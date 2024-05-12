@@ -1,0 +1,110 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Users {
+  id        Int      @id @default(autoincrement())
+  role      Role
+  name      String
+  email     String   @unique
+  phone     String   @unique
+  birth     DateTime
+  password  String
+  createdAt DateTime @default(now())
+
+  sentReq   Beneficiaries[] @relation("SentRequests")
+  recvReq   Beneficiaries[] @relation("ReceivedRequests")
+  accounts  Accounts[]
+}
+
+model Beneficiaries {
+  id        Int      @id @default(autoincrement())
+  rUser     Int
+  aUser     Int
+  accepted  Boolean?
+  createdAt DateTime @default(now())
+
+  userR     Users   @relation("SentRequests", fields: [rUser], references: [id])
+  userA     Users   @relation("ReceivedRequests", fields: [aUser], references: [id])
+}
+
+model Accounts {
+  id        Int            @id @default(autoincrement())
+  userId    Int
+  name      String
+  balance   Float          @default(0)
+  type      AccountType    @default(Checking)
+  status    AccountStatus  @default(Active)
+  createdAt DateTime       @default(now())
+
+  user     Users           @relation(fields: [userId], references: [id])
+  transS   Transactions[]  @relation("source")
+  transD   Transactions[]  @relation("destination")
+  card     Cards[]
+}
+
+model Cards {
+  id            Int        @id @default(autoincrement())
+  accountNumber Int
+  cvv           Int
+  expiryDate    DateTime   @default(now())
+  physical      Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+
+  account       Accounts   @relation(fields: [accountNumber], references: [id])
+}
+
+model Transactions {
+  id                 Int                @id @default(autoincrement())
+  sourceAccount      Int
+  destinationAccount Int
+  type               TransactionType
+  amount             Float
+  status             TransactionStatus  @default(Pending)
+  createdAt          DateTime           @default(now())
+
+  sAccount     Accounts   @relation("source", fields: [sourceAccount], references: [id])
+  dAccount     Accounts   @relation("destination", fields: [destinationAccount], references: [id])
+}
+
+enum Role {
+  Customer
+  Merchant
+  Vendor
+  Employee
+}
+
+enum AccountType {
+  Checking
+  Investment
+  Savings
+}
+
+enum AccountStatus {
+  Active
+  Inactive
+  Blocked
+  Locked
+  Suspended
+}
+
+enum TransactionType {
+  Transferer
+  Bill
+  Deposit
+  Withdraw
+}
+
+enum TransactionStatus {
+  Pending
+  Cancelled
+  Declined
+  Failed
+  Completed
+}
+
