@@ -13,21 +13,26 @@ async function index(req, res) {
 
 async function show(req, res) {
     try {
-        const beneficiaries = await prisma.beneficiaries.findUnique({
+        const id = parseInt(req.params.id);
+        if(isNaN(id)){
+            return res.status(409).json({error: "Invaled id type (must be int)"})
+        }
+        const beneficiaries = await prisma.beneficiaries.findMany({
             where: {
-                rUser: parseInt(req.params.id),        
-                aUser: parseInt(req.params.id),
-                accepted: true
+                OR: [
+                    {rUser: id},        
+                    {aUser: id, accepted: true},
+                ],
             },
         });
 
-        if (!beneficiaries) {
+        if (beneficiaries.length <= 0) {
             return res.status(404).json({ message: 'Beneficiaries not found' });
         }
         return res.json(beneficiaries);
 
     } catch (error) {
-        return res.status(500).json({ message: 'Internal server error' });
+        await handleError(error, res);
     }
 }
 

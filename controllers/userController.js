@@ -1,8 +1,9 @@
 const { PrismaClient, Prisma } = require('@prisma/client');
 const prisma = new PrismaClient();
 const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
 
+const { handleError } = require("./errorController");
+const dotenv = require('dotenv');
 dotenv.config();
 
 async function index(req, res) {
@@ -12,19 +13,23 @@ async function index(req, res) {
 
 async function show(req, res) {
   try {
+    const id = parseInt(req.params.id);
+    if(isNaN(id)){
+      return res.status(409).json({error: "Invaled id type (must be int)"})
+    }
     const user = await prisma.users.findUnique({
       where: {
-        id: parseInt(req.params.id),
+        id,
       },
     });
-
+    
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
     return res.json(user);
 
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error' });
+    await handleError(error, res);
   }
 }
 
@@ -50,7 +55,7 @@ async function destroy(req, res) {
     }
     return res.json({ message: 'User deleted successfully' });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error' });
+    await handleError(error, res);
   }
 }
 
