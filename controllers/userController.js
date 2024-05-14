@@ -14,15 +14,15 @@ async function index(req, res) {
 async function show(req, res) {
   try {
     const id = parseInt(req.params.id);
-    if(isNaN(id)){
-      return res.status(409).json({error: "Invaled id type (must be int)"})
+    if (isNaN(id)) {
+      return res.status(409).json({ error: "Invaled id type (must be int)" })
     }
     const user = await prisma.users.findUnique({
       where: {
         id,
       },
     });
-    
+
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
