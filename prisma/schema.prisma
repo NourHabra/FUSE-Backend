@@ -20,17 +20,36 @@ model Users {
   sentReq   Beneficiaries[] @relation("SentRequests")
   recvReq   Beneficiaries[] @relation("ReceivedRequests")
   accounts  Accounts[]
+  mrchant   Merchant?
+  customer  Customer?
+}
+
+model Merchant {
+  id          Int     @id @default(autoincrement())
+  userId      Int     @unique
+  category    MerchantCategory
+  workPermit  String
+
+  user     Users    @relation(fields: [userId], references: [id])
+}
+
+model Customer {
+  id            Int     @id @default(autoincrement())
+  userId        Int     @unique
+  yearlyIncome  Float
+
+  user     Users    @relation(fields: [userId], references: [id])
 }
 
 model Beneficiaries {
-  id        Int      @id @default(autoincrement())
-  rUser     Int
-  aUser     Int
-  accepted  Boolean?
-  createdAt DateTime @default(now())
+  id             Int      @id @default(autoincrement())
+  requstUser     Int
+  acceptUser     Int
+  accepted       Boolean?
+  createdAt      DateTime @default(now())
 
-  userR     Users   @relation("SentRequests", fields: [rUser], references: [id])
-  userA     Users   @relation("ReceivedRequests", fields: [aUser], references: [id])
+  userR     Users   @relation("SentRequests", fields: [requstUser], references: [id])
+  userA     Users   @relation("ReceivedRequests", fields: [acceptUser], references: [id])
 }
 
 model Accounts {
@@ -108,3 +127,8 @@ enum TransactionStatus {
   Completed
 }
 
+enum MerchantCategory {
+  Food
+  Health
+  Transport
+}
