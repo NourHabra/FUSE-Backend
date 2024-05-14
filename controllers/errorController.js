@@ -1,4 +1,5 @@
-const { Prisma } = require('@prisma/client');
+const { PrismaClient, Prisma, Role } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 async function handleError(error, res) {
     console.log(error);
@@ -15,24 +16,4 @@ async function handleError(error, res) {
     }
 }
 
-async function matchPassword( password, rPassword ){
-    error = new Error("password error");
-    if (parseInt(password.length) < 6){ 
-        error.meta ={error: "Password is short"} ; throw error;
-    }else if (password != rPassword) {
-        error.meta = {error: "Passwords don`t match"}; throw error;
-    }
-}
-
-async function notEmpty(...args){
-    error = new Error("Empty parameter");
-    args.forEach((arg, index)=>{
-        if(!arg){
-            const paramName = `arg${index + 1}`;
-            error.meta = {error: `Empty parameter`, paramName}; 
-            throw error;
-        }
-    });
-}
-
-module.exports = {handleError, matchPassword, notEmpty};
+module.exports = {handleError};

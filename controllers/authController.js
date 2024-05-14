@@ -1,19 +1,32 @@
-const { PrismaClient, Prisma } = require('@prisma/client');
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
 
+const dotenv = require('dotenv');
 dotenv.config();
 
-const { handleError, matchPassword, notEmpty } = require('./errorController');
+const { handleError } = require('./errorController');
+const validate = require('./validateController');
+
 const secretKey = process.env.JWT_SECRET;
 const maxAge = 60 * 60 * 1000;
 
 async function register(req, res) {
     try {
         const { name, role, email, phone, birth, password, rPassword  } = req.body;
-        await notEmpty(name, role, email, phone, birth, password, rPassword);
-        await matchPassword(password, rPassword);
+        const { category, workPermit } = req.body;
+        const { yearlyIncome } = req.body;
+
+        await validate.isRole(role);
+        await validate.isEmail(email);
+        await validate.matchPassword(password, rPassword);
+        await validate.notEmpty(name, phone, birth);
+
+        if(role === "Merchant"){
+            await validate.notEmpty(category, workPermit);
+        }else if (role === "Customer"){
+            await validate.notEmpty(yearlyIncome);
+        }
 
         const newUser = await prisma.users.create({
             data: {
@@ -26,6 +39,23 @@ async function register(req, res) {
             },
         });
 
+        if(role === "Merchant"){
+            const newMerchant = await prisma.merchant.creat({
+                data: {
+                    userId: newUser.id,
+                    category,
+                    workPermit
+                }
+            })
+        }else if (role === "Customer"){
+            const newCustomer = await prisma.customer.create({
+                data: {
+                    userId: newUser.id,
+                    yearlyIncome
+                }
+            })
+        }
+
         const token = jwt.sign({ userId: newUser.id, role: role }, secretKey, { expiresIn: '1h' });
         res.cookie("jwt", token,  { httpOnly: true, maxAge: maxAge });
         res.status(201).json({ message: 'User created successfully' });
@@ -34,12 +64,14 @@ async function register(req, res) {
         await handleError(error, res);
     }
 }
+const isEMail = require("isemail");
 
 
 async function login(req, res) {
     try {
         const { email, password } = req.body;
-        await notEmpty(email, password);
+        await validate.isEmail(email);
+        await validate.notEmpty(password);
 
         const user = await prisma.users.findUnique({
             where: {

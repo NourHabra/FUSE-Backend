@@ -1,10 +1,9 @@
-const { PrismaClient, Prisma } = require('@prisma/client');
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
-const { handleError, notEmpty } = require('./errorController');
 
-dotenv.config();
+const { handleError } = require('./errorController');
+const validate = require('./validateController');
+
 
 async function index(req, res) {
     const allBeneficiaries = await prisma.beneficiaries.findMany();
@@ -14,14 +13,14 @@ async function index(req, res) {
 async function show(req, res) {
     try {
         const id = parseInt(req.params.id);
-        if(isNaN(id)){
-            return res.status(409).json({error: "Invaled id type (must be int)"})
+        if (isNaN(id)) {
+            return res.status(409).json({ error: "Invaled id type (must be int)" })
         }
         const beneficiaries = await prisma.beneficiaries.findMany({
             where: {
                 OR: [
-                    {rUser: id},        
-                    {aUser: id, accepted: true},
+                    { requstUser: id },
+                    { acceptUser: id, accepted: true },
                 ],
             },
         });
@@ -37,11 +36,11 @@ async function show(req, res) {
 }
 
 async function store(req, res) {
-    try{
+    try {
         const { aID, rID } = req.body;
-        notEmpty(aID, rID);
+        validate.notEmpty(aID, rID);
 
-        const beneficiarie = await prisma.beneficiaries.findMany({
+        const beneficiaries = await prisma.beneficiaries.findMany({
             where: {
                 OR: [
                     {
@@ -56,57 +55,69 @@ async function store(req, res) {
             }
         });
 
-        if(beneficiarie.length != 0){
+        if (beneficiaries.length > 0) {
+            if (!beneficiaries[0].accepted) {
+                await prisma.beneficiaries.update({
+                    where: {
+                        id: beneficiaries[0].id
+                    },
+                    data: {
+                        accepted: true
+                    }
+                })
+            }
             return res.status(409).json({ message: 'beneficiaries true' });
         }
-        beneficiarie = await prisma.beneficiaries.create({
+
+        const beneficiarie = await prisma.beneficiaries.create({
             data: {
-                rUser: parseInt(rID),
-                aUser: parseInt(aID)
+                requstUser: parseInt(rID),
+                acceptUser: parseInt(aID)
             }
         })
-        return res.statue(201).json(beneficiarie);
+        return res.status(201).json({ message: 'beneficiaries true' });
 
-    }catch (error){
+    } catch (error) {
         await handleError(error, res);
     }
 }
 
-// get edit|create page
-async function create(req, res) {
-
-}
-
 async function update(req, res) {
-    try{
-        const {id, accepted} = req.Body;
+    try {
+        const { id, accepted } = req.Body;
+        validate.notEmpty(id, accepted);
+
         const beneficiarie = await prisma.beneficiaries.findUnique({
-            where:{
+            where: {
                 id: parseInt(id),
             }
         })
 
-        if(beneficiarie){
+        if (beneficiarie) {
             await prisma.beneficiaries.update({
                 where: {
                     id,
                 },
                 data: {
-                    accepted: accepted === "Ture"? true : false,
+                    accepted: accepted === "Ture" ? true : false,
                 }
             })
         }
 
-    }catch (error){
+    } catch (error) {
         await handleError(error, res);
     }
 }
 
 async function destroy(req, res) {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+        return res.status(409).json({ error: "Invaled id type (must be int)" })
+    }
     try {
         const deletedBeneficiarie = await prisma.beneficiaries.delete({
             where: {
-                id: parseInt(req.params.id),
+                id,
             },
         });
         if (!deletedBeneficiarie) {
@@ -118,4 +129,4 @@ async function destroy(req, res) {
     }
 }
 
-module.exports = { index, show, store, create, update, destroy };
+module.exports = { index, show, store, update, destroy };
