@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const dotenv = require('dotenv');
@@ -13,6 +14,7 @@ const maxAge = 60 * 60 * 1000;
 
 async function register(req, res) {
   try {
+    const salt = await bcrypt.genSalt();
     let { name, role, email, phone, birth, password, rPassword } = req.body;
     let { category, workPermit } = req.body;
     let { yearlyIncome } = req.body;
@@ -23,6 +25,7 @@ async function register(req, res) {
     birth = await validate.isDate(birth);
     name = await validate.checkEmpty(name, "name");
     password = await validate.matchPassword(password, rPassword);
+    password = await bcrypt.hash(password,salt);
 
     if (role === "Merchant") {
       await validate.notEmpty(category, workPermit);
@@ -73,7 +76,7 @@ async function login(req, res) {
   try {
     const { email, password } = req.body;
     await validate.isEmail(email);
-    await validate.notEmpty(password);
+    await validate.checkEmpty(password, "password");
 
     const user = await prisma.users.findUnique({
       where: {
@@ -83,7 +86,7 @@ async function login(req, res) {
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
-    } else if (user.password === password) {
+    } else if (bcrypt.compare(password, user.password)) {
       const token = jwt.sign({ userId: user.id, role: user.role }, secretKey, { expiresIn: '1h' });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
       return res.json("success");
