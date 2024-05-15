@@ -13,14 +13,16 @@ const maxAge = 60 * 60 * 1000;
 
 async function register(req, res) {
   try {
-    const { name, role, email, phone, birth, password, rPassword } = req.body;
-    const { category, workPermit } = req.body;
-    const { yearlyIncome } = req.body;
-
-    await validate.isRole(role);
-    await validate.isEmail(email);
-    await validate.matchPassword(password, rPassword);
-    await validate.notEmpty(name, phone, birth);
+    let { name, role, email, phone, birth, password, rPassword } = req.body;
+    let { category, workPermit } = req.body;
+    let { yearlyIncome } = req.body;
+    
+    role = await validate.isRole(role);
+    email = await validate.isEmail(email);
+    phone = await validate.isPhone(phone);
+    birth = await validate.isDate(birth);
+    name = await validate.checkEmpty(name, "name");
+    password = await validate.matchPassword(password, rPassword);
 
     if (role === "Merchant") {
       await validate.notEmpty(category, workPermit);
@@ -40,7 +42,7 @@ async function register(req, res) {
     });
 
     if (role === "Merchant") {
-      const newMerchant = await prisma.merchant.creat({
+      const newMerchant = await prisma.merchant.create({
         data: {
           userId: newUser.id,
           category,
