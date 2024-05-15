@@ -12,10 +12,8 @@ async function index(req, res) {
 
 async function show(req, res) {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(409).json({ error: "Invaled id type (must be int)" })
-    }
+    const id = parseInt(await validate.isNumber(req.params.id, "id"));
+
     const beneficiaries = await prisma.beneficiaries.findMany({
       where: {
         OR: [
@@ -37,19 +35,20 @@ async function show(req, res) {
 
 async function store(req, res) {
   try {
-    const { aID, rID } = req.body;
-    validate.notEmpty(aID, rID);
+    let { acceptUser, requstUser } = req.body;
+    acceptUser = await validate.isNumber(acceptUser, "acceptUser");
+    requstUser = await validate.isNumber(requstUser, "requstUser");
 
-    const beneficiaries = await prisma.beneficiaries.findMany({
+    const beneficiaries = await prisma.beneficiaries.findFirst({
       where: {
         OR: [
           {
-            rUser: parseInt(rID),
-            aUser: parseInt(aID)
+            requstUser: parseInt(requstUser),
+            acceptUser: parseInt(acceptUser)
           },
           {
-            rUser: parseInt(aID),
-            aUser: parseInt(rID)
+            requstUser: parseInt(acceptUser),
+            acceptUser: parseInt(requstUser)
           }
         ]
       }
@@ -59,7 +58,8 @@ async function store(req, res) {
       if (!beneficiaries[0].accepted) {
         await prisma.beneficiaries.update({
           where: {
-            id: beneficiaries[0].id
+            id: beneficiaries[0].id,
+            acceptUser: requstUser
           },
           data: {
             accepted: true
@@ -71,11 +71,11 @@ async function store(req, res) {
 
     const beneficiarie = await prisma.beneficiaries.create({
       data: {
-        requstUser: parseInt(rID),
-        acceptUser: parseInt(aID)
+        requstUser: parseInt(requstUser),
+        acceptUser: parseInt(acceptUser)
       }
     })
-    return res.status(201).json({ message: 'beneficiaries true' });
+    return res.status(201).json({ message: 'sent' });
 
   } catch (error) {
     await handleError(error, res);
@@ -84,8 +84,9 @@ async function store(req, res) {
 
 async function update(req, res) {
   try {
-    const { id, accepted } = req.Body;
-    validate.notEmpty(id, accepted);
+    let { id, accepted } = req.Body;
+    id = await validate.isNumber(id, "id");
+    accepted = await validate.checkEmpty(accepted ,"accepted");
 
     const beneficiarie = await prisma.beneficiaries.findUnique({
       where: {
@@ -99,7 +100,7 @@ async function update(req, res) {
           id,
         },
         data: {
-          accepted: accepted === "Ture" ? true : false,
+          accepted: accepted,
         }
       })
     }
@@ -110,10 +111,8 @@ async function update(req, res) {
 }
 
 async function destroy(req, res) {
-  const id = parseInt(req.params.id);
-  if (isNaN(id)) {
-    return res.status(409).json({ error: "Invaled id type (must be int)" })
-  }
+  const id = parseInt(await validate.isNumber(req.params.id, "id"));
+  
   try {
     const deletedBeneficiarie = await prisma.beneficiaries.delete({
       where: {
@@ -125,7 +124,7 @@ async function destroy(req, res) {
     }
     return res.json({ message: 'Beneficiarie deleted successfully' });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error' });
+    await handleError(error, res);
   }
 }
 

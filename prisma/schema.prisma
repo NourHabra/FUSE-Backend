@@ -20,7 +20,7 @@ model Users {
   sentReq   Beneficiaries[] @relation("SentRequests")
   recvReq   Beneficiaries[] @relation("ReceivedRequests")
   accounts  Accounts[]
-  mrchant   Merchant?
+  merchant  Merchant?
   customer  Customer?
 }
 
