@@ -14,6 +14,7 @@ model Users {
   email     String   @unique
   phone     String   @unique
   birth     DateTime
+  status    userStatus @default(Created)
   password  String
   createdAt DateTime @default(now())
 
@@ -131,4 +132,11 @@ enum MerchantCategory {
   Food
   Health
   Transport
+}
+
+enum userStatus {
+  Created
+  Deleted
+  Baned
+  Stopped
 }

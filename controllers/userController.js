@@ -10,6 +10,9 @@ dotenv.config();
 
 async function index(req, res) {
   const allUsers = await prisma.users.findMany({
+    where:{
+      status: {not: "Deleted"}
+    },
     select: {
       id: true,
       name: true,
@@ -29,6 +32,7 @@ async function show(req, res) {
     const user = await prisma.users.findUnique({
       where: {
         id,
+        status: {not: "Deleted"}
       },
       select: {
         id: true,
@@ -53,11 +57,12 @@ async function show(req, res) {
 async function update(req, res) {
   try {
     const id = parseInt(await validate.isNumber(req.params.id));
-    let { name, email, phone, birth } = req.body;
+    let { name, email, phone, birth, status } = req.body;
     name = await validate.checkEmpty(name, "name");
     email = await validate.isEmail(email);
     phone = await validate.isPhone(phone);
     birth = await validate.isDate(birth);
+    status = await validate.isUserStatus(status);
 
     const oldUser = await prisma.users.findUnique({where:{id}});
     if(!oldUser){
@@ -73,6 +78,7 @@ async function update(req, res) {
         email,
         phone,
         birth: new Date(birth).toISOString(),
+        status
       }, 
       select: {
         id: true,
@@ -94,10 +100,13 @@ async function update(req, res) {
 
 async function destroy(req, res) {
   try {
-    const deletedUser = await prisma.users.delete({
+    const deletedUser = await prisma.users.update({
       where: {
         id: parseInt(req.params.id),
       },
+      data: {
+        status: "Deleted"
+      }
     });
     if (!deletedUser) {
       return res.status(404).json({ message: 'User not found' });

@@ -1,5 +1,5 @@
 const isEMail = require("isemail");
-const { Role } = require('@prisma/client');
+const { Role, MerchantCategory, userStatus } = require('@prisma/client');
 
 
 async function matchPassword(password, rPassword) {
@@ -83,6 +83,30 @@ async function checkEmpty(parameter, paramName) {
   return parameter.trim();
 }
 
+async function isUserStatus(status) {
+  status = await checkEmpty(status, "UserStatus");
+
+  if(status in userStatus){
+    return status;
+  }else{
+    error = new Error("Invaled status");
+    error.meta = { error: `Invaled status format`, paramName: "status" };
+    throw error;
+  }
+}
+
+async function isMerchantCategory(category) {
+  category = await checkEmpty(category, "MerchantCategory");
+
+  if(category in MerchantCategory){
+    return category;
+  }else{
+    error = new Error("Invaled category");
+    error.meta = { error: `Invaled category format`, paramName: "category" };
+    throw error;
+  }
+}
+
 async function notEmpty(...args) {
   error = new Error("Empty parameter");
   args.forEach((arg, index) => {
@@ -94,4 +118,4 @@ async function notEmpty(...args) {
   });
 }
 
-module.exports = { matchPassword, notEmpty, isEmail, isRole, isPhone, isDate, isNumber, checkEmpty };
+module.exports = { matchPassword, notEmpty, isEmail, isRole, isPhone, isDate, isNumber, isUserStatus, isMerchantCategory, checkEmpty };
