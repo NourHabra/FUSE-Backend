@@ -12,7 +12,7 @@ const controllerRole = "Merchant";
 
 async function index(req, res) {
   const allMerchants = await prisma.users.findMany({
-    where: {role: controllerRole},
+    where: { role: controllerRole, status: { not: "Deleted" } },
     select: {
       id: true,
       name: true,
@@ -38,6 +38,7 @@ async function show(req, res) {
     const merchant = await prisma.users.findUnique({
       where: {
         id,
+        status: {not: "Deleted"}
       },
       select: {
         id: true,
@@ -45,7 +46,13 @@ async function show(req, res) {
         email: true,
         phone: true,
         birth: true,
-        role: true
+        role: true,
+        merchant: {
+          select: {
+            category: true,
+            workPermit: true
+          }
+        }
       }
     });
 
@@ -62,40 +69,57 @@ async function show(req, res) {
 async function update(req, res) {
   try {
     const id = parseInt(await validate.isNumber(req.params.id));
-    let { name, email, phone, birth } = req.body;
+    let { name, email, phone, birth, status, category, workPermit } = req.body;
     name = await validate.checkEmpty(name, "name");
+    workPermit = await validate.checkEmpty(workPermit, "workPermit");
     email = await validate.isEmail(email);
     phone = await validate.isPhone(phone);
     birth = await validate.isDate(birth);
+    category = await validate.isMerchantCategory(category);
+    status = await validate.isUserStatus(status);
 
-    const oldMerchant = await prisma.users.findUnique({where:{id}});
-    if(!oldMerchant){
+    const oldMerchant = await prisma.users.findUnique({ where: { id, role: controllerRole } });
+    if (!oldMerchant) {
       return res.status(404).json({ message: 'Merchant not found' });
     }
 
     const updateMerchant = await prisma.users.update({
       where: {
-        id
+        id,
+        role: controllerRole
       },
       data: {
         name,
         email,
         phone,
         birth: new Date(birth).toISOString(),
-      }, 
+        status,
+        merchant: {
+          update: {
+            category,
+            workPermit
+          }
+        }
+      },
       select: {
         id: true,
         name: true,
         email: true,
         phone: true,
         birth: true,
-        role: true
+        role: true,
+        merchant: {
+          select: {
+            category: true,
+            workPermit: true
+          }
+        }
       }
     });
 
     return res.status(200).json(updateMerchant);
 
-  }catch(error){
+  } catch (error) {
     await handleError(error, res);
   }
 
@@ -103,10 +127,14 @@ async function update(req, res) {
 
 async function destroy(req, res) {
   try {
-    const deletedMerchant = await prisma.users.delete({
+    const deletedMerchant = await prisma.users.update({
       where: {
         id: parseInt(req.params.id),
+        role: controllerRole,
       },
+      data:{
+        status: "Deleted"
+      }
     });
     if (!deletedMerchant) {
       return res.status(404).json({ message: 'Merchant not found' });
