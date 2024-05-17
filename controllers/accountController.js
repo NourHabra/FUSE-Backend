@@ -48,12 +48,13 @@ async function store(req, res){
 
     const newAccount = await prisma.accounts.create({
       data: {
-        userId,
-        balance,
+        userId: parseInt(userId),
+        balance: parseFloat(balance),
         type,
         name: `${type}_${userId}_FUSE`
       }
     })
+    return res.json(newAccount);
   }catch(error){
     await handleError(error, res);
   }
@@ -82,6 +83,7 @@ async function update(req, res){
         status
       }
     })
+    res.json(newAccount);
   }catch(error){
     await handleError(error, res);
   }
