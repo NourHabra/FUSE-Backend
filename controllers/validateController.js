@@ -1,5 +1,5 @@
 const isEMail = require("isemail");
-const { Role, MerchantCategory, userStatus, AccountType, AccountStatus } = require('@prisma/client');
+const { Role, MerchantCategory, userStatus, AccountType, AccountStatus, TransactionType } = require('@prisma/client');
 
 
 async function matchPassword(password, rPassword) {
@@ -131,6 +131,19 @@ async function isMerchantCategory(category) {
   }
 }
 
+async function isTransactionType(type) {
+  type = await checkEmpty(type, "transactionType");
+
+  if(type in TransactionType){
+    return type;
+  }else{
+    error = new Error("Invaled type");
+    error.meta = { error: `Invaled type format`, paramName: "type" };
+    throw error;
+  }
+}
+
+
 async function notEmpty(...args) {
   error = new Error("Empty parameter");
   args.forEach((arg, index) => {
@@ -142,4 +155,18 @@ async function notEmpty(...args) {
   });
 }
 
-module.exports = { matchPassword, notEmpty, isEmail, isRole, isPhone, isDate, isNumber, isUserStatus, isMerchantCategory, isAccountType, isAccountStatus, checkEmpty };
+module.exports = {
+  matchPassword,
+  notEmpty,
+  isEmail,
+  isRole, 
+  isPhone, 
+  isDate, 
+  isNumber, 
+  isUserStatus, 
+  isMerchantCategory, 
+  isAccountType, 
+  isAccountStatus,
+  isTransactionType,
+  checkEmpty 
+};

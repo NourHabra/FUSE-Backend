@@ -81,14 +81,14 @@ model Cards {
 
 model Transactions {
   id                 Int                @id @default(autoincrement())
-  sourceAccount      Int
+  sourceAccount      Int?
   destinationAccount Int
   type               TransactionType
   amount             Float
   status             TransactionStatus  @default(Pending)
   createdAt          DateTime           @default(now())
 
-  sAccount     Accounts   @relation("source", fields: [sourceAccount], references: [id])
+  sAccount     Accounts?   @relation("source", fields: [sourceAccount], references: [id])
   dAccount     Accounts   @relation("destination", fields: [destinationAccount], references: [id])
 }
 

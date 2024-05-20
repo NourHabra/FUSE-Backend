@@ -5,6 +5,7 @@ const beneficiarieRouter = require("./routes/beneficiarieRoutes");
 const merchantRoutes = require("./routes/merchantRoutes");
 const accountRoutes = require("./routes/accountRoutes");
 const cardRoutes = require("./routes/cardRoutes");
+const transactionRoutes = require("./routes/transactionRoutes");
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use("/beneficiarie", beneficiarieRouter);
 app.use("/merchant", merchantRoutes);
 app.use("/account", accountRoutes);
 app.use("/card", cardRoutes);
+app.use("/transaction", transactionRoutes);
 
 app.listen(3000, () => {
     console.log('Server listening on port 3000');
