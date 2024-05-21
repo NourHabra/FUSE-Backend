@@ -19,11 +19,11 @@ async function index(req, res) {
 
 async function show(req, res) {
   try {
-    const id = await validate.isNumber(req.params.id, "id");
+    const id = await validate.checkEmpty(req.params.id, "id");
 
     const card = await prisma.cards.findUnique({
       where: {
-        id: parseInt(id),
+        id: id,
       }
     });
 
@@ -42,8 +42,21 @@ async function store(req, res) {
     let { accountNumber } = req.body;
     accountNumber = await validate.isNumber(accountNumber, "accountNumber");
 
+    let id, checkID;
+    do{
+    let randomNumber = Math.floor(Math.random() * 9000000000000000) + 1000000000000000;
+    id = randomNumber.toString();
+    
+    checkID = await prisma.cards.findUnique({
+      where: {id}
+    });
+
+    }while(checkID);
+
+
     const newCard = await prisma.cards.create({
       data: {
+        id,
         accountNumber: parseInt(accountNumber),
         cvv: Math.floor(Math.random() * 900) + 100,
       }
@@ -56,7 +69,7 @@ async function store(req, res) {
 
 async function update(req, res) {
   try{
-    const id = await validate.isNumber(req.params.id, "id");
+    const id = await validate.checkEmpty(req.params.id, "id");
 
     let {accountNumber, expiryDate, physical} = req.body;
     accountNumber = await validate.isNumber();
@@ -81,7 +94,7 @@ async function update(req, res) {
 
 async function destroy(req, res) {
   try {
-    const id = await validate.isNumber(req.params.id, "id");
+    const id = await validate.checkEmpty(req.params.id, "id");
 
     const deletedCard = await prisma.cards.delete({
       where: {

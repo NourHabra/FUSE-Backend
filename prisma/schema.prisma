@@ -69,7 +69,7 @@ model Accounts {
 }
 
 model Cards {
-  id            Int        @id @default(autoincrement())
+  id            String     @id
   accountNumber Int
   cvv           Int
   expiryDate    DateTime   @default(dbgenerated("NOW() + interval '2 years'"))
