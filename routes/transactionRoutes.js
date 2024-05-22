@@ -11,6 +11,7 @@ router.post('/bill', transactionController.storeBill);
 router.post('/transferer', transactionController.storeTransferer);
 router.post('/deposit', transactionController.storeDeposit);
 router.post('/withdraw', transactionController.storeWithdraw);
+router.post('/payBill/:id', transactionController.payBill);
 router.get('/:id', transactionController.show);
 router.put('/:id', transactionController.update);
 router.delete('/:id', transactionController.destroy);

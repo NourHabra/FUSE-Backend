@@ -361,6 +361,80 @@ async function storeWithdraw(req, res) {
 
 }
 
+async function payBill(req, res) {
+  let {sourceAccount, accepted} = req.body;
+  const billId = parseInt(await validate.isNumber(req.params.id, "billId"))
+  sourceAccount = parseInt(await validate.isNumber(sourceAccount, "sourceAccount"));
+  accepted = (await validate.checkEmpty(accepted, "accepted")) === "true"? true : false;
+
+  const sAccount = await prisma.accounts.findUnique({
+    where: {id: sourceAccount},
+  });
+  const bill = await prisma.transactions.findUnique({
+    where: {id: billId}
+  });
+
+  if(!sAccount){
+    return res.status(404).json({error: "User account is not found"});
+  }else if(!bill){
+    return res.status(404).json({error: "Bill is not found"});
+  }else if(bill.status != "Pending"){
+    return res.status(409).json({error: "Bill status is not valied"});
+  }
+
+  const dAccount = await prisma.accounts.findUnique({
+    where: {id: bill.destinationAccount}
+  });
+
+  if((sAccount.balance - bill.amount) < 0){
+    return res.status(409).json({error: "User balace is low"});
+  }
+
+  if(accepted){
+    const transactions = await prisma.$transaction([
+      prisma.accounts.update({
+        where: {id: sourceAccount},
+        data: {
+          balance: sAccount.balance - bill.amount
+        }
+      }),
+      prisma.accounts.update({
+        where: {id: bill.destinationAccount},
+        data: {
+          balance: dAccount.balance + amount
+        }
+      }),
+      prisma.transactions.update({
+        where: {id: billId},
+        data:{
+          sourceAccount,
+          status: "Completed"
+        }
+      })
+    ]);
+    if(!transactions){
+      const upTransaction = await prisma.transactions.update({
+        where: { id: billId },
+        data: {
+          sourceAccount,
+          status: "Failed"
+        }
+      });
+      return res.status(409).json({ error: 'Falid to pay bill', upTransaction });
+    }
+    return res.status(201).json(transactions)
+  } else {
+    const transaction = await prisma.transactions.update({
+      where: {id: billId},
+      data: {
+        sourceAccount,
+        status: "Declined"
+      }
+    });
+    return res.status(400).json(transaction)
+  }
+}
+
 async function update(req, res) {
 
 }
@@ -369,4 +443,4 @@ async function destroy(req, res) {
 
 }
 
-module.exports = { index, show, storeBill, storeTransferer, storeDeposit, storeWithdraw, update, destroy };
+module.exports = { index, show, storeBill, storeTransferer, storeDeposit, storeWithdraw, payBill, update, destroy };
