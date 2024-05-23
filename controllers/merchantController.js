@@ -1,66 +1,26 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-
+const merchantService = require('../services/merchantService');
+const { handleError } = require('./errorController');
 const validate = require('./validateController');
-const { handleError } = require("./errorController");
-
-const dotenv = require('dotenv');
-const e = require('express');
-dotenv.config();
-
-const controllerRole = "Merchant";
 
 async function index(req, res) {
-  const allMerchants = await prisma.users.findMany({
-    where: { role: controllerRole, status: { not: "Deleted" } },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      phone: true,
-      birth: true,
-      role: true,
-      merchant: {
-        select: {
-          category: true,
-          workPermit: true
-        }
-      }
-    }
-  });
-  return res.json(allMerchants);
+  try {
+    const allMerchants = await merchantService.findAll();
+    return res.json(allMerchants);
+  } catch (error) {
+    await handleError(error, res);
+  }
 }
 
 async function show(req, res) {
   try {
     const id = parseInt(await validate.isNumber(req.params.id));
 
-    const merchant = await prisma.users.findUnique({
-      where: {
-        id,
-        status: {not: "Deleted"}
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        birth: true,
-        role: true,
-        merchant: {
-          select: {
-            category: true,
-            workPermit: true
-          }
-        }
-      }
-    });
+    const merchant = await merchantService.findById(id);
 
     if (!merchant) {
       return res.status(404).json({ message: 'Merchant not found' });
     }
     return res.json(merchant);
-
   } catch (error) {
     await handleError(error, res);
   }
@@ -78,64 +38,23 @@ async function update(req, res) {
     category = await validate.isMerchantCategory(category);
     status = await validate.isUserStatus(status);
 
-    const oldMerchant = await prisma.users.findUnique({ where: { id, role: controllerRole } });
+    const oldMerchant = await merchantService.findById(id);
     if (!oldMerchant) {
       return res.status(404).json({ message: 'Merchant not found' });
     }
 
-    const updateMerchant = await prisma.users.update({
-      where: {
-        id,
-        role: controllerRole
-      },
-      data: {
-        name,
-        email,
-        phone,
-        birth: new Date(birth).toISOString(),
-        status,
-        merchant: {
-          update: {
-            category,
-            workPermit
-          }
-        }
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        birth: true,
-        role: true,
-        merchant: {
-          select: {
-            category: true,
-            workPermit: true
-          }
-        }
-      }
-    });
-
-    return res.status(200).json(updateMerchant);
-
+    const updatedMerchant = await merchantService.updateById(id, { name, email, phone, birth, status, category, workPermit });
+    return res.status(200).json(updatedMerchant);
   } catch (error) {
     await handleError(error, res);
   }
-
 }
 
 async function destroy(req, res) {
   try {
-    const deletedMerchant = await prisma.users.update({
-      where: {
-        id: parseInt(req.params.id),
-        role: controllerRole,
-      },
-      data:{
-        status: "Deleted"
-      }
-    });
+    const id = parseInt(await validate.isNumber(req.params.id));
+
+    const deletedMerchant = await merchantService.deleteMerchant(id);
     if (!deletedMerchant) {
       return res.status(404).json({ message: 'Merchant not found' });
     }

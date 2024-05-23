@@ -1,27 +1,21 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-
+const beneficiarieService = require('../services/beneficiarieService');
 const { handleError } = require('./errorController');
 const validate = require('./validateController');
 
-
 async function index(req, res) {
-  const allBeneficiaries = await prisma.beneficiaries.findMany();
-  return res.json(allBeneficiaries);
+  try {
+    const allBeneficiaries = await beneficiarieService.findAll();
+    return res.json(allBeneficiaries);
+  } catch (error) {
+    await handleError(error, res);
+  }
 }
 
 async function show(req, res) {
   try {
     const id = parseInt(await validate.isNumber(req.params.id, "id"));
 
-    const beneficiaries = await prisma.beneficiaries.findMany({
-      where: {
-        OR: [
-          { requstUser: id },
-          { acceptUser: id, accepted: true },
-        ],
-      },
-    });
+    const beneficiaries = await beneficiarieService.findByUserId(id);
 
     if (beneficiaries.length <= 0) {
       return res.status(404).json({ message: 'Beneficiaries not found' });
@@ -39,42 +33,16 @@ async function store(req, res) {
     acceptUser = await validate.isNumber(acceptUser, "acceptUser");
     requstUser = await validate.isNumber(requstUser, "requstUser");
 
-    const beneficiaries = await prisma.beneficiaries.findFirst({
-      where: {
-        OR: [
-          {
-            requstUser: parseInt(requstUser),
-            acceptUser: parseInt(acceptUser)
-          },
-          {
-            requstUser: parseInt(acceptUser),
-            acceptUser: parseInt(requstUser)
-          }
-        ]
-      }
-    });
+    const beneficiaries = await beneficiarieService.find(requstUser, acceptUser);
 
-    if (beneficiaries.length > 0) {
-      if (!beneficiaries[0].accepted) {
-        await prisma.beneficiaries.update({
-          where: {
-            id: beneficiaries[0].id,
-            acceptUser: requstUser
-          },
-          data: {
-            accepted: true
-          }
-        })
+    if (beneficiaries) {
+      if (!beneficiaries.accepted) {
+        await beneficiarieService.updateById(beneficiaries.id, { accepted: true });
       }
-      return res.status(409).json({ message: 'beneficiaries true' });
+      return res.status(409).json({ message: 'Beneficiaries true' });
     }
 
-    const beneficiarie = await prisma.beneficiaries.create({
-      data: {
-        requstUser: parseInt(requstUser),
-        acceptUser: parseInt(acceptUser)
-      }
-    })
+    await beneficiarieService.create(requstUser, acceptUser);
     return res.status(201).json({ message: 'sent' });
 
   } catch (error) {
@@ -84,25 +52,14 @@ async function store(req, res) {
 
 async function update(req, res) {
   try {
-    let { id, accepted } = req.Body;
+    let { id, accepted } = req.body;
     id = await validate.isNumber(id, "id");
-    accepted = await validate.checkEmpty(accepted ,"accepted");
+    accepted = await validate.checkEmpty(accepted, "accepted");
 
-    const beneficiarie = await prisma.beneficiaries.findUnique({
-      where: {
-        id: parseInt(id),
-      }
-    })
+    const beneficiarie = await beneficiarieService.findById(id);
 
     if (beneficiarie) {
-      await prisma.beneficiaries.update({
-        where: {
-          id,
-        },
-        data: {
-          accepted: accepted,
-        }
-      })
+      await beneficiarieService.updateById(id, { accepted });
     }
 
   } catch (error) {
@@ -111,18 +68,15 @@ async function update(req, res) {
 }
 
 async function destroy(req, res) {
-  const id = parseInt(await validate.isNumber(req.params.id, "id"));
-  
   try {
-    const deletedBeneficiarie = await prisma.beneficiaries.delete({
-      where: {
-        id,
-      },
-    });
+    const id = parseInt(await validate.isNumber(req.params.id, "id"));
+    const deletedBeneficiarie = await beneficiarieService.deleteById(id);
+
     if (!deletedBeneficiarie) {
       return res.status(404).json({ message: 'Beneficiarie not found' });
     }
     return res.json({ message: 'Beneficiarie deleted successfully' });
+
   } catch (error) {
     await handleError(error, res);
   }

@@ -1,29 +1,27 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-
+const transactionService = require('../services/transactionService');
+const merchantService = require('../services/merchantService');
+const accountService = require('../services/accountService');
 const { handleError } = require('./errorController');
 const validate = require('./validateController');
 
 async function index(req, res) {
-  const allTransactions = await prisma.transactions.findMany();
-  return res.json(allTransactions);
+  try {
+    const allTransactions = await transactionService.findAll();
+    return res.json(allTransactions);
+  } catch (error) {
+    await handleError(error, res);
+  }
 }
 
 async function show(req, res) {
   try {
     const id = parseInt(await validate.isNumber(req.params.id, "id"));
-
-    const transaction = await prisma.transactions.findUnique({
-      where: {
-        id,
-      },
-    });
+    const transaction = await transactionService.findById(id);
 
     if (!transaction) {
       return res.status(404).json({ message: 'Transaction not found' });
     }
     return res.json(transaction);
-
   } catch (error) {
     await handleError(error, res);
   }
@@ -34,413 +32,230 @@ async function storeBill(req, res) {
     let { destinationAccount, amount } = req.body;
     destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
     amount = parseFloat(await validate.isNumber(amount, "amount"));
-    const dAccount = await prisma.accounts.findUnique({
-      where: {
-        id: destinationAccount,
-        user: {
-          role: "Merchant"
-        }
-      },
-    });
+
+    const dAccount = await merchantService.findById(destinationAccount);
 
     if (!dAccount) {
-      return res.status(404).json({ message: 'destinationAccount not found' });
-    } else if (dAccount.status != "Active") {
-      return res.status(409).json({ error: `destinationAccount is not Active (${dAccount.status})` });
+      return res.status(404).json({ message: 'Destination account not found' });
+    } else if (dAccount.status !== "Active") {
+      return res.status(409).json({ error: `Destination account is not active (${dAccount.status})` });
     } else if (amount <= 0) {
-      return res.status(409).json({ error: `amount cant be <= 0` });
+      return res.status(409).json({ error: 'Amount must be greater than 0' });
     }
 
-    const transaction = await prisma.transactions.create({
-      data: {
-        destinationAccount: parseInt(destinationAccount),
-        amount: parseFloat(amount),
-        type: "Bill"
-      }
-    });
+    const transaction = await transactionService.create("Bill", null, destinationAccount, amount);
 
     res.status(201).json({ message: "Bill created", bill: transaction });
-
   } catch (error) {
     await handleError(error, res);
   }
 }
 
 async function storeTransferer(req, res) {
-  let { sourceAccount, destinationAccount, amount } = req.body;
-  sourceAccount = parseInt(await validate.isNumber(sourceAccount, "sourceAccount"));
-  destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
-  amount = parseFloat(await validate.isNumber(amount, "amount"));
+  try {
+    let { sourceAccount, destinationAccount, amount } = req.body;
+    sourceAccount = parseInt(await validate.isNumber(sourceAccount, "sourceAccount"));
+    destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
+    amount = parseFloat(await validate.isNumber(amount, "amount"));
 
-  const dAccount = await prisma.accounts.findUnique({
-    where: { id: destinationAccount }
-  });
-  const sAccount = await prisma.accounts.findUnique({
-    where: { id: sourceAccount }
-  });
+    const dAccount = await accountService.getById(destinationAccount);
+    const sAccount = await accountService.getById(sourceAccount);
 
-  if (!dAccount) {
-    return res.status(404).json({ message: 'destinationAccount not found' });
-  } else if (!sAccount) {
-    return res.status(404).json({ message: 'sourceAccount not found' });
-  } else if (amount <= 0) {
-    return res.status(409).json({ error: `amount cant be <= 0` });
-  }
-
-  const transaction = await prisma.transactions.create({
-    data: {
-      sourceAccount,
-      destinationAccount,
-      amount,
-      type: "Transferer",
+    if (!dAccount) {
+      return res.status(404).json({ message: 'Destination account not found' });
+    } else if (!sAccount) {
+      return res.status(404).json({ message: 'Source account not found' });
+    } else if (amount <= 0) {
+      return res.status(409).json({ error: 'Amount must be greater than 0' });
     }
-  });
 
-  if ((sAccount.balance - amount) < 0) {
-    const upTransaction = await prisma.transactions.update({
-      where: { id: transaction.id },
-      data: {
-        status: "Failed"
-      }
-    })
-    return res.status(409).json({ error: 'sourceAccount low balance', upTransaction });
+    const transaction = await transactionService.create("Transferer", sourceAccount, destinationAccount, amount);
+
+    if ((sAccount.balance - amount) < 0) {
+      await transactionService.updateById(transaction.id, { status: "Failed" });
+      return res.status(409).json({ error: 'Source account has insufficient balance' });
+    }
+
+    const transactions = await transactionService.makeTransaction([
+      accountService.updateById(sourceAccount, { balance: sAccount.balance - amount }),
+      accountService.updateById(destinationAccount, { balance: dAccount.balance + amount }),
+      transactionService.updateById(transaction.id, { status: "Completed" })
+    ]);
+
+    if (!transactions) {
+      await transactionService.updateById(transaction.id, { status: "Failed" });
+      return res.status(409).json({ error: 'Failed to complete transaction' });
+    }
+
+    return res.status(201).json({ transactions });
+  } catch (error) {
+    await handleError(error, res);
   }
-
-  const transactions = await prisma.$transaction([
-    prisma.accounts.update({
-      where: { id: sourceAccount },
-      data: {
-        balance: sAccount.balance - amount,
-      }
-    }),
-    prisma.accounts.update({
-      where: { id: destinationAccount },
-      data: {
-        balance: dAccount.balance + amount
-      }
-    }),
-    prisma.transactions.update({
-      where: { id: transaction.id },
-      data: { status: "Completed" }
-    })
-  ]);
-  if (!transactions) {
-    const upTransaction = await prisma.transactions.update({
-      where: { id: transaction.id },
-      data: {
-        status: "Failed"
-      }
-    });
-    return res.status(409).json({ error: 'Falid to make transaction', upTransaction });
-  }
-
-  return res.status(201).json({ transactions });
-
 }
 
 async function storeDeposit(req, res) {
-  let { sourceAccount, destinationAccount, amount } = req.body;
-  sourceAccount = parseInt(await validate.isNumber(sourceAccount, "sourceAccount"));
-  destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
-  amount = parseFloat(await validate.isNumber(amount, "amount"));
+  try {
+    let { sourceAccount, destinationAccount, amount } = req.body;
+    sourceAccount = parseInt(await validate.isNumber(sourceAccount, "sourceAccount"));
+    destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
+    amount = parseFloat(await validate.isNumber(amount, "amount"));
 
-  const dAccount = await prisma.accounts.findUnique({
-    where: { id: destinationAccount }
-  });
-  const sAccount = await prisma.accounts.findUnique({
-    where: { id: sourceAccount },
-    select: {
-      balance: true,
-      user: {
-        select: {
-          role: true
-        }
-      }
+    const dAccount = await accountService.getById(destinationAccount);
+    const sAccount = await accountService.getById(sourceAccount);
+
+    if (!dAccount) {
+      return res.status(404).json({ message: 'Destination account not found' });
+    } else if (!sAccount) {
+      return res.status(404).json({ message: 'Source account not found' });
+    } else if (amount <= 0) {
+      return res.status(409).json({ error: 'Amount must be greater than 0' });
     }
-  });
 
-  if (!dAccount) {
-    return res.status(404).json({ message: 'destinationAccount not found' });
-  } else if (!sAccount) {
-    return res.status(404).json({ message: 'sourceAccount not found' });
-  } else if (amount <= 0) {
-    return res.status(409).json({ error: `amount cant be <= 0` });
-  }
-
-  if (!(sAccount.user.role in { "Vendor": "Vendor", "Employee": "Employee" })) {
-    return res.status(409).json({ error: "Only Employee or Vendor can deposit" });
-  }
-
-  const transaction = await prisma.transactions.create({
-    data: {
-      sourceAccount,
-      destinationAccount,
-      amount,
-      type: "Deposit",
+    if (!["Vendor", "Employee"].includes(sAccount.user.role)) {
+      return res.status(409).json({ error: "Only Employee or Vendor can deposit" });
     }
-  });
 
-  if ((sAccount.balance - amount) < 0 && sAccount.user.role === "Vendor") {
-    const upTransaction = await prisma.transactions.update({
-      where: { id: transaction.id },
-      data: {
-        status: "Failed"
-      }
-    })
-    return res.status(409).json({ error: 'Vendor low balance', upTransaction });
-  }
+    const transaction = await transactionService.create("Deposit", sourceAccount, destinationAccount, amount);
 
-  if (sAccount.user.role === "Vendor") {
-    const transactions = await prisma.$transaction([
-      prisma.accounts.update({
-        where: { id: sourceAccount },
-        data: {
-          balance: sAccount.balance - amount,
-        }
-      }),
-      prisma.accounts.update({
-        where: { id: destinationAccount },
-        data: {
-          balance: dAccount.balance + amount
-        }
-      }),
-      prisma.transactions.update({
-        where: { id: transaction.id },
-        data: { status: "Completed" }
-      })
-    ]);
+    if ((sAccount.balance - amount) < 0 && sAccount.user.role === "Vendor") {
+      await transactionService.updateById(transaction.id, { status: "Failed" });
+      return res.status(409).json({ error: 'Vendor has insufficient balance' });
+    }
+
+    const transactions = await transactionService.makeTransaction(
+      sAccount.user.role === "Vendor" ? [
+        accountService.updateById(sourceAccount, { balance: sAccount.balance - amount }),
+        accountService.updateById(destinationAccount, { balance: dAccount.balance + amount }),
+        transactionService.updateById(transaction.id, { status: "Completed" })
+      ] : [
+        accountService.updateById(destinationAccount, { balance: dAccount.balance + amount }),
+        transactionService.updateById(transaction.id, { status: "Completed" })
+      ]
+    );
 
     if (!transactions) {
-      const upTransaction = await prisma.transactions.update({
-        where: { id: transaction.id },
-        data: {
-          status: "Failed"
-        }
-      });
-      return res.status(409).json({ error: 'Falid to make transaction', upTransaction });
+      await transactionService.updateById(transaction.id, { status: "Failed" });
+      return res.status(409).json({ error: 'Failed to complete transaction' });
     }
-    return res.status(201).json({ transactions });
 
-  } else if (sAccount.user.role === "Employee") {
-    const transactions = await prisma.$transaction([
-      prisma.accounts.update({
-        where: { id: destinationAccount },
-        data: {
-          balance: dAccount.balance + amount
-        }
-      }),
-      prisma.transactions.update({
-        where: { id: transaction.id },
-        data: { status: "Completed" }
-      })
-    ]);
-
-    if (!transactions) {
-      const upTransaction = await prisma.transactions.update({
-        where: { id: transaction.id },
-        data: {
-          status: "Failed"
-        }
-      });
-      return res.status(409).json({ error: 'Falid to make transaction', upTransaction });
-    }
     return res.status(201).json({ transactions });
+  } catch (error) {
+    await handleError(error, res);
   }
-
 }
 
 async function storeWithdraw(req, res) {
-  let { sourceAccount, destinationAccount, amount } = req.body;
-  sourceAccount = parseInt(await validate.isNumber(sourceAccount, "sourceAccount"));
-  destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
-  amount = parseFloat(await validate.isNumber(amount, "amount"));
+  try {
+    let { sourceAccount, destinationAccount, amount } = req.body;
+    sourceAccount = parseInt(await validate.isNumber(sourceAccount, "sourceAccount"));
+    destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
+    amount = parseFloat(await validate.isNumber(amount, "amount"));
 
-  const dAccount = await prisma.accounts.findUnique({
-    where: { id: destinationAccount },
-    select: {
-      balance: true,
-      user: {
-        select: {
-          role: true
-        }
-      }
+    const dAccount = await accountService.getById(destinationAccount);
+    const sAccount = await accountService.getById(sourceAccount);
+
+    if (!dAccount) {
+      return res.status(404).json({ message: 'Destination account not found' });
+    } else if (!sAccount) {
+      return res.status(404).json({ message: 'Source account not found' });
+    } else if (amount <= 0) {
+      return res.status(409).json({ error: 'Amount must be greater than 0' });
     }
-  });
-  const sAccount = await prisma.accounts.findUnique({
-    where: { id: sourceAccount },
-    
-  });
 
-  if (!dAccount) {
-    return res.status(404).json({ message: 'destinationAccount not found' });
-  } else if (!sAccount) {
-    return res.status(404).json({ message: 'sourceAccount not found' });
-  } else if (amount <= 0) {
-    return res.status(409).json({ error: `amount cant be <= 0` });
-  }
-
-  if (!(dAccount.user.role in { "Vendor": "Vendor", "Employee": "Employee" })) {
-    return res.status(409).json({ error: "Only Employee or Vendor can deposit" });
-  }
-
-  const transaction = await prisma.transactions.create({
-    data: {
-      sourceAccount,
-      destinationAccount,
-      amount,
-      type: "Withdraw",
+    if (!["Vendor", "Employee"].includes(dAccount.user.role)) {
+      return res.status(409).json({ error: "Only Employee or Vendor can withdraw" });
     }
-  });
 
-  if ((sAccount.balance - amount) < 0) {
-    const upTransaction = await prisma.transactions.update({
-      where: { id: transaction.id },
-      data: {
-        status: "Failed"
-      }
-    })
-    return res.status(409).json({ error: 'User low balance', upTransaction });
-  }
+    const transaction = await transactionService.create("Withdraw", sourceAccount, destinationAccount, amount);
 
-  if (dAccount.user.role === "Vendor") {
-    const transactions = await prisma.$transaction([
-      prisma.accounts.update({
-        where: { id: sourceAccount },
-        data: {
-          balance: sAccount.balance - amount,
-        }
-      }),
-      prisma.accounts.update({
-        where: { id: destinationAccount },
-        data: {
-          balance: dAccount.balance + amount
-        }
-      }),
-      prisma.transactions.update({
-        where: { id: transaction.id },
-        data: { status: "Completed" }
-      })
-    ]);
+    if ((sAccount.balance - amount) < 0) {
+      await transactionService.updateTransaction(transaction.id, "Failed");
+      return res.status(409).json({ error: 'User has insufficient balance' });
+    }
+
+    const transactions = await transactionService.makeTransaction(
+      dAccount.user.role === "Vendor" ? [
+        accountService.updateById(sourceAccount, { balance: sAccount.balance - amount }),
+        accountService.updateById(destinationAccount, { balance: dAccount.balance + amount }),
+        transactionService.updateById(transaction.id, { status: "Completed" })
+      ] : [
+        accountService.updateById(sourceAccount, { balance: sAccount.balance - amount }),
+        transactionService.updateById(transaction.id, { status: "Completed" })
+      ]
+    );
 
     if (!transactions) {
-      const upTransaction = await prisma.transactions.update({
-        where: { id: transaction.id },
-        data: {
-          status: "Failed"
-        }
-      });
-      return res.status(409).json({ error: 'Falid to make transaction', upTransaction });
+      await transactionService.updateById(transaction.id, { status: "Failed" });
+      return res.status(409).json({ error: 'Failed to complete transaction' });
     }
-    return res.status(201).json({ transactions });
 
-  } else if (sAccount.user.role === "Employee") {
-    const transactions = await prisma.$transaction([
-      prisma.accounts.update({
-        where: { id: sourceAccount },
-        data: {
-          balance: sAccount.balance - amount
-        }
-      }),
-      prisma.transactions.update({
-        where: { id: transaction.id },
-        data: { status: "Completed" }
-      })
-    ]);
-
-    if (!transactions) {
-      const upTransaction = await prisma.transactions.update({
-        where: { id: transaction.id },
-        data: {
-          status: "Failed"
-        }
-      });
-      return res.status(409).json({ error: 'Falid to make transaction', upTransaction });
-    }
     return res.status(201).json({ transactions });
+  } catch (error) {
+    await handleError(error, res);
   }
-
 }
 
 async function payBill(req, res) {
-  let {sourceAccount, accepted} = req.body;
-  const billId = parseInt(await validate.isNumber(req.params.id, "billId"))
-  sourceAccount = parseInt(await validate.isNumber(sourceAccount, "sourceAccount"));
-  accepted = (await validate.checkEmpty(accepted, "accepted")) === "true"? true : false;
+  try {
+    let { sourceAccount, accepted } = req.body;
+    const billId = parseInt(await validate.isNumber(req.params.id, "billId"));
+    sourceAccount = parseInt(await validate.isNumber(sourceAccount, "sourceAccount"));
+    accepted = (await validate.checkEmpty(accepted, "accepted")) === "true";
 
-  const sAccount = await prisma.accounts.findUnique({
-    where: {id: sourceAccount},
-  });
-  const bill = await prisma.transactions.findUnique({
-    where: {id: billId}
-  });
+    const sAccount = await accountService.getById(sourceAccount);
+    const bill = await transactionService.findById(billId);
 
-  if(!sAccount){
-    return res.status(404).json({error: "User account is not found"});
-  }else if(!bill){
-    return res.status(404).json({error: "Bill is not found"});
-  }else if(bill.status != "Pending"){
-    return res.status(409).json({error: "Bill status is not valied"});
-  }
-
-  const dAccount = await prisma.accounts.findUnique({
-    where: {id: bill.destinationAccount}
-  });
-
-  if((sAccount.balance - bill.amount) < 0){
-    return res.status(409).json({error: "User balace is low"});
-  }
-
-  if(accepted){
-    const transactions = await prisma.$transaction([
-      prisma.accounts.update({
-        where: {id: sourceAccount},
-        data: {
-          balance: sAccount.balance - bill.amount
-        }
-      }),
-      prisma.accounts.update({
-        where: {id: bill.destinationAccount},
-        data: {
-          balance: dAccount.balance + amount
-        }
-      }),
-      prisma.transactions.update({
-        where: {id: billId},
-        data:{
-          sourceAccount,
-          status: "Completed"
-        }
-      })
-    ]);
-    if(!transactions){
-      const upTransaction = await prisma.transactions.update({
-        where: { id: billId },
-        data: {
-          sourceAccount,
-          status: "Failed"
-        }
-      });
-      return res.status(409).json({ error: 'Falid to pay bill', upTransaction });
+    if (!sAccount) {
+      return res.status(404).json({ error: "User account not found" });
+    } else if (!bill) {
+      return res.status(404).json({ error: "Bill not found" });
+    } else if (bill.status !== "Pending") {
+      return res.status(409).json({ error: "Bill status is not valid" });
     }
-    return res.status(201).json(transactions)
-  } else {
-    const transaction = await prisma.transactions.update({
-      where: {id: billId},
-      data: {
-        sourceAccount,
-        status: "Declined"
+
+    const dAccount = await accountService.getById(bill.destinationAccount);
+
+    if ((sAccount.balance - bill.amount) < 0) {
+      return res.status(409).json({ error: "User has insufficient balance" });
+    }
+
+    if (accepted) {
+      const transactions = await transactionService.makeTransaction([
+        accountService.updateById(sourceAccount, { balance: sAccount.balance - bill.amount }),
+        accountService.updateById(bill.destinationAccount, { balance: dAccount.balance + bill.amount }),
+        transactionService.updateById(billId, { status: "Completed", sourceAccount })
+      ]);
+
+      if (!transactions) {
+        await transactionService.updateById(billId, { status: "Failed", sourceAccount });
+        return res.status(409).json({ error: 'Failed to pay bill' });
       }
-    });
-    return res.status(400).json(transaction)
+      return res.status(201).json(transactions);
+    } else {
+      const transaction = await transactionService.updateById(billId, { status: "Declined", sourceAccount });
+      return res.status(400).json(transaction);
+    }
+  } catch (error) {
+    await handleError(error, res);
   }
 }
 
 async function update(req, res) {
-
+  // Implementation of the update function
 }
 
 async function destroy(req, res) {
-
+  // Implementation of the destroy function
 }
 
-module.exports = { index, show, storeBill, storeTransferer, storeDeposit, storeWithdraw, payBill, update, destroy };
+module.exports = {
+  index,
+  show,
+  storeBill,
+  storeTransferer,
+  storeDeposit,
+  storeWithdraw,
+  payBill,
+  update,
+  destroy
+};

@@ -1,37 +1,26 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-
+const cardService = require('../services/cardService');
 const { handleError } = require('./errorController');
 const validate = require('./validateController');
 
-
 async function index(req, res) {
-  const allCards = await prisma.cards.findMany({
-    orderBy: [{expiryDate: "desc"}],
-    select: {
-      id: true,
-      accountNumber: true,
-      expiryDate: true,
-    }
-  });
-  return res.json(allCards);
+  try {
+    const allCards = await cardService.findAll();
+    return res.json(allCards);
+  } catch (error) {
+    await handleError(error, res);
+  }
 }
 
 async function show(req, res) {
   try {
     const id = await validate.checkEmpty(req.params.id, "id");
 
-    const card = await prisma.cards.findUnique({
-      where: {
-        id: id,
-      }
-    });
+    const card = await cardService.findById(id);
 
     if (!card) {
       return res.status(404).json({ message: 'Card not found' });
     }
     return res.json(card);
-
   } catch (error) {
     await handleError(error, res);
   }
@@ -43,24 +32,14 @@ async function store(req, res) {
     accountNumber = await validate.isNumber(accountNumber, "accountNumber");
 
     let id, checkID;
-    do{
-    let randomNumber = Math.floor(Math.random() * 9000000000000000) + 1000000000000000;
-    id = randomNumber.toString();
-    
-    checkID = await prisma.cards.findUnique({
-      where: {id}
-    });
+    do {
+      let randomNumber = Math.floor(Math.random() * 9000000000000000) + 1000000000000000;
+      id = randomNumber.toString();
 
-    }while(checkID);
+      checkID = await cardService.findById(id);
+    } while (checkID);
 
-
-    const newCard = await prisma.cards.create({
-      data: {
-        id,
-        accountNumber: parseInt(accountNumber),
-        cvv: Math.floor(Math.random() * 900) + 100,
-      }
-    })
+    const newCard = await cardService.create(id, accountNumber);
     return res.json(newCard);
   } catch (error) {
     await handleError(error, res);
@@ -68,26 +47,17 @@ async function store(req, res) {
 }
 
 async function update(req, res) {
-  try{
+  try {
     const id = await validate.checkEmpty(req.params.id, "id");
 
-    let {accountNumber, expiryDate, physical} = req.body;
-    accountNumber = await validate.isNumber();
-    expiryDate = await validate.isDate();
-    physical = await validate.checkEmpty(physical, "physical");
+    let { accountNumber, expiryDate, physical } = req.body;
+    accountNumber = parseInt(await validate.isNumber(accountNumber, "accountNumber"));
+    expiryDate = await validate.isDate(expiryDate, "expiryDate");
+    physical = (await validate.checkEmpty(physical, "physical")) === "true" ? true : false;
 
-    const newCard = await prisma.cards.update({
-      where: {
-        id: parseInt(id)
-      },
-      data: {
-        accountNumber: parseInt(accountNumber),
-        expiryDate: new Date(expiryDate).toISOString(),
-        physical
-      }
-    })
-    res.json(newCard);
-  }catch(error){
+    const updatedCard = await cardService.updateById(id, { accountNumber, expiryDate, physical });
+    res.json(updatedCard);
+  } catch (error) {
     await handleError(error, res);
   }
 }
@@ -96,11 +66,8 @@ async function destroy(req, res) {
   try {
     const id = await validate.checkEmpty(req.params.id, "id");
 
-    const deletedCard = await prisma.cards.delete({
-      where: {
-        id: parseInt(id),
-      },
-    });
+    const deletedCard = await cardService.deleteCard(id);
+
     if (!deletedCard) {
       return res.status(404).json({ message: 'Card not found' });
     }

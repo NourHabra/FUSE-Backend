@@ -1,11 +1,12 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
 const dotenv = require('dotenv');
 dotenv.config();
 
+const authService = require('../services/authService');
+const userService = require('../services/userService');
+const merchantService = require('../services/merchantService');
+const customerService = require('../services/customerService');
 const { handleError } = require('./errorController');
 const validate = require('./validateController');
 
@@ -18,14 +19,14 @@ async function register(req, res) {
     let { name, role, email, phone, birth, password, rPassword } = req.body;
     let { category, workPermit } = req.body;
     let { yearlyIncome } = req.body;
-    
+
     role = await validate.isRole(role);
     email = await validate.isEmail(email);
     phone = await validate.isPhone(phone);
     birth = await validate.isDate(birth);
     name = await validate.checkEmpty(name, "name");
     password = await validate.matchPassword(password, rPassword);
-    password = await bcrypt.hash(password,salt);
+    password = await bcrypt.hash(password, salt);
 
     if (role === "Merchant") {
       await validate.notEmpty(category, workPermit);
@@ -33,44 +34,24 @@ async function register(req, res) {
       await validate.notEmpty(yearlyIncome);
     }
 
-    const newUser = await prisma.users.create({
-      data: {
-        name,
-        role,
-        email,
-        phone,
-        birth: new Date(birth).toISOString(),
-        password
-      },
-    });
+    const newUser = await userService.create(name, role, email, phone, birth, password);
 
     if (role === "Merchant") {
-      const newMerchant = await prisma.merchant.create({
-        data: {
-          userId: newUser.id,
-          category,
-          workPermit
-        }
-      })
+      await merchantService.create(newUser.id, category, workPermit);
     } else if (role === "Customer") {
-      const newCustomer = await prisma.customer.create({
-        data: {
-          userId: newUser.id,
-          yearlyIncome
-        }
-      })
+      await customerService.create(newUser.id, yearlyIncome);
     }
 
-    const token = jwt.sign({ userId: newUser.id, role: role }, secretKey, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: newUser.id, role }, secretKey, { expiresIn: '1h' });
     res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
     res.status(201).json({ message: 'User created successfully' });
 
   } catch (error) {
     await handleError(error, res);
+  } finally {
+    await authService.disconnect();
   }
 }
-const isEMail = require("isemail");
-
 
 async function login(req, res) {
   try {
@@ -78,24 +59,22 @@ async function login(req, res) {
     await validate.isEmail(email);
     await validate.checkEmpty(password, "password");
 
-    const user = await prisma.users.findUnique({
-      where: {
-        email,
-      },
-    });
+    const user = await userService.findByEmail(email);
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
-    } else if (bcrypt.compare(password, user.password)) {
+    } else if (await bcrypt.compare(password, user.password)) {
       const token = jwt.sign({ userId: user.id, role: user.role }, secretKey, { expiresIn: '1h' });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
       return res.json("success");
     } else {
-      return res.status(409).json({ message: 'wronge password' });
+      return res.status(409).json({ message: 'Wrong password' });
     }
 
   } catch (error) {
     await handleError(error, res);
+  } finally {
+    await authService.disconnect();
   }
 }
 
