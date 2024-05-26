@@ -8,10 +8,11 @@ const userService = require('../services/userService');
 const merchantService = require('../services/merchantService');
 const customerService = require('../services/customerService');
 const { handleError } = require('./errorController');
+const { revokedTokens } = require('../middleware/authMiddleware');
 const validate = require('./validateController');
 
 const secretKey = process.env.JWT_SECRET;
-const maxAge = 60 * 60 * 1000;
+const maxAge = "30m";
 
 async function register(req, res) {
   try {
@@ -54,6 +55,61 @@ async function register(req, res) {
   }
 }
 
+async function registerMerchant(req, res) {
+  try {
+    const salt = await bcrypt.genSalt();
+    let { name, email, phone, birth, password, rPassword, category, workPermit } = req.body;
+
+    email = await validate.isEmail(email);
+    phone = await validate.isPhone(phone);
+    birth = await validate.isDate(birth);
+    name = await validate.checkEmpty(name, "name");
+    password = await validate.matchPassword(password, rPassword);
+    password = await bcrypt.hash(password, salt);
+    workPermit = await validate.checkEmpty(workPermit, "workPermit");
+    category = await validate.isMerchantCategory(category);
+
+    const newUser = await userService.create(name, "Merchant", email, phone, birth, password);
+    await merchantService.create(newUser.id, category, workPermit);
+
+    const token = jwt.sign({ userId: newUser.id, role: "Merchant" }, secretKey, { expiresIn: '1h' });
+    res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
+    res.status(201).json({ message: 'Merchant created successfully' });
+
+  } catch (error) {
+    await handleError(error, res);
+  } finally {
+    await authService.disconnect();
+  }
+}
+
+async function registerCustomer(req, res) {
+  try {
+    const salt = await bcrypt.genSalt();
+    let { name, email, phone, birth, password, rPassword, yearlyIncome } = req.body;
+
+    email = await validate.isEmail(email);
+    phone = await validate.isPhone(phone);
+    birth = await validate.isDate(birth);
+    name = await validate.checkEmpty(name, "name");
+    password = await validate.matchPassword(password, rPassword);
+    password = await bcrypt.hash(password, salt);
+    yearlyIncome = parseFloat(await validate.isNumber(yearlyIncome));
+
+    const newUser = await userService.create(name, "Customer", email, phone, birth, password);
+    await customerService.create(newUser.id, yearlyIncome);
+
+    const token = jwt.sign({ userId: newUser.id, role: "Customer" }, secretKey, { expiresIn: '1h' });
+    res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
+    res.status(201).json({ message: 'Customer created successfully' });
+
+  } catch (error) {
+    await handleError(error, res);
+  } finally {
+    await authService.disconnect();
+  }
+}
+
 async function login(req, res) {
   try {
     const { email, password } = req.body;
@@ -80,8 +136,19 @@ async function login(req, res) {
 }
 
 async function logout(req, res) {
-  res.cookie('jwt', '', { expiresIn: new Date(0) });
-  res.json({ logout: "True" });
+  try {
+    // Get the JWT token from the cookie
+    const token = req.body.jwt;
+
+    // Revoke the token
+    revokedTokens.add(token);
+
+    // Clear the JWT token from the cookie
+    res.clearCookie('jwt');
+    res.json({ message: 'Logout successful' });
+  } catch (error) {
+    await handleError(error, res);
+  }
 }
 
 module.exports = { register, login, logout };

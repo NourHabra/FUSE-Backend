@@ -4,21 +4,41 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const secretKey = process.env.JWT_SECRET;
+const revokedTokens = new Set();
+
+// Function to remove expired tokens from the revokedTokens set
+function removeExpiredTokens() {
+  const now = Date.now();
+  revokedTokens.forEach(token => {
+    const decoded = jwt.decode(token);
+    if (decoded.exp * 1000 < now) {
+      revokedTokens.delete(token);
+    }
+  });
+}
 
 const authenticateJWT = (req, res, next) => {
-    const token = req.header('Authorization')?.split(' ')[1]; // Get token from headers
+  const token = req.body.jwt || req.query.jwt || req.headers['x-access-token'];
 
-    if (!token) {
-        return res.status(401).json({ message: 'Unauthorized' });
-    }
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
 
-    try {
-        const decoded = jwt.verify(token, secretKey);
-        req.user = decoded;
-        next();
-    } catch (error) {
-        return res.status(403).json({ message: 'Invalid token' });
-    }
+  // Remove expired tokens from the revokedTokens set
+  removeExpiredTokens();
+
+  // Check if the token is revoked
+  if (revokedTokens.has(token)) {
+    return res.status(401).json({ message: 'Token has been revoked' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, secretKey);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(403).json({ message: 'Invalid token' });
+  }
 };
 
-module.exports = authenticateJWT;
+module.exports = { authenticateJWT, revokedTokens };
