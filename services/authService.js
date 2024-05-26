@@ -8,7 +8,5 @@ async function disconnect() {
 }
 
 module.exports = {
-  createMerchant,
-  createCustomer,
   disconnect,
 };
