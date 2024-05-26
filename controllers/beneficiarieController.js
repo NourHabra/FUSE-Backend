@@ -18,7 +18,7 @@ async function show(req, res) {
     const beneficiaries = await beneficiarieService.findByUserId(id);
 
     if (beneficiaries.length <= 0) {
-      return res.status(404).json({ message: 'Beneficiaries not found' });
+      return res.status(404).json({ code:"404",message: 'Beneficiaries not found' });
     }
     return res.json(beneficiaries);
 
@@ -39,7 +39,7 @@ async function store(req, res) {
       if (!beneficiaries.accepted) {
         await beneficiarieService.updateById(beneficiaries.id, { accepted: true });
       }
-      return res.status(409).json({ message: 'Beneficiaries true' });
+      return res.status(201).json({ message: 'Beneficiaries true' });
     }
 
     await beneficiarieService.create(requstUser, acceptUser);
@@ -73,7 +73,7 @@ async function destroy(req, res) {
     const deletedBeneficiarie = await beneficiarieService.deleteById(id);
 
     if (!deletedBeneficiarie) {
-      return res.status(404).json({ message: 'Beneficiarie not found' });
+      return res.status(404).json({ code:"404",message: 'Beneficiarie not found' });
     }
     return res.json({ message: 'Beneficiarie deleted successfully' });
 

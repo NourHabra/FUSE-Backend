@@ -62,7 +62,7 @@ async function login(req, res) {
     const user = await userService.findByEmail(email);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ code:"404",message: 'User not found' });
     } else if (await bcrypt.compare(password, user.password)) {
       const token = jwt.sign({ userId: user.id, role: user.role }, secretKey, { expiresIn: '1h' });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });

@@ -18,7 +18,7 @@ async function show(req, res) {
     const card = await cardService.findById(id);
 
     if (!card) {
-      return res.status(404).json({ message: 'Card not found' });
+      return res.status(404).json({ code:"404",message: 'Card not found' });
     }
     return res.json(card);
   } catch (error) {
@@ -69,7 +69,7 @@ async function destroy(req, res) {
     const deletedCard = await cardService.deleteCard(id);
 
     if (!deletedCard) {
-      return res.status(404).json({ message: 'Card not found' });
+      return res.status(404).json({ code:"404",message: 'Card not found' });
     }
     return res.json({ message: 'Card deleted successfully' });
   } catch (error) {

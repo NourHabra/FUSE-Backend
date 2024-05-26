@@ -18,7 +18,7 @@ async function show(req, res) {
     const merchant = await merchantService.findById(id);
 
     if (!merchant) {
-      return res.status(404).json({ message: 'Merchant not found' });
+      return res.status(404).json({ code:"404", message: 'Merchant not found' });
     }
     return res.json(merchant);
   } catch (error) {
@@ -40,7 +40,7 @@ async function update(req, res) {
 
     const oldMerchant = await merchantService.findById(id);
     if (!oldMerchant) {
-      return res.status(404).json({ message: 'Merchant not found' });
+      return res.status(404).json({ code:"404", message: 'Merchant not found' });
     }
 
     const updatedMerchant = await merchantService.updateById(id, { name, email, phone, birth, status, category, workPermit });
@@ -56,7 +56,7 @@ async function destroy(req, res) {
 
     const deletedMerchant = await merchantService.deleteMerchant(id);
     if (!deletedMerchant) {
-      return res.status(404).json({ message: 'Merchant not found' });
+      return res.status(404).json({ code:"404", message: 'Merchant not found' });
     }
     return res.json({ message: 'Merchant deleted successfully' });
   } catch (error) {

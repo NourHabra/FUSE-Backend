@@ -20,7 +20,7 @@ async function show(req, res) {
     const account = await accountService.getById(id);
 
     if (!account) {
-      return res.status(404).json({ message: 'Account not found' });
+      return res.status(404).json({ code: "404", message: 'Account not found' });
     }
     return res.json(account);
 
@@ -73,7 +73,7 @@ async function destroy(req, res) {
 
     const deletedAccount = await accountService.updateById(id, { status: "Inactive" });
     if (!deletedAccount) {
-      return res.status(404).json({ message: 'Account not found' });
+      return res.status(404).json({ code:"404", message: 'Account not found' });
     }
     return res.json({ message: 'Account deleted successfully' });
   } catch (error) {

@@ -20,7 +20,7 @@ async function show(req, res) {
     const user = await userService.findById(id);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ code:"404",message: 'User not found' });
     }
     return res.json(user);
   } catch (error) {
@@ -41,7 +41,7 @@ async function update(req, res) {
 
     const oldUser = await userService.findById(id);
     if (!oldUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ code:"404",message: 'User not found' });
     }
 
     const updatedUser = await userService.updateUser(id, name, email, phone, birth, status);
@@ -57,7 +57,7 @@ async function destroy(req, res) {
     const deletedUser = await userService.deleteUser(id);
 
     if (!deletedUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ code:"404",message: 'User not found' });
     }
     return res.json({ message: 'User deleted successfully' });
   } catch (error) {
