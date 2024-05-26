@@ -29,7 +29,8 @@ async function findById(id) {
       email: true,
       phone: true,
       birth: true,
-      role: true
+      role: true,
+      status: true
     }
   });
 }
