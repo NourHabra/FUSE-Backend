@@ -29,9 +29,10 @@ async function register(req, res) {
     password = await bcrypt.hash(password, salt);
 
     if (role === "Merchant") {
-      await validate.notEmpty(category, workPermit);
+      workPermit = await validate.checkEmpty(workPermit, "workPermit");
+      category = await validate.isMerchantCategory(category);
     } else if (role === "Customer") {
-      await validate.notEmpty(yearlyIncome);
+      yearlyIncome = parseFloat(await validate.isNumber(yearlyIncome));
     }
 
     const newUser = await userService.create(name, role, email, phone, birth, password);
