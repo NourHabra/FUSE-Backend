@@ -4,7 +4,7 @@ const validate = require('./validateController');
 
 async function index(req, res) {
   try {
-    const allAccounts = await accountService.getAllAccounts();
+    const allAccounts = await accountService.getAll();
     return res.json(allAccounts);
   } catch (error) {
     await handleError(error, res);

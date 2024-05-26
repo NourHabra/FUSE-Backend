@@ -12,7 +12,7 @@ const { revokedTokens } = require('../middleware/authMiddleware');
 const validate = require('./validateController');
 
 const secretKey = process.env.JWT_SECRET;
-const maxAge = "30m";
+const maxAge = 30 * 60 * 1000;
 
 async function register(req, res) {
   try {
