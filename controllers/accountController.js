@@ -58,7 +58,7 @@ async function update(req, res) {
     status = await validate.isAccountStatus(status);
     name = await validate.checkEmpty(name, "name");
 
-    const updatedAccount = await accountService.updatebyId(id, { userId, balance, type, status, name });
+    const updatedAccount = await accountService.updateById(id, { userId, balance, type, status, name });
     res.json(updatedAccount);
   } catch (error) {
     await handleError(error, res);

@@ -18,7 +18,15 @@ async function findById(id) {
   });
 }
 
-async function create(id, accountNumber) {
+async function create(accountNumber) {
+  let id, checkID;
+    do {
+      let randomNumber = Math.floor(Math.random() * 9000000000000000) + 1000000000000000;
+      id = randomNumber.toString();
+
+      checkID = await findById(id);
+    } while (checkID);
+
   return await prisma.cards.create({
     data: {
       id,

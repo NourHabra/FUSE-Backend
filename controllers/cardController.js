@@ -31,15 +31,7 @@ async function store(req, res) {
     let { accountNumber } = req.body;
     accountNumber = await validate.isNumber(accountNumber, "accountNumber");
 
-    let id, checkID;
-    do {
-      let randomNumber = Math.floor(Math.random() * 9000000000000000) + 1000000000000000;
-      id = randomNumber.toString();
-
-      checkID = await cardService.findById(id);
-    } while (checkID);
-
-    const newCard = await cardService.create(id, accountNumber);
+    const newCard = await cardService.create(accountNumber);
     return res.json(newCard);
   } catch (error) {
     await handleError(error, res);
