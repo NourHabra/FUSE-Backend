@@ -33,7 +33,7 @@ async function storeBill(req, res) {
     destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
     amount = parseFloat(await validate.isNumber(amount, "amount"));
 
-    const dAccount = await merchantService.findById(destinationAccount);
+    const dAccount = await accountService.findById(destinationAccount);
 
     if (!dAccount) {
       return res.status(404).json({ code:"404",message: 'Destination account not found' });
@@ -58,8 +58,8 @@ async function storeTransferer(req, res) {
     destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
     amount = parseFloat(await validate.isNumber(amount, "amount"));
 
-    const dAccount = await accountService.getById(destinationAccount);
-    const sAccount = await accountService.getById(sourceAccount);
+    const dAccount = await accountService.findById(destinationAccount);
+    const sAccount = await accountService.findById(sourceAccount);
 
     if (!dAccount) {
       return res.status(404).json({ code:"404",message: 'Destination account not found' });
@@ -100,8 +100,8 @@ async function storeDeposit(req, res) {
     destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
     amount = parseFloat(await validate.isNumber(amount, "amount"));
 
-    const dAccount = await accountService.getById(destinationAccount);
-    const sAccount = await accountService.getById(sourceAccount);
+    const dAccount = await accountService.findById(destinationAccount);
+    const sAccount = await accountService.findById(sourceAccount);
 
     if (!dAccount) {
       return res.status(404).json({ code:"404",message: 'Destination account not found' });
@@ -151,8 +151,8 @@ async function storeWithdraw(req, res) {
     destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
     amount = parseFloat(await validate.isNumber(amount, "amount"));
 
-    const dAccount = await accountService.getById(destinationAccount);
-    const sAccount = await accountService.getById(sourceAccount);
+    const dAccount = await accountService.findById(destinationAccount);
+    const sAccount = await accountService.findById(sourceAccount);
 
     if (!dAccount) {
       return res.status(404).json({ code:"404",message: 'Destination account not found' });
@@ -202,7 +202,7 @@ async function payBill(req, res) {
     sourceAccount = parseInt(await validate.isNumber(sourceAccount, "sourceAccount"));
     accepted = (await validate.checkEmpty(accepted, "accepted")) === "true";
 
-    const sAccount = await accountService.getById(sourceAccount);
+    const sAccount = await accountService.findById(sourceAccount);
     const bill = await transactionService.findById(billId);
 
     if (!sAccount) {
@@ -213,7 +213,7 @@ async function payBill(req, res) {
       return res.status(409).json({ error: "Bill status is not valid" });
     }
 
-    const dAccount = await accountService.getById(bill.destinationAccount);
+    const dAccount = await accountService.findById(bill.destinationAccount);
 
     if ((sAccount.balance - bill.amount) < 0) {
       return res.status(409).json({ error: "User has insufficient balance" });

@@ -4,7 +4,7 @@ const validate = require('./validateController');
 
 async function index(req, res) {
   try {
-    const allAccounts = await accountService.getAll();
+    const allAccounts = await accountService.findAll();
     return res.json(allAccounts);
   } catch (error) {
     await handleError(error, res);
@@ -17,7 +17,7 @@ async function show(req, res) {
   try {
     const id = await validate.isNumber(req.params.id, "id");
 
-    const account = await accountService.getById(id);
+    const account = await accountService.findById(id);
 
     if (!account) {
       return res.status(404).json({ code: "404", message: 'Account not found' });

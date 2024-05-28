@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-async function getAll() {
+async function findAll() {
   return await prisma.accounts.findMany({
     select: {
       id: true,
@@ -13,7 +13,7 @@ async function getAll() {
   });
 }
 
-async function getById(id) {
+async function findById(id) {
   return await prisma.accounts.findUnique({
     where: {
       id: parseInt(id),
@@ -46,8 +46,8 @@ async function disconnect() {
 }
 
 module.exports = {
-  getAll,
-  getById,
+  findAll,
+  findById,
   create,
   updateById,
   disconnect,
