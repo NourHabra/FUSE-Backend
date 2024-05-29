@@ -17,26 +17,11 @@ const maxAge = 30 * 60 * 1000;
 async function register(req, res) {
   try {
     const salt = await bcrypt.genSalt();
-    let { name, role, email, phone, birth, password, rPassword } = req.body;
-    let { category, workPermit } = req.body;
-    let { yearlyIncome } = req.body;
+    const { name, role, email, phone, birth, password } = req.body;
+    const { category, workPermit } = req.body;
+    const { yearlyIncome } = req.body;
 
-    role = await validate.isRole(role);
-    email = await validate.isEmail(email);
-    phone = await validate.isPhone(phone);
-    birth = await validate.isDate(birth);
-    name = await validate.checkEmpty(name, "name");
-    password = await validate.matchPassword(password, rPassword);
-    password = await bcrypt.hash(password, salt);
-
-    if (role === "Merchant") {
-      workPermit = await validate.checkEmpty(workPermit, "workPermit");
-      category = await validate.isMerchantCategory(category);
-    } else if (role === "Customer") {
-      yearlyIncome = parseFloat(await validate.isNumber(yearlyIncome));
-    }
-
-    const newUser = await userService.create(name, role, email, phone, birth, password);
+    const newUser = await userService.create(name, role, email, phone, birth, await bcrypt.hash(password, salt));
 
     if (role === "Merchant") {
       await merchantService.create(newUser.id, category, workPermit);
@@ -113,8 +98,6 @@ async function registerCustomer(req, res) {
 async function login(req, res) {
   try {
     const { email, password } = req.body;
-    await validate.isEmail(email);
-    await validate.checkEmpty(password, "password");
 
     const user = await userService.findByEmail(email);
 
@@ -137,13 +120,10 @@ async function login(req, res) {
 
 async function logout(req, res) {
   try {
-    // Get the JWT token from the cookie
     const token = req.body.jwt;
 
-    // Revoke the token
     revokedTokens.add(token);
 
-    // Clear the JWT token from the cookie
     res.clearCookie('jwt');
     res.json({ message: 'Logout successful' });
   } catch (error) {

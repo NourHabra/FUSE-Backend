@@ -18,6 +18,7 @@ model Users {
   password  String
   createdAt DateTime @default(now())
 
+  @@index([email])
   sentReq   Beneficiaries[] @relation("SentRequests")
   recvReq   Beneficiaries[] @relation("ReceivedRequests")
   accounts  Accounts[]
