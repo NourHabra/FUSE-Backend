@@ -33,10 +33,22 @@ const updateAccountSchema = Joi.object({
   name: Joi.string(),
 });
 
+const createBeneficiarySchema = Joi.object({
+  acceptUser: Joi.number().integer().required(),
+  requstUser: Joi.number().integer().required(),
+});
+
+const updateBeneficiarySchema = Joi.object({
+  id: Joi.number().integer().required(),
+  accepted: Joi.boolean().required(),
+});
+
 
 module.exports = {
   signUpSchema,
   signInSchema,
   createAccountSchema,
-  updateAccountSchema
+  updateAccountSchema,
+  createBeneficiarySchema,
+  updateBeneficiarySchema
 };

@@ -29,9 +29,7 @@ async function show(req, res) {
 
 async function store(req, res) {
   try {
-    let { acceptUser, requstUser } = req.body;
-    acceptUser = await validate.isNumber(acceptUser, "acceptUser");
-    requstUser = await validate.isNumber(requstUser, "requstUser");
+    const { acceptUser, requstUser } = req.body;
 
     const beneficiaries = await beneficiarieService.find(requstUser, acceptUser);
 
@@ -54,9 +52,7 @@ async function store(req, res) {
 
 async function update(req, res) {
   try {
-    let { id, accepted } = req.body;
-    id = await validate.isNumber(id, "id");
-    accepted = await validate.checkEmpty(accepted, "accepted");
+    const { id, accepted } = req.body;
 
     const beneficiarie = await beneficiarieService.findById(id);
 
