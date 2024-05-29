@@ -1,6 +1,7 @@
 const isEMail = require("isemail");
 const { Role, MerchantCategory, userStatus, AccountType, AccountStatus, TransactionType } = require('@prisma/client');
 
+// This file was created before using joi for validation, I kept it bec I am still using some of the function 
 
 async function matchPassword(password, rPassword) {
   password = await checkEmpty(password, "password");
