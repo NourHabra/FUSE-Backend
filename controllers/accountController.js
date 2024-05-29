@@ -33,10 +33,7 @@ async function show(req, res) {
 
 async function store(req, res) {
   try {
-    let { userId, balance, type } = req.body;
-    userId = await validate.isNumber(userId, "userId");
-    balance = await validate.isNumber(balance, "balance");
-    type = await validate.isAccountType(type);
+    const { userId, balance, type } = req.body;
 
     const newAccount = await accountService.create(userId, balance, type);
     return res.json(newAccount);
@@ -50,13 +47,7 @@ async function store(req, res) {
 async function update(req, res) {
   try {
     const id = await validate.isNumber(req.params.id, "id");
-
-    let { userId, balance, type, status, name } = req.body;
-    userId = await validate.isNumber(userId, "userId");
-    balance = await validate.isNumber(balance, "balance");
-    type = await validate.isAccountType(type);
-    status = await validate.isAccountStatus(status);
-    name = await validate.checkEmpty(name, "name");
+    const { userId, balance, type, status, name } = req.body;
 
     const updatedAccount = await accountService.updateById(id, { userId, balance, type, status, name });
     res.json(updatedAccount);
