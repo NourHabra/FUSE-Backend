@@ -1,24 +1,15 @@
-const Joi = require('joi');
-const { signUpSchema, signInSchema } = require('../validationSchemas');
+const Joi = require("joi")
 
-const validateSignUp = (req, res, next) => {
-  const { error } = signUpSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
+const validateRequest = (schema) => {
+  return (req, res, next) => {
+    const { error } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+    next();
   }
-  next();
-};
-
-const validateSignIn = (req, res, next) => {
-  const { error } = signInSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
-  }
-  next();
-};
-
+}
 
 module.exports = {
-  validateSignUp,
-  validateSignIn
+  validateRequest
 };
