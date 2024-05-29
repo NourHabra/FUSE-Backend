@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
+const { validateRequest } = require('../middleware/validationMiddleware');
+const { updateUserSchema } = require('../validationSchemas');
 
 const {authenticateJWT} = require('../middleware/authMiddleware');
 const { isCustomer } = require('../middleware/authRole');
@@ -9,7 +11,7 @@ const { isCustomer } = require('../middleware/authRole');
 
 router.get('/', authenticateJWT, isCustomer, userController.index);
 router.get('/:id', userController.show);
-router.put('/:id', userController.update);
+router.put('/:id', validateRequest(updateUserSchema), userController.update);
 router.delete('/:id', userController.destroy);
 
 module.exports = router;

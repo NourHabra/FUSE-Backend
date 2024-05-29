@@ -28,8 +28,7 @@ async function show(req, res) {
 
 async function store(req, res) {
   try {
-    let { accountNumber } = req.body;
-    accountNumber = await validate.isNumber(accountNumber, "accountNumber");
+    const { accountNumber } = req.body;
 
     const newCard = await cardService.create(accountNumber);
     return res.json(newCard);
@@ -42,10 +41,7 @@ async function update(req, res) {
   try {
     const id = await validate.checkEmpty(req.params.id, "id");
 
-    let { accountNumber, expiryDate, physical } = req.body;
-    accountNumber = parseInt(await validate.isNumber(accountNumber, "accountNumber"));
-    expiryDate = await validate.isDate(expiryDate, "expiryDate");
-    physical = (await validate.checkEmpty(physical, "physical")) === "true" ? true : false;
+    const { accountNumber, expiryDate, physical } = req.body;
 
     const updatedCard = await cardService.updateById(id, { accountNumber, expiryDate, physical });
     res.json(updatedCard);

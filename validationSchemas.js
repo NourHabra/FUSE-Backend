@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { Role, AccountType, AccountStatus, MerchantCategory } = require('@prisma/client');
+const { Role, AccountType, AccountStatus, MerchantCategory, userStatus } = require('@prisma/client');
 
 const signUpSchema = Joi.object({
   name: Joi.string().required(),
@@ -43,6 +43,62 @@ const updateBeneficiarySchema = Joi.object({
   accepted: Joi.boolean().required(),
 });
 
+const createCardSchema = Joi.object({
+  accountNumber: Joi.number().integer().required(),
+});
+
+const updateCardSchema = Joi.object({
+  accountNumber: Joi.number().integer(),
+  expiryDate: Joi.date().iso().required(),
+  physical: Joi.boolean().required(),
+});
+
+const updateMerchantSchema = Joi.object({
+  name: Joi.string().required(),
+  email: Joi.string().email().required(),
+  phone: Joi.string().pattern(/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/).required(),
+  birth: Joi.string().pattern(/^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[0-2])\/\d{4}$/).required(),
+  status: Joi.string().valid(...Object.values(userStatus)).required(),
+  category: Joi.string().valid(...Object.values(MerchantCategory)).required(),
+  workPermit: Joi.string().required(),
+});
+
+const createBillSchema = Joi.object({
+  destinationAccount: Joi.number().integer().required(),
+  amount: Joi.number().positive().required(),
+});
+
+const createTransferSchema = Joi.object({
+  sourceAccount: Joi.number().integer().required(),
+  destinationAccount: Joi.number().integer().required(),
+  amount: Joi.number().positive().required(),
+});
+
+const createDepositSchema = Joi.object({
+  sourceAccount: Joi.number().integer().required(),
+  destinationAccount: Joi.number().integer().required(),
+  amount: Joi.number().positive().required(),
+});
+
+const createWithdrawSchema = Joi.object({
+  sourceAccount: Joi.number().integer().required(),
+  destinationAccount: Joi.number().integer().required(),
+  amount: Joi.number().positive().required(),
+});
+
+const payBillSchema = Joi.object({
+  sourceAccount: Joi.number().integer().required(),
+  accepted: Joi.boolean().required(),
+});
+
+const updateUserSchema = Joi.object({
+  name: Joi.string().required(),
+  email: Joi.string().email().required(),
+  phone: Joi.string().pattern(/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/).required(),
+  birth: Joi.string().pattern(/^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[0-2])\/\d{4}$/).required(),
+  status: Joi.string().valid(...Object.values(userStatus)).required(),
+});
+
 
 module.exports = {
   signUpSchema,
@@ -50,5 +106,14 @@ module.exports = {
   createAccountSchema,
   updateAccountSchema,
   createBeneficiarySchema,
-  updateBeneficiarySchema
+  updateBeneficiarySchema,
+  createCardSchema,
+  updateCardSchema,
+  updateMerchantSchema,
+  createBillSchema,
+  createTransferSchema,
+  createDepositSchema,
+  createWithdrawSchema,
+  payBillSchema,
+  updateUserSchema
 };
