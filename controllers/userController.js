@@ -31,13 +31,7 @@ async function show(req, res) {
 async function update(req, res) {
   try {
     const id = parseInt(await validate.isNumber(req.params.id, "id"));
-    let { name, email, phone, birth, status } = req.body;
-
-    name = await validate.checkEmpty(name, "name");
-    email = await validate.isEmail(email);
-    phone = await validate.isPhone(phone);
-    birth = await validate.isDate(birth);
-    status = await validate.isUserStatus(status);
+    const { name, email, phone, birth, status } = req.body;
 
     const oldUser = await userService.findById(id);
     if (!oldUser) {

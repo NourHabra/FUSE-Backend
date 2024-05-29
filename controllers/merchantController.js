@@ -29,14 +29,7 @@ async function show(req, res) {
 async function update(req, res) {
   try {
     const id = parseInt(await validate.isNumber(req.params.id));
-    let { name, email, phone, birth, status, category, workPermit } = req.body;
-    name = await validate.checkEmpty(name, "name");
-    workPermit = await validate.checkEmpty(workPermit, "workPermit");
-    email = await validate.isEmail(email);
-    phone = await validate.isPhone(phone);
-    birth = await validate.isDate(birth);
-    category = await validate.isMerchantCategory(category);
-    status = await validate.isUserStatus(status);
+    const { name, email, phone, birth, status, category, workPermit } = req.body;
 
     const oldMerchant = await merchantService.findById(id);
     if (!oldMerchant) {

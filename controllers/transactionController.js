@@ -29,9 +29,7 @@ async function show(req, res) {
 
 async function storeBill(req, res) {
   try {
-    let { destinationAccount, amount } = req.body;
-    destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
-    amount = parseFloat(await validate.isNumber(amount, "amount"));
+    const { destinationAccount, amount } = req.body;
 
     const dAccount = await accountService.findById(destinationAccount);
 
@@ -53,10 +51,7 @@ async function storeBill(req, res) {
 
 async function storeTransferer(req, res) {
   try {
-    let { sourceAccount, destinationAccount, amount } = req.body;
-    sourceAccount = parseInt(await validate.isNumber(sourceAccount, "sourceAccount"));
-    destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
-    amount = parseFloat(await validate.isNumber(amount, "amount"));
+    const { sourceAccount, destinationAccount, amount } = req.body;
 
     const dAccount = await accountService.findById(destinationAccount);
     const sAccount = await accountService.findById(sourceAccount);
@@ -95,10 +90,7 @@ async function storeTransferer(req, res) {
 
 async function storeDeposit(req, res) {
   try {
-    let { sourceAccount, destinationAccount, amount } = req.body;
-    sourceAccount = parseInt(await validate.isNumber(sourceAccount, "sourceAccount"));
-    destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
-    amount = parseFloat(await validate.isNumber(amount, "amount"));
+    const { sourceAccount, destinationAccount, amount } = req.body;
 
     const dAccount = await accountService.findById(destinationAccount);
     const sAccount = await accountService.findById(sourceAccount);
@@ -146,10 +138,7 @@ async function storeDeposit(req, res) {
 
 async function storeWithdraw(req, res) {
   try {
-    let { sourceAccount, destinationAccount, amount } = req.body;
-    sourceAccount = parseInt(await validate.isNumber(sourceAccount, "sourceAccount"));
-    destinationAccount = parseInt(await validate.isNumber(destinationAccount, "destinationAccount"));
-    amount = parseFloat(await validate.isNumber(amount, "amount"));
+    const { sourceAccount, destinationAccount, amount } = req.body;
 
     const dAccount = await accountService.findById(destinationAccount);
     const sAccount = await accountService.findById(sourceAccount);
@@ -198,9 +187,6 @@ async function storeWithdraw(req, res) {
 async function payBill(req, res) {
   try {
     let { sourceAccount, accepted } = req.body;
-    const billId = parseInt(await validate.isNumber(req.params.id, "billId"));
-    sourceAccount = parseInt(await validate.isNumber(sourceAccount, "sourceAccount"));
-    accepted = (await validate.checkEmpty(accepted, "accepted")) === "true";
 
     const sAccount = await accountService.findById(sourceAccount);
     const bill = await transactionService.findById(billId);
