@@ -19,7 +19,7 @@ async function show(req, res) {
     const transaction = await transactionService.findById(id);
 
     if (!transaction) {
-      return res.status(404).json({ code:"404",message: 'Transaction not found' });
+      return res.status(404).json({ code: "404", message: 'Transaction not found' });
     }
     return res.json(transaction);
   } catch (error) {
@@ -34,7 +34,7 @@ async function storeBill(req, res) {
     const dAccount = await accountService.findById(destinationAccount);
 
     if (!dAccount) {
-      return res.status(404).json({ code:"404",message: 'Destination account not found' });
+      return res.status(404).json({ code: "404", message: 'Destination account not found' });
     } else if (dAccount.status !== "Active") {
       return res.status(409).json({ error: `Destination account is not active (${dAccount.status})` });
     } else if (amount <= 0) {
@@ -49,7 +49,7 @@ async function storeBill(req, res) {
   }
 }
 
-async function storeTransferer(req, res) {
+async function storeTransfer(req, res) {
   try {
     const { sourceAccount, destinationAccount, amount } = req.body;
 
@@ -57,9 +57,9 @@ async function storeTransferer(req, res) {
     const sAccount = await accountService.findById(sourceAccount);
 
     if (!dAccount) {
-      return res.status(404).json({ code:"404",message: 'Destination account not found' });
+      return res.status(404).json({ code: "404", message: 'Destination account not found' });
     } else if (!sAccount) {
-      return res.status(404).json({ code:"404",message: 'Source account not found' });
+      return res.status(404).json({ code: "404", message: 'Source account not found' });
     } else if (amount <= 0) {
       return res.status(409).json({ error: 'Amount must be greater than 0' });
     }
@@ -71,11 +71,7 @@ async function storeTransferer(req, res) {
       return res.status(409).json({ error: 'Source account has insufficient balance' });
     }
 
-    const transactions = await transactionService.makeTransaction([
-      accountService.updateById(sourceAccount, { balance: sAccount.balance - amount }),
-      accountService.updateById(destinationAccount, { balance: dAccount.balance + amount }),
-      transactionService.updateById(transaction.id, { status: "Completed" })
-    ]);
+    const transactions = await transactionService.transfer(transaction.id, sourceAccount, destinationAccount, amount);
 
     if (!transactions) {
       await transactionService.updateById(transaction.id, { status: "Failed" });
@@ -96,9 +92,9 @@ async function storeDeposit(req, res) {
     const sAccount = await accountService.findById(sourceAccount);
 
     if (!dAccount) {
-      return res.status(404).json({ code:"404",message: 'Destination account not found' });
+      return res.status(404).json({ code: "404", message: 'Destination account not found' });
     } else if (!sAccount) {
-      return res.status(404).json({ code:"404",message: 'Source account not found' });
+      return res.status(404).json({ code: "404", message: 'Source account not found' });
     } else if (amount <= 0) {
       return res.status(409).json({ error: 'Amount must be greater than 0' });
     }
@@ -114,16 +110,7 @@ async function storeDeposit(req, res) {
       return res.status(409).json({ error: 'Vendor has insufficient balance' });
     }
 
-    const transactions = await transactionService.makeTransaction(
-      sAccount.user.role === "Vendor" ? [
-        accountService.updateById(sourceAccount, { balance: sAccount.balance - amount }),
-        accountService.updateById(destinationAccount, { balance: dAccount.balance + amount }),
-        transactionService.updateById(transaction.id, { status: "Completed" })
-      ] : [
-        accountService.updateById(destinationAccount, { balance: dAccount.balance + amount }),
-        transactionService.updateById(transaction.id, { status: "Completed" })
-      ]
-    );
+    const transactions = await transactionService.deposit(transaction.id, sAccount, dAccount, amount);
 
     if (!transactions) {
       await transactionService.updateById(transaction.id, { status: "Failed" });
@@ -144,9 +131,9 @@ async function storeWithdraw(req, res) {
     const sAccount = await accountService.findById(sourceAccount);
 
     if (!dAccount) {
-      return res.status(404).json({ code:"404",message: 'Destination account not found' });
+      return res.status(404).json({ code: "404", message: 'Destination account not found' });
     } else if (!sAccount) {
-      return res.status(404).json({ code:"404",message: 'Source account not found' });
+      return res.status(404).json({ code: "404", message: 'Source account not found' });
     } else if (amount <= 0) {
       return res.status(409).json({ error: 'Amount must be greater than 0' });
     }
@@ -162,16 +149,7 @@ async function storeWithdraw(req, res) {
       return res.status(409).json({ error: 'User has insufficient balance' });
     }
 
-    const transactions = await transactionService.makeTransaction(
-      dAccount.user.role === "Vendor" ? [
-        accountService.updateById(sourceAccount, { balance: sAccount.balance - amount }),
-        accountService.updateById(destinationAccount, { balance: dAccount.balance + amount }),
-        transactionService.updateById(transaction.id, { status: "Completed" })
-      ] : [
-        accountService.updateById(sourceAccount, { balance: sAccount.balance - amount }),
-        transactionService.updateById(transaction.id, { status: "Completed" })
-      ]
-    );
+    const transactions = await transactionService.withdraw(transaction.id, sAccount, dAccount, amount);
 
     if (!transactions) {
       await transactionService.updateById(transaction.id, { status: "Failed" });
@@ -186,15 +164,16 @@ async function storeWithdraw(req, res) {
 
 async function payBill(req, res) {
   try {
-    let { sourceAccount, accepted } = req.body;
+    const billId = parseInt(await validate.isNumber(req.params.id, "Bill ID"));
+    const { sourceAccount, accepted } = req.body;
 
     const sAccount = await accountService.findById(sourceAccount);
     const bill = await transactionService.findById(billId);
 
     if (!sAccount) {
-      return res.status(404).json({ code:"404",message: "User account not found" });
+      return res.status(404).json({ code: "404", message: "User account not found" });
     } else if (!bill) {
-      return res.status(404).json({ code:"404",message: "Bill not found" });
+      return res.status(404).json({ code: "404", message: "Bill not found" });
     } else if (bill.status !== "Pending") {
       return res.status(409).json({ error: "Bill status is not valid" });
     }
@@ -238,7 +217,7 @@ module.exports = {
   index,
   show,
   storeBill,
-  storeTransferer,
+  storeTransfer,
   storeDeposit,
   storeWithdraw,
   payBill,

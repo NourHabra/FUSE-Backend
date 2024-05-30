@@ -19,6 +19,42 @@ async function updateById(id, { data }) {
   return await prisma.transactions.update({ where: { id }, data });
 }
 
+async function makeTransfer(id,sourceAccount, destinationAccount, amount) {
+  const transactions = [
+    accountService.updateById(sourceAccount, { balance: sourceAccount.balance - amount }),
+    accountService.updateById(destinationAccount, { balance: destinationAccount.balance + amount }),
+    updateById(id, { status: "Completed" })
+  ];
+
+  return await prisma.$transaction(transactions);
+}
+
+async function deposit(id, sourceAccount, destinationAccount, amount) {
+  const transactions = sourceAccount.user.role === "Vendor" ? [
+    accountService.updateById(sourceAccount, { balance: sourceAccount.balance - amount }),
+    accountService.updateById(destinationAccount, { balance: destinationAccount.balance + amount }),
+    updateById(id, { status: "Completed" })
+  ] : [
+    accountService.updateById(destinationAccount, { balance: destinationAccount.balance + amount }),
+    updateById(id, { status: "Completed" })
+  ];
+
+  return await prisma.$transaction(transactions);
+}
+
+async function withdraw(id, sourceAccount, destinationAccount, amount) {
+  const transactions = destinationAccount.user.role === "Vendor" ? [
+    accountService.updateById(sourceAccount, { balance: sourceAccount.balance - amount }),
+    accountService.updateById(destinationAccount, { balance: destinationAccount.balance + amount }),
+    updateById(id, { status: "Completed" })
+  ] : [
+    accountService.updateById(sourceAccount, { balance: sourceAccount.balance - amount }),
+    updateById(id, { status: "Completed" })
+  ]
+
+  return await prisma.$transaction(transactions);
+}
+
 async function makeTransaction(transactions) {
   return await prisma.$transaction(transactions);
 }
@@ -28,5 +64,8 @@ module.exports = {
   findById,
   create,
   updateById,
-  makeTransaction
+  makeTransaction,
+  makeTransfer,
+  deposit,
+  withdraw
 };

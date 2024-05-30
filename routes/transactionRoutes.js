@@ -9,7 +9,7 @@ const { createTransferSchema,createBillSchema,createDepositSchema,createWithdraw
 router.get('/', transactionController.index);
 //router.post('/', transactionController.store);
 router.post('/bill', validateRequest(createBillSchema), transactionController.storeBill);
-router.post('/transferer', validateRequest(createTransferSchema), transactionController.storeTransferer);
+router.post('/transferer', validateRequest(createTransferSchema), transactionController.storeTransfer);
 router.post('/deposit', validateRequest(createDepositSchema), transactionController.storeDeposit);
 router.post('/withdraw', validateRequest(createWithdrawSchema), transactionController.storeWithdraw);
 router.post('/payBill/:id', validateRequest(payBillSchema), transactionController.payBill);
