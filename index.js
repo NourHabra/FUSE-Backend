@@ -1,4 +1,6 @@
 const express = require("express");
+const helmet = require("helmet");
+
 const userRoutes = require("./routes/userRoutes");
 const authRouter = require("./routes/authRoutes");
 const beneficiarieRouter = require("./routes/beneficiarieRoutes");
@@ -13,6 +15,7 @@ const app = express();
 
 app.use(express.static("public"));
 app.use(express.json());
+app.use(helmet());
 
 app.get("/", async (req, res) => {
 	res.json({ msg: "Hello World, I am alive!" });
