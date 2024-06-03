@@ -59,6 +59,15 @@ async function makeTransaction(transactions) {
   return await prisma.$transaction(transactions);
 }
 
+async function addTransactionDetails(id, details){
+  return await prisma.transactionsDetails.create({
+    date:{
+      transactionId : id,
+      details
+    }
+  })
+}
+
 module.exports = {
   findAll,
   findById,
@@ -67,5 +76,6 @@ module.exports = {
   makeTransaction,
   makeTransfer,
   deposit,
-  withdraw
+  withdraw,
+  addTransactionDetails
 };

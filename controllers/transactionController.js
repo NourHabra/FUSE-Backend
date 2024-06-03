@@ -29,7 +29,7 @@ async function show(req, res) {
 
 async function storeBill(req, res) {
   try {
-    const { destinationAccount, amount } = req.body;
+    const { destinationAccount, amount, details } = req.body;
 
     const dAccount = await accountService.findById(destinationAccount);
 
@@ -42,6 +42,7 @@ async function storeBill(req, res) {
     }
 
     const transaction = await transactionService.create("Bill", null, destinationAccount, amount);
+    if(details) transactionService.addTransactionDetails(transaction.id, details);
 
     res.status(201).json({ message: "Bill created", bill: transaction });
   } catch (error) {
@@ -51,7 +52,7 @@ async function storeBill(req, res) {
 
 async function storeTransfer(req, res) {
   try {
-    const { sourceAccount, destinationAccount, amount } = req.body;
+    const { sourceAccount, destinationAccount, amount, details } = req.body;
 
     const dAccount = await accountService.findById(destinationAccount);
     const sAccount = await accountService.findById(sourceAccount);
@@ -65,6 +66,7 @@ async function storeTransfer(req, res) {
     }
 
     const transaction = await transactionService.create("Transferer", sourceAccount, destinationAccount, amount);
+    if(details) transactionService.addTransactionDetails(transaction.id, details);
 
     if ((sAccount.balance - amount) < 0) {
       await transactionService.updateById(transaction.id, { status: "Failed" });
@@ -86,7 +88,7 @@ async function storeTransfer(req, res) {
 
 async function storeDeposit(req, res) {
   try {
-    const { sourceAccount, destinationAccount, amount } = req.body;
+    const { sourceAccount, destinationAccount, amount, details } = req.body;
 
     const dAccount = await accountService.findById(destinationAccount);
     const sAccount = await accountService.findById(sourceAccount);
@@ -104,6 +106,7 @@ async function storeDeposit(req, res) {
     }
 
     const transaction = await transactionService.create("Deposit", sourceAccount, destinationAccount, amount);
+    if(details) transactionService.addTransactionDetails(transaction.id, details);
 
     if ((sAccount.balance - amount) < 0 && sAccount.user.role === "Vendor") {
       await transactionService.updateById(transaction.id, { status: "Failed" });
@@ -125,7 +128,7 @@ async function storeDeposit(req, res) {
 
 async function storeWithdraw(req, res) {
   try {
-    const { sourceAccount, destinationAccount, amount } = req.body;
+    const { sourceAccount, destinationAccount, amount, details } = req.body;
 
     const dAccount = await accountService.findById(destinationAccount);
     const sAccount = await accountService.findById(sourceAccount);
@@ -143,6 +146,7 @@ async function storeWithdraw(req, res) {
     }
 
     const transaction = await transactionService.create("Withdraw", sourceAccount, destinationAccount, amount);
+    if(details) transactionService.addTransactionDetails(transaction.id, details);
 
     if ((sAccount.balance - amount) < 0) {
       await transactionService.updateTransaction(transaction.id, "Failed");

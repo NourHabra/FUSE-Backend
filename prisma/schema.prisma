@@ -92,6 +92,15 @@ model Transactions {
 
   sAccount     Accounts?   @relation("source", fields: [sourceAccount], references: [id])
   dAccount     Accounts   @relation("destination", fields: [destinationAccount], references: [id])
+  details      TransactionsDetails[]
+}
+
+model TransactionsDetails {
+  id              Int          @id @default(autoincrement())
+  transactionId   Int
+  details         String
+
+  transaction    Transactions  @relation(fields: [transactionId], references: [id])
 }
 
 enum Role {

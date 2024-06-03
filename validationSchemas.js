@@ -66,24 +66,28 @@ const updateMerchantSchema = Joi.object({
 const createBillSchema = Joi.object({
   destinationAccount: Joi.number().integer().required(),
   amount: Joi.number().positive().required(),
+  details: Joi.string(),
 });
 
 const createTransferSchema = Joi.object({
   sourceAccount: Joi.number().integer().required(),
   destinationAccount: Joi.number().integer().required(),
   amount: Joi.number().positive().required(),
+  details: Joi.string(),
 });
 
 const createDepositSchema = Joi.object({
   sourceAccount: Joi.number().integer().required(),
   destinationAccount: Joi.number().integer().required(),
   amount: Joi.number().positive().required(),
+  details: Joi.string(),
 });
 
 const createWithdrawSchema = Joi.object({
   sourceAccount: Joi.number().integer().required(),
   destinationAccount: Joi.number().integer().required(),
   amount: Joi.number().positive().required(),
+  details: Joi.string(),
 });
 
 const payBillSchema = Joi.object({
