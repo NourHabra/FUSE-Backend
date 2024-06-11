@@ -1,5 +1,6 @@
 const express = require("express");
 const helmet = require("helmet");
+const cors = require('cors');
 
 const userRoutes = require("./routes/userRoutes");
 const authRouter = require("./routes/authRoutes");
@@ -15,16 +16,23 @@ PORT = process.env.PORT | 3000;
 
 const app = express();
 
+const corsOptions = {
+	origin: '*', // Allow requests from all origins
+	optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+  
+app.use(cors(corsOptions));
+
 app.use(express.static("public"));
 app.use(express.json());
 app.use(helmet());
 
-app.use((req, res, next) => {
-	res.setHeader('Access-Control-Allow-Origin', '*');
-	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-	res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-	next();
-});
+// app.use((req, res, next) => {
+// 	res.setHeader('Access-Control-Allow-Origin', '*');
+// 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+// 	res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+// 	next();
+// });
 
 app.get("/", async (req, res) => {
 	res.json({ msg: "Hello World, I am alive!" });
