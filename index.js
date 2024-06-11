@@ -8,6 +8,8 @@ const merchantRoutes = require("./routes/merchantRoutes");
 const accountRoutes = require("./routes/accountRoutes");
 const cardRoutes = require("./routes/cardRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
+const keyRoutes = require("./routes/keyRoutes");
+const encry = require("./middleware/encryption");
 
 PORT = process.env.PORT | 3000;
 
@@ -20,6 +22,10 @@ app.use(helmet());
 app.get("/", async (req, res) => {
 	res.json({ msg: "Hello World, I am alive!" });
 });
+
+app.use("key", keyRoutes);
+
+app.use(encry.decryption);
 
 app.use("/user", userRoutes);
 app.use("/auth", authRouter);

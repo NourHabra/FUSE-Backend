@@ -8,4 +8,5 @@ router.post('/login', validateRequest(signInSchema), authController.login);
 router.post('/register',validateRequest(signUpSchema), authController.register);
 router.get('/logout', authController.logout);
 
+
 module.exports = router;
