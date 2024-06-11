@@ -23,7 +23,7 @@ app.get("/", async (req, res) => {
 	res.json({ msg: "Hello World, I am alive!" });
 });
 
-app.use("key", keyRoutes);
+app.use("/key", keyRoutes);
 
 //app.use(encry.decryption);
 
