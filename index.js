@@ -17,7 +17,7 @@ const app = express();
 
 app.use(express.static("public"));
 app.use(express.json());
-app.use(helmet());
+//app.use(helmet());
 
 app.get("/", async (req, res) => {
 	res.json({ msg: "Hello World, I am alive!" });
