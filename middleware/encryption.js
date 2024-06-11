@@ -4,26 +4,23 @@ const userService = require('../services/userService');
 let keys = {};
 
 async function genKeys(req, res) {
-  try {
-    const { email, clientPublicKey } = req.body;
 
-    const user = await userService.findByEmail(email);
-    if (!user) return res.status(404).json({ error: "User not found" });
+  const { email, clientPublicKey } = req.body;
 
-    const server = crypto.createECDH('secp256k1');
-    server.generateKeys();
+  const user = await userService.findByEmail(email);
+  if (!user) return res.status(404).json({ error: "User not found" });
 
-    const serverPublicKeyBase64 = server.getPublicKey().toString('base64');
-    const sharedKey = server.computeSecret(Buffer.from(clientPublicKey, 'base64'), null, 'hex');
-    keys[user.id] = sharedKey;
+  const server = crypto.createECDH('secp256k1');
+  server.generateKeys();
 
-    console.log(`Shared Key: ${sharedKey} for ${email}`);
-    
-    return res.json({ serverPublicKey: serverPublicKeyBase64 });
-  } catch (error) {
-    console.error('Error generating keys:', error);
-    return res.status(500).json({ error: "Failed to generate keys" });
-  }
+  const serverPublicKeyBase64 = server.getPublicKey().toString('base64');
+  const sharedKey = server.computeSecret(Buffer.from(clientPublicKey, 'base64'), null, 'hex');
+  keys[user.id] = sharedKey;
+
+  console.log(`Shared Key: ${sharedKey} for ${email}`);
+
+  return res.json({ serverPublicKey: serverPublicKeyBase64 });
+
 }
 
 async function decryption(req, res, next) {
