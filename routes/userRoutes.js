@@ -9,7 +9,7 @@ const { isCustomer } = require('../middleware/authRole');
 
 //router.get('/create', userController.create);
 
-router.get('/', authenticateJWT, isCustomer, userController.index);
+router.get('/', userController.index);
 router.get('/:id', userController.show);
 router.put('/:id', validateRequest(updateUserSchema), userController.update);
 router.delete('/:id', userController.destroy);
