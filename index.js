@@ -32,7 +32,7 @@ app.get("/", async (req, res) => {
 
 app.use("/key", keyRoutes);
 
-//app.use(encry.decryption);
+app.use(encry.decryption);
 
 app.use("/user", userRoutes);
 app.use("/auth", authRouter);

@@ -29,9 +29,15 @@ async function genKeys(req, res) {
 async function decryption(req, res, next) {
   if (!req.body) return next();
   try {
+    if(typeof req.body.email === 'undefined' && typeof req.user.userId === 'undefined'){
+      return res.status(400).json({ error: "Can't find keys without email or JWT" });
+    }
+    const { email } = req.body;
+    const user = email? await userService.findByEmail(email) : null;
     const { payload } = req.body;
-    const decrypted = decrypt(payload, keys[req.user.userId]);
-    req.body.values = JSON.parse(decrypted);
+    const decrypted = decrypt(payload, keys[user? user.id : req.user.userId]);
+    console.log('Decrypted message: ', JSON.parse(decrypted));
+    req.body = JSON.parse(decrypted);
     console.log('Decrypted message: ', decrypted);
     next();
   } catch (error) {
