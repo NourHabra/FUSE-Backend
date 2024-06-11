@@ -29,13 +29,17 @@ async function genKeys(req, res) {
 async function decryption(req, res, next) {
   if (!req.body) return next();
   try {
-    if(typeof req.body.email === 'undefined' && typeof req.user.userId === 'undefined'){
+    if (typeof req.body.email === 'undefined' && typeof req.user === 'undefined') {
       return res.status(400).json({ error: "Can't find keys without email or JWT" });
     }
     const { email } = req.body;
-    const user = email? await userService.findByEmail(email) : null;
+    const user = email ? await userService.findByEmail(email) : null;
+    const userId = user ? user.id : (req.user ? req.user.userId : undefined);
+    if (typeof userId === 'undefined') {
+      return res.status(401).json({ error: 'Invalid or missing JWT token' });
+    }
     const { payload } = req.body;
-    const decrypted = decrypt(payload, keys[user? user.id : req.user.userId]);
+    const decrypted = decrypt(payload, keys[userId]);
     console.log('Decrypted message: ', JSON.parse(decrypted));
     req.body = JSON.parse(decrypted);
     console.log('Decrypted message: ', decrypted);
@@ -45,6 +49,7 @@ async function decryption(req, res, next) {
     res.status(500).json({ error: "Failed to decrypt message" });
   }
 }
+
 
 async function encryption(data, userId) {
   try {
