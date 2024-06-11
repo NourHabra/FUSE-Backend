@@ -17,7 +17,14 @@ const app = express();
 
 app.use(express.static("public"));
 app.use(express.json());
-//app.use(helmet());
+app.use(helmet());
+
+app.use((req, res, next) => {
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+	res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+	next();
+});
 
 app.get("/", async (req, res) => {
 	res.json({ msg: "Hello World, I am alive!" });
