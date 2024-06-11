@@ -18,7 +18,7 @@ async function findById(id) {
   });
 }
 
-async function create(accountNumber) {
+async function create(accountNumber, PIN) {
   let id, checkID;
     do {
       let randomNumber = Math.floor(Math.random() * 9000000000000000) + 1000000000000000;
@@ -32,6 +32,7 @@ async function create(accountNumber) {
       id,
       accountNumber: parseInt(accountNumber),
       cvv: Math.floor(Math.random() * 900) + 100,
+      PIN
     }
   });
 }

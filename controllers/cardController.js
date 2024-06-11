@@ -28,9 +28,9 @@ async function show(req, res) {
 
 async function store(req, res) {
   try {
-    const { accountNumber } = req.body;
+    const { accountNumber, PIN } = req.body;
 
-    const newCard = await cardService.create(accountNumber);
+    const newCard = await cardService.create(accountNumber, PIN);
     return res.json(newCard);
   } catch (error) {
     await handleError(error, res);

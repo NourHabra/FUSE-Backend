@@ -45,6 +45,7 @@ async function main() {
       accountNumber: customerAccount1.id,
       cvv: 123,
       physical: true,
+      PIN: 1234
     },
   });
 
@@ -55,6 +56,7 @@ async function main() {
       accountNumber: customerAccount2.id,
       cvv: 456,
       physical: false,
+      PIN: 1234
     },
   });
 
@@ -101,6 +103,7 @@ async function main() {
       accountNumber: merchantAccount1.id,
       cvv: 789,
       physical: true,
+      PIN: 1234
     },
   });
 
@@ -111,6 +114,7 @@ async function main() {
       accountNumber: merchantAccount2.id,
       cvv: 102,
       physical: false,
+      PIN: 1234
     },
   });
 
@@ -149,6 +153,7 @@ async function main() {
       accountNumber: vendorAccount1.id,
       cvv: 345,
       physical: true,
+      PIN: 1234
     },
   });
 
@@ -159,6 +164,7 @@ async function main() {
       accountNumber: vendorAccount2.id,
       cvv: 678,
       physical: false,
+      PIN: 1234
     },
   });
 
@@ -197,6 +203,7 @@ async function main() {
       accountNumber: employeeAccount1.id,
       cvv: 901,
       physical: true,
+      PIN: 1234
     },
   });
 
@@ -207,6 +214,7 @@ async function main() {
       accountNumber: employeeAccount2.id,
       cvv: 234,
       physical: false,
+      PIN: 1234
     },
   });
 

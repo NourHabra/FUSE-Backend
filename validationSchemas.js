@@ -1,6 +1,8 @@
 const Joi = require('joi');
 const { Role, AccountType, AccountStatus, MerchantCategory, userStatus } = require('@prisma/client');
 
+// Auth
+
 const signUpSchema = Joi.object({
   name: Joi.string().required(),
   role: Joi.string().valid(...Object.values(Role)).required(),
@@ -19,6 +21,8 @@ const signInSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+// Account
+
 const createAccountSchema = Joi.object({
   userId: Joi.number().integer().required(),
   balance: Joi.number().required(),
@@ -33,6 +37,8 @@ const updateAccountSchema = Joi.object({
   name: Joi.string(),
 });
 
+// Beneficiary
+
 const createBeneficiarySchema = Joi.object({
   acceptUser: Joi.number().integer().required(),
   requstUser: Joi.number().integer().required(),
@@ -43,8 +49,11 @@ const updateBeneficiarySchema = Joi.object({
   accepted: Joi.boolean().required(),
 });
 
+// Card
+
 const createCardSchema = Joi.object({
   accountNumber: Joi.number().integer().required(),
+  PIN: Joi.number().required().min(1000).max(9999)
 });
 
 const updateCardSchema = Joi.object({
@@ -52,6 +61,8 @@ const updateCardSchema = Joi.object({
   expiryDate: Joi.date().iso().required(),
   physical: Joi.boolean().required(),
 });
+
+// Merchant
 
 const updateMerchantSchema = Joi.object({
   name: Joi.string().required(),
@@ -62,6 +73,8 @@ const updateMerchantSchema = Joi.object({
   category: Joi.string().valid(...Object.values(MerchantCategory)).required(),
   workPermit: Joi.string().required(),
 });
+
+// Transaction
 
 const createBillSchema = Joi.object({
   destinationAccount: Joi.number().integer().required(),
@@ -94,6 +107,8 @@ const payBillSchema = Joi.object({
   sourceAccount: Joi.number().integer().required(),
   accepted: Joi.boolean().required(),
 });
+
+// User
 
 const updateUserSchema = Joi.object({
   name: Joi.string().required(),
