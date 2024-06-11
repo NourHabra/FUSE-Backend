@@ -4,13 +4,12 @@ const userService = require('../services/userService');
 let keys = {};
 
 async function genKeys(req, res) {
-
   const { email, clientPublicKey } = req.body;
 
   const user = await userService.findByEmail(email);
   if (!user) return res.status(404).json({ error: "User not found" });
 
-  const server = crypto.createECDH('secp256k1');
+  const server = crypto.createECDH('prime256v1');
   server.generateKeys();
 
   const serverPublicKeyBase64 = server.getPublicKey().toString('base64');
@@ -20,7 +19,6 @@ async function genKeys(req, res) {
   console.log(`Shared Key: ${sharedKey} for ${email}`);
 
   return res.json({ serverPublicKey: serverPublicKeyBase64 });
-
 }
 
 async function decryption(req, res, next) {
