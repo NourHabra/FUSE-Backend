@@ -3,6 +3,18 @@ const prisma = new PrismaClient();
 const bcrypt = require('bcrypt');
 
 async function main() {
+  // Create an employee user
+  const adminUser = await prisma.users.create({
+    data: {
+      role: 'Admin',
+      name: 'The Admin',
+      email: 'admin@mail.com',
+      phone: '9873334321',
+      birth: new Date('1995-07-10'),
+      password: await bcrypt.hash('admin12345', 10),
+    },
+  });
+
   // Create a customer user
   const customerUser = await prisma.users.create({
     data: {
