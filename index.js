@@ -11,6 +11,8 @@ const cardRoutes = require("./routes/cardRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
 const keyRoutes = require("./routes/keyRoutes");
 const encry = require("./middleware/encryption");
+const {authenticateJWT} = require('./middleware/authMiddleware');
+
 
 PORT = process.env.PORT | 3030;
 
@@ -42,8 +44,11 @@ app.use("/key", keyRoutes);
 
 app.use(encry.decryption);
 
-app.use("/user", userRoutes);
 app.use("/auth", authRouter);
+
+app.use(authenticateJWT);
+
+app.use("/user", userRoutes);
 app.use("/beneficiarie", beneficiarieRouter);
 app.use("/merchant", merchantRoutes);
 app.use("/account", accountRoutes);
