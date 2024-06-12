@@ -3,7 +3,7 @@ const merchantService = require('../services/merchantService');
 const accountService = require('../services/accountService');
 const { handleError } = require('./errorController');
 const validate = require('./validateController');
-const { makePayload } = require('../middleware/encryption');
+const { makePayload } = require('../middleware/encryptionMiddleware');
 
 async function index(req, res) {
   try {

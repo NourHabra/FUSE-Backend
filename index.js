@@ -10,7 +10,7 @@ const accountRoutes = require("./routes/accountRoutes");
 const cardRoutes = require("./routes/cardRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
 const keyRoutes = require("./routes/keyRoutes");
-const encry = require("./middleware/encryption");
+const encry = require("./middleware/encryptionMiddleware");
 const {authenticateJWT} = require('./middleware/authMiddleware');
 
 
@@ -42,11 +42,11 @@ app.get("/", async (req, res) => {
 
 app.use("/key", keyRoutes);
 
-app.use(encry.decryption);
-
 app.use("/auth", authRouter);
 
 app.use(authenticateJWT);
+
+app.use(encry.decryption);
 
 app.use("/user", userRoutes);
 app.use("/beneficiarie", beneficiarieRouter);

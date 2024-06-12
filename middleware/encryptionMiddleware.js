@@ -65,7 +65,7 @@ async function decryption(req, res, next) {
     const decrypted = decrypt(payload, keys[userId]);
     req.body = JSON.parse(decrypted);
 
-    console.log('Message Decrypted');
+    console.log('Message Decrypted', req.body);
 
     next();
   } catch (error) {

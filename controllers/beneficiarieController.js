@@ -1,7 +1,7 @@
 const beneficiarieService = require('../services/beneficiarieService');
 const { handleError } = require('./errorController');
 const validate = require('./validateController');
-const { makePayload } = require('../middleware/encryption');
+const { makePayload } = require('../middleware/encryptionMiddleware');
 
 async function index(req, res) {
   try {
