@@ -9,6 +9,7 @@ const merchantService = require('../services/merchantService');
 const customerService = require('../services/customerService');
 const { handleError } = require('./errorController');
 const { revokedTokens } = require('../middleware/authMiddleware');
+const { makePayload } = require('../middleware/encryption');
 const validate = require('./validateController');
 
 const secretKey = process.env.JWT_SECRET;
@@ -102,15 +103,14 @@ async function login(req, res) {
     const user = await userService.findByEmail(email);
 
     if (!user) {
-      return res.status(404).json({ code:"404",message: 'User not found' });
+      return res.status(404).json(await makePayload({ code:'404',message: 'User not found' }, user.id));
     } else if (await bcrypt.compare(password, user.password)) {
       const token = jwt.sign({ userId: user.id, role: user.role }, secretKey, { expiresIn: '30m' });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
-      return res.json("success");
+      return res.json(await makePayload({jwt: token}, user.id));
     } else {
-      return res.status(409).json({ message: 'Wrong password' });
+      return res.status(409).json( await makePayload({error: 'Wrong password'}, user.id));
     }
-
   } catch (error) {
     await handleError(error, res);
   } finally {

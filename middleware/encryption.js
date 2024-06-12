@@ -41,8 +41,9 @@ async function decryption(req, res, next) {
     const { payload } = req.body;
     const decrypted = decrypt(payload, keys[userId]);
     req.body = JSON.parse(decrypted);
-    console.log('Decrypted message: ', decrypted);
-    console.log('Decrypted body: ', req.body);
+
+    console.log('Message Decrypted');
+
     next();
   } catch (error) {
     console.error('Error decrypting message:', error);
@@ -51,10 +52,17 @@ async function decryption(req, res, next) {
 }
 
 
-async function encryption(data, userId) {
+async function encryption(data, userId, email) {
+  if (typeof email !== 'undefined'){
+    const user = await userService.findByEmail(email);
+    if (!user) return null;
+    userId = user.id;
+  } 
+
   try {
     data = JSON.stringify(data);
     const encrypted = encrypt(data, keys[userId]);
+    console.log('Encrypted message: ', encrypted);
     return encrypted;
   } catch (error) {
     console.error('Error encrypting data:', error);
@@ -93,8 +101,16 @@ function decrypt(payload, sharedKey) {
   return decrypted;
 }
 
+async function makePayload(data, userId, email) {
+  const dataS = JSON.stringify(data);
+  console.log('Data to encrypt: ', dataS);
+  const payload = await encryption(dataS, userId, email);
+  return { payload };
+}
+
 module.exports = {
   genKeys,
   encryption,
-  decryption
+  decryption,
+  makePayload
 };

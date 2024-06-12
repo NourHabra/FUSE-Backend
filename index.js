@@ -12,7 +12,7 @@ const transactionRoutes = require("./routes/transactionRoutes");
 const keyRoutes = require("./routes/keyRoutes");
 const encry = require("./middleware/encryption");
 
-PORT = process.env.PORT | 3000;
+PORT = process.env.PORT | 3030;
 
 const app = express();
 
@@ -20,7 +20,7 @@ const corsOptions = {
 	origin: '*', // Allow requests from all origins
 	optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
 }
-  
+
 app.use(cors(corsOptions));
 
 app.use(express.static("public"));
