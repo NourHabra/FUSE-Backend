@@ -40,9 +40,9 @@ async function decryption(req, res, next) {
     }
     const { payload } = req.body;
     const decrypted = decrypt(payload, keys[userId]);
-    console.log('Decrypted message: ', JSON.parse(decrypted));
     req.body = JSON.parse(decrypted);
     console.log('Decrypted message: ', decrypted);
+    console.log('Decrypted body: ', req.body);
     next();
   } catch (error) {
     console.error('Error decrypting message:', error);
