@@ -26,6 +26,29 @@ async function genKeys(req, res) {
   }
 }
 
+async function genKeysDashboard(req, res) {
+  try{
+    const { email, clientPublicKey } = req.body;
+
+    const user = await userService.findByEmail(email);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    if (user.role !== 'Admin') return res.status(403).json({ error: "User not authorized" });
+
+    const server = crypto.createECDH('prime256v1');
+    server.generateKeys();
+
+    const serverPublicKeyBase64 = server.getPublicKey().toString('base64');
+    const sharedKey = server.computeSecret(Buffer.from(clientPublicKey, 'base64'), null, 'hex');
+    keys[user.id] = sharedKey;
+
+    console.log(`Shared Key: ${sharedKey} for ${email}`);
+
+    return res.json({ serverPublicKey: serverPublicKeyBase64 });
+  }catch(error){
+    await handleError(error, res);
+  }
+}
+
 async function decryption(req, res, next) {
   if (!req.body) return next();
   try {
@@ -112,5 +135,6 @@ module.exports = {
   genKeys,
   encryption,
   decryption,
-  makePayload
+  makePayload,
+  genKeysDashboard
 };

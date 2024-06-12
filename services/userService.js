@@ -66,7 +66,15 @@ async function deleteUser(id) {
 
 async function create(name, role, email, phone, birth, password) {
   return await prisma.users.create({
-    data: { name, role, email, phone, birth: new Date(birth).toISOString(), password }
+    data: { name, role, email, phone, birth: new Date(birth).toISOString(), password },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      birth: true,
+      role: true
+    }
   });
 }
 

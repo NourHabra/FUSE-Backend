@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+const { makePayload } = require('../middleware/encryption');
 dotenv.config();
 
 const authService = require('../services/authService');
@@ -33,6 +34,22 @@ async function register(req, res) {
     const token = jwt.sign({ userId: newUser.id, role }, secretKey, { expiresIn: '30m' });
     res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
     res.status(201).json({ message: 'User created successfully' });
+
+  } catch (error) {
+    await handleError(error, res);
+  } finally {
+    await authService.disconnect();
+  }
+}
+
+async function registerEmployee(req, res) {
+  try {
+    const salt = await bcrypt.genSalt();
+    const { name, email, phone, birth, password } = req.body;
+
+    const newUser = await userService.create(name, "Employee", email, phone, birth, await bcrypt.hash(password, salt));
+
+    res.status(201).json(await makePayload(newUser, req.user.id));
 
   } catch (error) {
     await handleError(error, res);
@@ -118,6 +135,31 @@ async function login(req, res) {
   }
 }
 
+async function loginDashboard(req, res) {
+  try {
+    const { email, password } = req.body;
+
+    const user = await userService.findByEmail(email);
+    if(user.role != "Admin") {
+      return res.status(401).json(await makePayload({error: 'You are not authorized to login'}, user.id));
+    }
+
+    if (!user) {
+      return res.status(404).json(await makePayload({ code:'404',message: 'User not found' }, user.id));
+    } else if (await bcrypt.compare(password, user.password)) {
+      const token = jwt.sign({ userId: user.id, role: user.role }, secretKey, { expiresIn: '30m' });
+      res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
+      return res.json(await makePayload({jwt: token}, user.id));
+    } else {
+      return res.status(409).json( await makePayload({error: 'Wrong password'}, user.id));
+    }
+  } catch (error) {
+    await handleError(error, res);
+  } finally {
+    await authService.disconnect();
+  }
+}
+
 async function logout(req, res) {
   try {
     const token = req.body.jwt;
@@ -131,4 +173,4 @@ async function logout(req, res) {
   }
 }
 
-module.exports = { register, login, logout };
+module.exports = { register, login, logout, loginDashboard, registerEmployee };
