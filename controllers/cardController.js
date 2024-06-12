@@ -1,11 +1,12 @@
 const cardService = require('../services/cardService');
 const { handleError } = require('./errorController');
 const validate = require('./validateController');
+const { makePayload } = require('../middleware/encryption');
 
 async function index(req, res) {
   try {
     const allCards = await cardService.findAll();
-    return res.json(allCards);
+    return res.json(await makePayload(allCards, req.user.id));
   } catch (error) {
     await handleError(error, res);
   }
@@ -18,9 +19,9 @@ async function show(req, res) {
     const card = await cardService.findById(id);
 
     if (!card) {
-      return res.status(404).json({ code:"404",message: 'Card not found' });
+      return res.status(404).json(await makePayload({ code: "404", message: 'Card not found' }, req.user.id));
     }
-    return res.json(card);
+    return res.json(await makePayload(card, req.user.id));
   } catch (error) {
     await handleError(error, res);
   }
@@ -31,7 +32,7 @@ async function store(req, res) {
     const { accountNumber, PIN } = req.body;
 
     const newCard = await cardService.create(accountNumber, PIN);
-    return res.json(newCard);
+    return res.json(await makePayload(newCard, req.user.id));
   } catch (error) {
     await handleError(error, res);
   }
@@ -44,7 +45,7 @@ async function update(req, res) {
     const { accountNumber, expiryDate, physical } = req.body;
 
     const updatedCard = await cardService.updateById(id, { accountNumber, expiryDate, physical });
-    res.json(updatedCard);
+    res.json(await makePayload(updatedCard, req.user.id));
   } catch (error) {
     await handleError(error, res);
   }
@@ -57,9 +58,9 @@ async function destroy(req, res) {
     const deletedCard = await cardService.deleteCard(id);
 
     if (!deletedCard) {
-      return res.status(404).json({ code:"404",message: 'Card not found' });
+      return res.status(404).json(await makePayload({ code: "404", message: 'Card not found' }, req.user.id));
     }
-    return res.json({ message: 'Card deleted successfully' });
+    return res.json(await makePayload({ message: 'Card deleted successfully' }, req.user.id));
   } catch (error) {
     await handleError(error, res);
   }

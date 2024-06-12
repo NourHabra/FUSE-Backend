@@ -2,7 +2,7 @@ const userService = require('../services/userService');
 
 const isCustomer = async (req, res, next) => {
     if (req.user.role === "Customer") {
-        const user = await userService.findById(req.user.userId);
+        const user = await userService.findById(req.user.id);
         if (user && ["Deleted", "Banned", "Stopped"].includes(user.status)) {
             return res.status(401).json({ message: `Customer is ${user.status}` });
         } else if (!user) {
@@ -17,7 +17,7 @@ const isCustomer = async (req, res, next) => {
 
 const isMerchant = async (req, res, next) => {
     if (req.user.role === "Merchant") {
-        const user = await userService.findById(req.user.userId);
+        const user = await userService.findById(req.user.id);
         if (user && ["Deleted", "Banned", "Stopped"].includes(user.status)) {
             return res.status(401).json({ message: `Merchant is ${user.status}` });
         } else if (!user) {
@@ -32,7 +32,7 @@ const isMerchant = async (req, res, next) => {
 
 const isVendor = async (req, res, next) => {
     if (req.user.role === "Vendor") {
-        const user = await userService.findById(req.user.userId);
+        const user = await userService.findById(req.user.id);
         if (user && ["Deleted", "Banned", "Stopped"].includes(user.status)) {
             return res.status(401).json({ message: `Vendor is ${user.status}` });
         } else if (!user) {
@@ -47,7 +47,7 @@ const isVendor = async (req, res, next) => {
 
 const isEmployee = async (req, res, next) => {
     if (req.user.role === "Employee") {
-        const user = await userService.findById(req.user.userId);
+        const user = await userService.findById(req.user.id);
         if (user && ["Deleted", "Banned", "Stopped"].includes(user.status)) {
             return res.status(401).json({ message: `Employee is ${user.status}` });
         } else if (!user) {

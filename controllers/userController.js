@@ -1,14 +1,12 @@
 const userService = require('../services/userService');
 const validate = require('./validateController');
 const { handleError } = require('./errorController');
-const dotenv = require('dotenv');
-
-dotenv.config();
+const { makePayload } = require('../middleware/encryption');
 
 async function index(req, res) {
   try {
     const allUsers = await userService.findAll();
-    return res.json(allUsers);
+    return res.json(await makePayload(allUsers, req.user.id));
   } catch (error) {
     await handleError(error, res);
   }
@@ -20,9 +18,9 @@ async function show(req, res) {
     const user = await userService.findById(id);
 
     if (!user) {
-      return res.status(404).json({ code:"404",message: 'User not found' });
+      return res.status(404).json(await makePayload({ code: "404", message: 'User not found' }, req.user.id));
     }
-    return res.json(user);
+    return res.json(await makePayload(user, req.user.id));
   } catch (error) {
     await handleError(error, res);
   }
@@ -35,11 +33,11 @@ async function update(req, res) {
 
     const oldUser = await userService.findById(id);
     if (!oldUser) {
-      return res.status(404).json({ code:"404",message: 'User not found' });
+      return res.status(404).json(await makePayload({ code: "404", message: 'User not found' }, req.user.id));
     }
 
     const updatedUser = await userService.updateUser(id, name, email, phone, birth, status);
-    return res.status(200).json(updatedUser);
+    return res.status(200).json(await makePayload(updatedUser, req.user.id));
   } catch (error) {
     await handleError(error, res);
   }
@@ -51,9 +49,9 @@ async function destroy(req, res) {
     const deletedUser = await userService.deleteUser(id);
 
     if (!deletedUser) {
-      return res.status(404).json({ code:"404",message: 'User not found' });
+      return res.status(404).json(await makePayload({ code: "404", message: 'User not found' }, req.user.id));
     }
-    return res.json({ message: 'User deleted successfully' });
+    return res.json(await makePayload({ message: 'User deleted successfully' }, req.user.id));
   } catch (error) {
     await handleError(error, res);
   }

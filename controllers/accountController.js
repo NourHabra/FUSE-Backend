@@ -1,11 +1,12 @@
 const accountService = require('../services/accountService');
 const { handleError } = require('./errorController');
+const { makePayload } = require('../middleware/encryption');
 const validate = require('./validateController');
 
 async function index(req, res) {
   try {
     const allAccounts = await accountService.findAll();
-    return res.json(allAccounts);
+    return res.json(await makePayload(allAccounts, req,user.id));
   } catch (error) {
     await handleError(error, res);
   } finally {
@@ -20,9 +21,9 @@ async function show(req, res) {
     const account = await accountService.findById(id);
 
     if (!account) {
-      return res.status(404).json({ code: "404", message: 'Account not found' });
+      return res.status(404).json(await makePayload({ code: "404", message: 'Account not found' }, req,user.id));
     }
-    return res.json(account);
+    return res.json(await makePayload(account, req,user.id));
 
   } catch (error) {
     await handleError(error, res);
@@ -36,7 +37,7 @@ async function store(req, res) {
     const { userId, balance, type } = req.body;
 
     const newAccount = await accountService.create(userId, balance, type);
-    return res.json(newAccount);
+    return res.json(await makePayload(newAccount, req,user.id));
   } catch (error) {
     await handleError(error, res);
   } finally {
@@ -50,7 +51,7 @@ async function update(req, res) {
     const { userId, balance, type, status, name } = req.body;
 
     const updatedAccount = await accountService.updateById(id, { userId, balance, type, status, name });
-    res.json(updatedAccount);
+    res.json(await makePayload(updatedAccount, req,user.id));
   } catch (error) {
     await handleError(error, res);
   } finally {
@@ -64,9 +65,9 @@ async function destroy(req, res) {
 
     const deletedAccount = await accountService.updateById(id, { status: "Inactive" });
     if (!deletedAccount) {
-      return res.status(404).json({ code:"404", message: 'Account not found' });
+      return res.status(404).json(await makePayload({ code:"404", message: 'Account not found' }, req,user.id));
     }
-    return res.json({ message: 'Account deleted successfully' });
+    return res.json(await makePayload({ message: 'Account deleted successfully' }, req,user.id));
   } catch (error) {
     await handleError(error, res);
   } finally {

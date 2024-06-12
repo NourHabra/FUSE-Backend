@@ -34,7 +34,7 @@ async function decryption(req, res, next) {
     }
     const { email } = req.body;
     const user = email ? await userService.findByEmail(email) : null;
-    const userId = user ? user.id : (req.user ? req.user.userId : undefined);
+    const userId = user ? user.id : (req.user ? req.user.id : undefined);
     if (typeof userId === 'undefined') {
       return res.status(401).json({ error: 'Invalid or missing JWT token' });
     }

@@ -1,11 +1,12 @@
 const beneficiarieService = require('../services/beneficiarieService');
 const { handleError } = require('./errorController');
 const validate = require('./validateController');
+const { makePayload } = require('../middleware/encryption');
 
 async function index(req, res) {
   try {
     const allBeneficiaries = await beneficiarieService.findAll();
-    return res.json(allBeneficiaries);
+    return res.json(await makePayload(allBeneficiaries, req.user.id));
   } catch (error) {
     await handleError(error, res);
   }
@@ -18,9 +19,9 @@ async function show(req, res) {
     const beneficiaries = await beneficiarieService.findByUserId(id);
 
     if (beneficiaries.length <= 0) {
-      return res.status(404).json({ code: "404", message: 'Beneficiaries not found' });
+      return res.status(404).json(await makePayload({ code: "404", message: 'Beneficiaries not found' }, req.user.id));
     }
-    return res.json(beneficiaries);
+    return res.json(await makePayload(beneficiaries, req.user.id));
 
   } catch (error) {
     await handleError(error, res);
@@ -36,14 +37,14 @@ async function store(req, res) {
     if (beneficiaries) {
       if (!beneficiaries.accepted && beneficiaries.acceptUser === requstUser) {
         await beneficiarieService.updateById(beneficiaries.id, { accepted: true });
-        return res.status(201).json({ message: 'Beneficiaries true' });
+        return res.status(201).json(await makePayload({ message: 'Beneficiaries true' }, req.user.id));
       } else {
-        return res.status(409).json({ message: 'Requset already sent' });
+        return res.status(409).json(await makePayload({ message: 'Requset already sent' }, req.user.id));
       }
     }
 
     await beneficiarieService.create(requstUser, acceptUser);
-    return res.status(201).json({ message: 'sent' });
+    return res.status(201).json(await makePayload({ message: 'sent' }, req.user.id));
 
   } catch (error) {
     await handleError(error, res);
@@ -71,9 +72,9 @@ async function destroy(req, res) {
     const deletedBeneficiarie = await beneficiarieService.deleteById(id);
 
     if (!deletedBeneficiarie) {
-      return res.status(404).json({ code: "404", message: 'Beneficiarie not found' });
+      return res.status(404).json(await makePayload({ code: "404", message: 'Beneficiarie not found' }, req.user.id));
     }
-    return res.json({ message: 'Beneficiarie deleted successfully' });
+    return res.json(await makePayload({ message: 'Beneficiarie deleted successfully' }, req.user.id));
 
   } catch (error) {
     await handleError(error, res);
