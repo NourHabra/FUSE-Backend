@@ -30,7 +30,7 @@ async function register(req, res) {
       await customerService.create(newUser.id, yearlyIncome);
     }
 
-    const token = jwt.sign({ userId: newUser.id, role }, secretKey, { expiresIn: '30m' });
+    const token = jwt.sign({ id: newUser.id, role }, secretKey, { expiresIn: '30m' });
     res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
     res.status(201).json({ message: 'User created successfully' });
 
@@ -74,7 +74,7 @@ async function registerMerchant(req, res) {
     const newUser = await userService.create(name, "Merchant", email, phone, birth, password);
     await merchantService.create(newUser.id, category, workPermit);
 
-    const token = jwt.sign({ userId: newUser.id, role: "Merchant" }, secretKey, { expiresIn: '30m' });
+    const token = jwt.sign({ id: newUser.id, role: "Merchant" }, secretKey, { expiresIn: '30m' });
     res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
     res.status(201).json({ message: 'Merchant created successfully' });
 
@@ -101,7 +101,7 @@ async function registerCustomer(req, res) {
     const newUser = await userService.create(name, "Customer", email, phone, birth, password);
     await customerService.create(newUser.id, yearlyIncome);
 
-    const token = jwt.sign({ userId: newUser.id, role: "Customer" }, secretKey, { expiresIn: '30m' });
+    const token = jwt.sign({ id: newUser.id, role: "Customer" }, secretKey, { expiresIn: '30m' });
     res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
     res.status(201).json({ message: 'Customer created successfully' });
 
@@ -121,7 +121,7 @@ async function login(req, res) {
     if (!user) {
       return res.status(404).json(await makePayload({ code:'404',message: 'User not found' }, user.id));
     } else if (await bcrypt.compare(password, user.password)) {
-      const token = jwt.sign({ userId: user.id, role: user.role }, secretKey, { expiresIn: '30m' });
+      const token = jwt.sign({ id: user.id, role: user.role }, secretKey, { expiresIn: '30m' });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
       return res.json(await makePayload({jwt: token}, user.id));
     } else {
@@ -146,7 +146,7 @@ async function loginDashboard(req, res) {
     if (!user) {
       return res.status(404).json(await makePayload({ code:'404',message: 'User not found' }, user.id));
     } else if (await bcrypt.compare(password, user.password)) {
-      const token = jwt.sign({ userId: user.id, role: user.role }, secretKey, { expiresIn: '30m' });
+      const token = jwt.sign({ id: user.id, role: user.role }, secretKey, { expiresIn: '30m' });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
       return res.json(await makePayload({jwt: token}, user.id));
     } else {
