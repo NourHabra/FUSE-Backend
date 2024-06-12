@@ -9,7 +9,7 @@ const merchantService = require('../services/merchantService');
 const customerService = require('../services/customerService');
 const { handleError } = require('./errorController');
 const { revokedTokens } = require('../middleware/authMiddleware');
-const { makePayload } = require('../middleware/encryption');
+const { makePayload } = require('../middleware/encryptionMiddleware');
 const validate = require('./validateController');
 
 const secretKey = process.env.JWT_SECRET;
@@ -139,7 +139,7 @@ async function loginDashboard(req, res) {
     const { email, password } = req.body;
 
     const user = await userService.findByEmail(email);
-    if(user.role != "Admin") {
+    if(!["Admin", "Employee"].includes(user.role)) {
       return res.status(401).json(await makePayload({error: 'You are not authorized to login'}, user.id));
     }
 
