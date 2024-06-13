@@ -19,8 +19,16 @@ async function findById(id) {
       id: parseInt(id),
     },
     select: {
+      id: true,
+      userId: true,
+      name: true,
+      type: true,
+      balance: true,
+      status: true,
       user: {
-        role: true
+        select:{
+          role: true,
+        }
       }
     }
   });
@@ -33,8 +41,16 @@ async function findByUserId(id){
       type: "Checking"
     },
     select: {
+      id: true,
+      userId: true,
+      name: true,
+      type: true,
+      balance: true,
+      status: true,
       user: {
-        role: true
+        select:{
+          role: true,
+        }
       }
     }
   });
