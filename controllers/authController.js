@@ -7,6 +7,7 @@ const authService = require('../services/authService');
 const userService = require('../services/userService');
 const merchantService = require('../services/merchantService');
 const customerService = require('../services/customerService');
+const accountService = require('../services/accountService');
 const { handleError } = require('./errorController');
 const { revokedTokens } = require('../middleware/authMiddleware');
 const { makePayload } = require('../middleware/encryptionMiddleware');
@@ -47,8 +48,15 @@ async function registerEmployee(req, res) {
     const { name, email, phone, birth, password } = req.body;
 
     const newUser = await userService.create(name, "Employee", email, phone, birth, await bcrypt.hash(password, salt));
+    const account = await accountService.create(newUser.id, 0, "Checking");
 
-    res.status(201).json(await makePayload(newUser, req.user.id));
+    if(newUser && account){
+      console.log("New Employee created successfully ID", newUser.id);
+      res.status(201).json(await makePayload(newUser, req.user.id));
+    }else{
+      console.log("Error creating new Employee");
+      res.status(400).json({ message: 'Error creating new Employee' });
+    }
 
   } catch (error) {
     await handleError(error, res);

@@ -15,6 +15,14 @@ async function main() {
     },
   });
 
+  const adminAccount = await prisma.accounts.create({
+    data: {
+      userId: adminUser.id,
+      name: 'Admin Checking Account',
+      type: 'Checking',
+    },
+  });
+
   // Create a customer user
   const customerUser = await prisma.users.create({
     data: {
