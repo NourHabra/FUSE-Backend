@@ -17,6 +17,11 @@ async function findById(id) {
   return await prisma.accounts.findUnique({
     where: {
       id: parseInt(id),
+    },
+    select: {
+      user: {
+        role: true
+      }
     }
   });
 }
@@ -26,6 +31,11 @@ async function findByUserId(id){
     where: {
       userId: parseInt(id),
       type: "Checking"
+    },
+    select: {
+      user: {
+        role: true
+      }
     }
   });
 }
