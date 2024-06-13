@@ -21,6 +21,14 @@ async function findById(id) {
   });
 }
 
+async function findByUserId(id){
+  return await prisma.accounts.findMany({
+    where: {
+      userId: parseInt(id)
+    }
+  });
+}
+
 async function create(userId, balance, type) {
   return await prisma.accounts.create({
     data: {
@@ -51,4 +59,5 @@ module.exports = {
   create,
   updateById,
   disconnect,
+  findByUserId
 };

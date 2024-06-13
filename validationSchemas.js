@@ -99,7 +99,6 @@ const createTransferSchema = Joi.object({
 });
 
 const createDepositSchema = Joi.object({
-  sourceAccount: Joi.number().integer().required(),
   destinationAccount: Joi.number().integer().required(),
   amount: Joi.number().positive().required(),
   details: Joi.string(),

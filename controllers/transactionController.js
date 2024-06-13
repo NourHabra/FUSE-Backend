@@ -104,10 +104,10 @@ async function storeTransfer(req, res) {
 
 async function storeDeposit(req, res) {
   try {
-    const { sourceAccount, destinationAccount, amount, details } = req.body;
+    const { destinationAccount, amount, details } = req.body;
 
     const dAccount = await accountService.findById(destinationAccount);
-    const sAccount = await accountService.findById(sourceAccount);
+    const sAccount = await accountService.findByUserId(req.user.id);
 
     if (!dAccount) {
       return res.status(404).json(await makePayload({ code: "404", message: 'Destination account not found' }, req.user.id));
