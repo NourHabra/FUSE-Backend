@@ -238,6 +238,35 @@ async function main() {
     },
   });
 
+  const transaction1 = await prisma.transactions.create({
+    data: {
+      amount: 1000,
+      sourceAccount: merchantAccount1.id,
+      destinationAccount: merchantAccount2.id,
+      type: 'Transferer',
+    },
+  });
+
+  console.log('Data populated successfully!');
+
+  const transaction2 = await prisma.transactions.create({
+    data: {
+      amount: 2000,
+      sourceAccount: merchantAccount1.id,
+      destinationAccount: merchantAccount2.id,
+      type: 'Transferer',
+    },
+  });
+
+  const transaction3 = await prisma.transactions.create({
+    data: {
+      amount: 2000,
+      sourceAccount: merchantAccount2.id,
+      destinationAccount: merchantAccount1.id,
+      type: 'Transferer',
+    },
+  });
+
   console.log('Data populated successfully!');
 }
 

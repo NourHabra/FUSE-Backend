@@ -27,6 +27,9 @@ async function findAllTopUp() {
 }
 
 async function findAllFromTo(sourceRole, destinationRole) {
+  sourceRole = sourceRole.charAt(0).toUpperCase() + sourceRole.slice(1);
+  destinationRole = destinationRole.charAt(0).toUpperCase() + destinationRole.slice(1);
+
   return await prisma.transactions.findMany({
     where: {
       sAccount: {
