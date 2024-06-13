@@ -22,9 +22,10 @@ async function findById(id) {
 }
 
 async function findByUserId(id){
-  return await prisma.accounts.findMany({
+  return await prisma.accounts.findFirst({
     where: {
-      userId: parseInt(id)
+      userId: parseInt(id),
+      type: "Checking"
     }
   });
 }
