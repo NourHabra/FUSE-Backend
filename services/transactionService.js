@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const accountService = require('../services/accountService');
 
 async function findAll() {
   return await prisma.transactions.findMany();
