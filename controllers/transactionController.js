@@ -28,6 +28,21 @@ async function show(req, res) {
   }
 }
 
+async function showTransactionsFromTo(req, res) {
+  try {
+    const { sourceRole, distinationRole } = req.body;
+    const transactions = await transactionService.findAllFromTo(sourceRole, distinationRole);
+
+    if (!transactions) {
+      return res.status(404).json(await makePayload({ code: "404", message: 'Transactions not found' }, req.user.id));
+    }
+    return res.json(await makePayload(transactions, req.user.id));
+
+  } catch (error) {
+    await handleError(error, res);
+  }
+}
+
 async function storeBill(req, res) {
   try {
     const { destinationAccount, amount, details } = req.body;
@@ -43,7 +58,7 @@ async function storeBill(req, res) {
     }
 
     const transaction = await transactionService.create("Bill", null, destinationAccount, amount);
-    if(details) transactionService.addTransactionDetails(transaction.id, details);
+    if (details) transactionService.addTransactionDetails(transaction.id, details);
 
     res.status(201).json(await makePayload({ message: "Bill created", bill: transaction }, req.user.id));
   } catch (error) {
@@ -67,7 +82,7 @@ async function storeTransfer(req, res) {
     }
 
     const transaction = await transactionService.create("Transferer", sourceAccount, destinationAccount, amount);
-    if(details) transactionService.addTransactionDetails(transaction.id, details);
+    if (details) transactionService.addTransactionDetails(transaction.id, details);
 
     if ((sAccount.balance - amount) < 0) {
       await transactionService.updateById(transaction.id, { status: "Failed" });
@@ -107,7 +122,7 @@ async function storeDeposit(req, res) {
     }
 
     const transaction = await transactionService.create("Deposit", sourceAccount, destinationAccount, amount);
-    if(details) transactionService.addTransactionDetails(transaction.id, details);
+    if (details) transactionService.addTransactionDetails(transaction.id, details);
 
     if ((sAccount.balance - amount) < 0 && sAccount.user.role === "Vendor") {
       await transactionService.updateById(transaction.id, { status: "Failed" });
@@ -147,7 +162,7 @@ async function storeWithdraw(req, res) {
     }
 
     const transaction = await transactionService.create("Withdraw", sourceAccount, destinationAccount, amount);
-    if(details) transactionService.addTransactionDetails(transaction.id, details);
+    if (details) transactionService.addTransactionDetails(transaction.id, details);
 
     if ((sAccount.balance - amount) < 0) {
       await transactionService.updateTransaction(transaction.id, "Failed");
@@ -175,6 +190,14 @@ async function payBill(req, res) {
     const sAccount = await accountService.findById(sourceAccount);
     const bill = await transactionService.findById(billId);
 
+    if (bill.sourceAccount) {
+      if (bill.sourceAccount !== sourceAccount) {
+        return res.status(409).json(await makePayload({ error: "Source account does not match bill source account" }, req.user.id));
+      }
+    }else{
+      await transactionService.updateById(billId, { sourceAccount });
+    }
+
     if (!sAccount) {
       return res.status(404).json(await makePayload({ code: "404", message: "User account not found" }, req.user.id));
     } else if (!bill) {
@@ -193,16 +216,16 @@ async function payBill(req, res) {
       const transactions = await transactionService.makeTransaction([
         accountService.updateById(sourceAccount, { balance: sAccount.balance - bill.amount }),
         accountService.updateById(bill.destinationAccount, { balance: dAccount.balance + bill.amount }),
-        transactionService.updateById(billId, { status: "Completed", sourceAccount })
+        transactionService.updateById(billId, { status: "Completed" })
       ]);
 
       if (!transactions) {
-        await transactionService.updateById(billId, { status: "Failed", sourceAccount });
+        await transactionService.updateById(billId, { status: "Failed" });
         return res.status(409).json(await makePayload({ error: 'Failed to pay bill' }, req.user.id));
       }
       return res.status(201).json(await makePayload(transactions, req.user.id));
     } else {
-      const transaction = await transactionService.updateById(billId, { status: "Declined", sourceAccount });
+      const transaction = await transactionService.updateById(billId, { status: "Declined" });
       return res.status(400).json(await makePayload(transaction, req.user.id));
     }
   } catch (error) {
@@ -227,5 +250,6 @@ module.exports = {
   storeWithdraw,
   payBill,
   update,
-  destroy
+  destroy,
+  showTransactionsFromTo
 };

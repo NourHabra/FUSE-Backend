@@ -9,6 +9,23 @@ async function findById(id) {
   return await prisma.transactions.findUnique({ where: { id } });
 }
 
+async function findAllFromTo(sourceRole, destinationRole) {
+  return await prisma.transactions.findMany({
+    where: {
+      sAccount: {
+        user: {
+          role: sourceRole
+        }
+      },
+      dAccount: {
+        user: {
+          role: destinationRole
+        }
+      }
+    }
+  });
+}
+
 async function create(type, sourceAccount, destinationAccount, amount) {
   return await prisma.transactions.create({
     data: { type, sourceAccount, destinationAccount, amount }
@@ -77,5 +94,6 @@ module.exports = {
   makeTransfer,
   deposit,
   withdraw,
-  addTransactionDetails
+  addTransactionDetails,
+  findAllFromTo
 };

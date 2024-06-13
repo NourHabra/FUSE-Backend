@@ -7,6 +7,7 @@ const { createTransferSchema,createBillSchema,createDepositSchema,createWithdraw
 //router.get('/create', transactionController.create);
 
 router.get('/', transactionController.index);
+router.get('/fromTo', transactionController.showTransactionsFromTo);
 //router.post('/', transactionController.store);
 router.post('/bill', validateRequest(createBillSchema), transactionController.storeBill);
 router.post('/transferer', validateRequest(createTransferSchema), transactionController.storeTransfer);
