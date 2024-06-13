@@ -36,6 +36,7 @@ async function showTransactionsFromTo(req, res) {
     if (!transactions) {
       return res.status(404).json(await makePayload({ code: "404", message: 'Transactions not found' }, req.user.id));
     }
+    console.log(transactions);
     return res.json(await makePayload(transactions, req.user.id));
 
   } catch (error) {
