@@ -67,7 +67,7 @@ async function create(userId, balance, type) {
   });
 }
 
-async function updateById(id, { data }) {
+async function updateById(id,  data ) {
   return await prisma.accounts.update({
     where: {
       id: parseInt(id)

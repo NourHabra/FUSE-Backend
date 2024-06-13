@@ -47,7 +47,7 @@ async function findById(id) {
   });
 }
 
-async function updateById(id, { data }) {
+async function updateById(id,  data ) {
   if (data.birth) data.birth = new Date(data.birth).toISOString();
   return await prisma.users.update({
     where: {

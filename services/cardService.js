@@ -37,7 +37,7 @@ async function create(accountNumber, PIN) {
   });
 }
 
-async function updateById(id, { data }) {
+async function updateById(id,  data ) {
   if (data.expiryDate) data.expiryDate = new Date(data.expiryDate).toISOString();
   return await prisma.cards.update({
     where: { id },

@@ -62,7 +62,7 @@ async function findById(id) {
   });
 }
 
-async function updateById(id, { date }) {
+async function updateById(id,  data ) {
   return await prisma.beneficiaries.update({
     where: {
       id: parseInt(id),

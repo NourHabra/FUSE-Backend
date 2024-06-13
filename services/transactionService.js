@@ -33,7 +33,7 @@ async function create(type, sourceAccount, destinationAccount, amount) {
   });
 }
 
-async function updateById(id, { data }) {
+async function updateById(id,  data ) {
   return await prisma.transactions.update({ where: { id }, data });
 }
 
