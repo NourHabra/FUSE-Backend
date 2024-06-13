@@ -32,7 +32,7 @@ async function genKeysDashboard(req, res) {
 
     const user = await userService.findByEmail(email);
     if (!user) return res.status(404).json({ error: "User not found" });
-    if (user.role !== 'Admin') return res.status(403).json({ error: "User not authorized" });
+    if (!["Admin", "Employee"].includes(user.role)) return res.status(403).json({ error: "User not authorized" });
 
     const server = crypto.createECDH('prime256v1');
     server.generateKeys();
