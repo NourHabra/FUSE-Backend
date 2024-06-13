@@ -51,10 +51,10 @@ async function deposit(id, sourceAccount, destinationAccount, amount) {
   const transactions = sourceAccount.user.role === "Vendor" ? [
     accountService.updateById(sourceAccount.id, { balance: sourceAccount.balance - amount }),
     accountService.updateById(destinationAccount.id, { balance: destinationAccount.balance + amount }),
-    updateById(id, { status: "Completed" })
+    prisma.transactions.update({ where: { id }, data: { status: "Completed" } })
   ] : [
     accountService.updateById(destinationAccount.id, { balance: destinationAccount.balance + amount }),
-    updateById(id, { status: "Completed" })
+    prisma.transactions.update({ where: { id }, data: { status: "Completed" } })
   ];
 
   return await prisma.$transaction(transactions);
