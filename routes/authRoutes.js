@@ -7,12 +7,12 @@ const {authenticateJWT} = require('../middleware/authMiddleware');
 const { isAdmin } = require('../middleware/authRole')
 const encry = require('../middleware/encryptionMiddleware')
 
-router.use(encry.decryption);
+// router.use(encry.decryption);
 
-router.post('/login', validateRequest(signInSchema), authController.login);
-router.post('/dashboard/login', validateRequest(signInSchema), authController.loginDashboard);
-router.post('/register', validateRequest(signUpSchema), authController.register);
-router.post('/register/employee', authenticateJWT, isAdmin, validateRequest(signUpSchemaEmployee), authController.registerEmployee);
+router.post('/login', encry.decryption, validateRequest(signInSchema), authController.login);
+router.post('/dashboard/login', encry.decryption, validateRequest(signInSchema), authController.loginDashboard);
+router.post('/register', encry.decryption, validateRequest(signUpSchema), authController.register);
+router.post('/register/employee', authenticateJWT, isAdmin, encry.decryption, validateRequest(signUpSchemaEmployee), authController.registerEmployee);
 router.get('/logout', authController.logout);
 
 
