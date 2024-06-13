@@ -117,11 +117,13 @@ async function storeDeposit(req, res) {
       return res.status(409).json(await makePayload({ error: 'Amount must be greater than 0' }, req.user.id));
     }
 
+    console.log(sAccount);
+
     if (!["Vendor", "Employee", "Admin"].includes(sAccount.user.role)) {
       return res.status(409).json(await makePayload({ error: "Only Admin, Employee or Vendor can deposit" }, req.user.id));
     }
 
-    const transaction = await transactionService.create("Deposit", sourceAccount, destinationAccount, amount);
+    const transaction = await transactionService.create("Deposit", sAccount.id, destinationAccount, amount);
     if (details) transactionService.addTransactionDetails(transaction.id, details);
 
     if ((sAccount.balance - amount) < 0 && sAccount.user.role === "Vendor") {
