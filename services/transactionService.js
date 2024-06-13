@@ -49,16 +49,32 @@ async function makeTransfer(id,sourceAccount, destinationAccount, amount) {
 
 async function deposit(id, sourceAccount, destinationAccount, amount) {
   const transactions = sourceAccount.user.role === "Vendor" ? [
-    accountService.updateById(sourceAccount.id, { balance: sourceAccount.balance - amount }),
-    accountService.updateById(destinationAccount.id, { balance: destinationAccount.balance + amount }),
-    prisma.transactions.update({ where: { id }, data: { status: "Completed" } })
+    prisma.accounts.update({
+      where: { id: sourceAccount.id },
+      data: { balance: { decrement: amount } }
+    }),
+    prisma.accounts.update({
+      where: { id: destinationAccount.id },
+      data: { balance: { increment: amount } }
+    }),
+    prisma.transactions.update({
+      where: { id },
+      data: { status: "Completed" }
+    })
   ] : [
-    accountService.updateById(destinationAccount.id, { balance: destinationAccount.balance + amount }),
-    prisma.transactions.update({ where: { id }, data: { status: "Completed" } })
+    prisma.accounts.update({
+      where: { id: destinationAccount.id },
+      data: { balance: { increment: amount } }
+    }),
+    prisma.transactions.update({
+      where: { id },
+      data: { status: "Completed" }
+    })
   ];
 
   return await prisma.$transaction(transactions);
 }
+
 
 async function withdraw(id, sourceAccount, destinationAccount, amount) {
   const transactions = destinationAccount.user.role === "Vendor" ? [
