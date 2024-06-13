@@ -49,11 +49,11 @@ async function makeTransfer(id,sourceAccount, destinationAccount, amount) {
 
 async function deposit(id, sourceAccount, destinationAccount, amount) {
   const transactions = sourceAccount.user.role === "Vendor" ? [
-    accountService.updateById(sourceAccount, { balance: sourceAccount.balance - amount }),
-    accountService.updateById(destinationAccount, { balance: destinationAccount.balance + amount }),
+    accountService.updateById(sourceAccount.id, { balance: sourceAccount.balance - amount }),
+    accountService.updateById(destinationAccount.id, { balance: destinationAccount.balance + amount }),
     updateById(id, { status: "Completed" })
   ] : [
-    accountService.updateById(destinationAccount, { balance: destinationAccount.balance + amount }),
+    accountService.updateById(destinationAccount.id, { balance: destinationAccount.balance + amount }),
     updateById(id, { status: "Completed" })
   ];
 
