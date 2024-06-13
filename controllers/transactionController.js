@@ -30,8 +30,8 @@ async function show(req, res) {
 
 async function showTransactionsFromTo(req, res) {
   try {
-    const { sourceRole, distinationRole } = req.body;
-    const transactions = await transactionService.findAllFromTo(sourceRole, distinationRole);
+    const { sourceRole, destinationRole } = req.body;
+    const transactions = await transactionService.findAllFromTo(sourceRole, destinationRole);
 
     if (!transactions) {
       return res.status(404).json(await makePayload({ code: "404", message: 'Transactions not found' }, req.user.id));
@@ -40,6 +40,15 @@ async function showTransactionsFromTo(req, res) {
 
   } catch (error) {
     await handleError(error, res);
+  }
+}
+
+async function showTopUp(req, res) {
+  try {
+    transactions = await transactionService.findAllTopUp();
+    return res.status(201).json(await makePayload(transactions, req.user.id));
+  } catch (error) {
+    await handleError(error, res)
   }
 }
 
@@ -196,7 +205,7 @@ async function payBill(req, res) {
       if (bill.sourceAccount !== sourceAccount) {
         return res.status(409).json(await makePayload({ error: "Source account does not match bill source account" }, req.user.id));
       }
-    }else{
+    } else {
       await transactionService.updateById(billId, { sourceAccount });
     }
 
@@ -236,7 +245,42 @@ async function payBill(req, res) {
 }
 
 async function update(req, res) {
-  // Implementation of the update function
+  const id = parseInt(await validate.isNumber(req.params.id, "id"));
+  const { sourceAccount, destinationAccount, amount } = req.body;
+
+  const oldTransaction = await transactionService.findById(id);
+  const result = "";
+
+  if (sourceAccount !== oldTransaction.sourceAccount) {
+    const oldSourceAccount = await accountService.findById(oldTransaction.sourceAccount);
+    const newSourceAccount = await accountService.findById(sourceAccount);
+
+    if(newSourceAccount.user.role === 'Vendor' && newSourceAccount.balance - amount < 0) {
+      return res.status(409).json(await makePayload({ error: 'New Vendon has insufficient balance' }, req.user.id));
+    }
+    const transactions = await transactionService.changeSourceAccount(id, oldSourceAccount, newSourceAccount, oldTransaction.amount, amount);
+    if(transactions){
+      result += "Source account changed from " + oldSourceAccount.id + " to " + newSourceAccount.id + "\n";
+    }
+  }
+
+  if (destinationAccount !== oldTransaction.destinationAccount) {
+    const oldDestinationAccount = await accountService.findById(oldTransaction.destinationAccount);
+    const newDestinationAccount = await accountService.findById(destinationAccount);
+
+    if(oldDestinationAccount.balance - oldTransaction.amount < 0) {
+      return res.status(409).json(await makePayload({ error: 'Old Account has insufficient balance' }, req.user.id));
+    }
+    const transactions = await transactionService.changeDestinationAccount(id, oldDestinationAccount, newDestinationAccount, oldTransaction.amount, amount);
+    if(transactions){
+      result += "Destination account changed from " + oldDestinationAccount.id + " to " + newDestinationAccount.id + "\n";
+    }
+  }
+
+  if(result === "" && amount!== oldTransaction.amount){
+    const transactions = await transactionService.changeAmount(id, oldTransaction.amount, amount);
+  }
+
 }
 
 async function destroy(req, res) {
