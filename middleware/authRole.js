@@ -75,4 +75,19 @@ const isAdmin = async (req, res, next) => {
     }
 }
 
-module.exports = { isCustomer, isEmployee, isMerchant, isVendor, isAdmin };
+const isAdminEmpVen = async (req, res, next) => {
+    if (req.user.role === "Admin" || req.user.role === "Employee" || req.user.role === "Vendor") {
+        const user = await userService.findById(req.user.id);
+        if (user && ["Deleted", "Banned", "Stopped"].includes(user.status)) {
+            return res.status(401).json({ message: `${req.user.role} is ${user.status}` });
+        } else if (!user) {
+            return res.status(401).json({ message: `${req.user.role} is Deleted` });
+        } else {
+            next();
+        }
+    } else {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+}
+
+module.exports = { isCustomer, isEmployee, isMerchant, isVendor, isAdmin, isAdminEmpVen };
