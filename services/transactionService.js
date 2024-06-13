@@ -42,6 +42,26 @@ async function findAllFromTo(sourceRole, destinationRole) {
           role: destinationRole
         }
       }
+    },
+    include: {
+      sAccount: {
+        include: {
+          user: {
+            include: {
+              name: true
+            }
+          }
+        }
+      },
+      dAccount: {
+        include: {
+          user: {
+            include: {
+              name: true
+            }
+          }
+        }
+      },
     }
   });
 }
