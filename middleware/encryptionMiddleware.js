@@ -86,6 +86,7 @@ async function encryption(data, userId, email) {
     data = JSON.stringify(data);
     const encrypted = encrypt(data, keys[userId]);
     console.log('Encrypted message: ', encrypted);
+    console.log('Message encrypted');
     return encrypted;
   } catch (error) {
     console.error('Error encrypting data:', error);
@@ -126,6 +127,7 @@ function decrypt(payload, sharedKey) {
 
 async function makePayload(data, userId, email) {
   const dataS = JSON.stringify(data);
+  console.log('Payload is in macking');
   console.log('Data to encrypt: ', dataS);
   const payload = await encryption(dataS, userId, email);
   return { payload };
