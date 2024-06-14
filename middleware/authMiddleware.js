@@ -18,7 +18,7 @@ function removeExpiredTokens() {
 }
 
 const authenticateJWT = (req, res, next) => {
-  const token = req.body.jwt || req.query.jwt || req.headers['x-access-token'];
+  const token = req.body.jwt || req.headers['x-access-token'] || req.query.jwt;
 
   if (!token) {
     return res.status(401).json({ message: 'Unauthorized' });
