@@ -50,7 +50,7 @@ async function genKeysDashboard(req, res) {
 }
 
 async function decryption(req, res, next) {
-  if (!req.body) return next();
+  if (!req.body.payload) return next();
   try {
     if (typeof req.body.email === 'undefined' && typeof req.user === 'undefined') {
       return res.status(400).json({ error: "Can't find keys without email or JWT" });
