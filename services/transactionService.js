@@ -22,6 +22,30 @@ async function findAllTopUp() {
         }
       },
       type: 'Deposit'
+    },
+    select: {
+      id: true,
+      sAccount: {
+        select: {
+          user: {
+            select: {
+              role: true
+            }
+          }
+        }
+      },
+      dAccount: {
+        select: {
+          user: {
+            select: {
+              name: true
+            }
+          }
+        }
+      },
+      destinationAccount: true,
+      amount: true,
+      status: true,
     }
   })
 }
