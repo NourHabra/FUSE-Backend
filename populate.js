@@ -3,271 +3,142 @@ const prisma = new PrismaClient();
 const bcrypt = require('bcrypt');
 
 async function main() {
-  // Create an employee user
-  const adminUser = await prisma.users.create({
-    data: {
-      role: 'Admin',
-      name: 'The Admin',
-      email: 'admin@mail.com',
-      phone: '9873334321',
-      birth: new Date('1995-07-10'),
-      password: await bcrypt.hash('admin12345', 10),
-    },
-  });
+  await deleteAllData();
 
-  const adminAccount = await prisma.accounts.create({
-    data: {
-      userId: adminUser.id,
-      name: 'Admin Checking Account',
-      type: 'Checking',
-    },
-  });
+  const admin = await createUser('Admin', 'The Admin', 'admin@mail.com', '1234560000', '1990-01-01', 'admin12345');
+  const [adminAccount, adminCard] = await createAccountsAndCards(admin.id, 2);
+  // Create merchant users
+  const merchant1 = await createUser('Merchant', 'John Doe', 'john@example.com', '1234567890', '1990-01-01', 'password123');
+  const merchant2 = await createUser('Merchant', 'Jane Smith', 'jane@example.com', '0987654321', '1985-05-15', 'password456');
+  const merchant3 = await createUser('Merchant', 'Bob Johnson', 'bob@example.com', '5551234567', '1980-12-25', 'password789');
 
-  // Create a customer user
-  const customerUser = await prisma.users.create({
-    data: {
-      role: 'Customer',
-      name: 'John Doe',
-      email: 'john@example.com',
-      phone: '1234567890',
-      birth: new Date('1990-01-01'),
-      password: await bcrypt.hash('password123', 10),
-    },
-  });
+  // Create vendor users
+  const vendor1 = await createUser('Vendor', 'Alice Williams', 'alice@example.com', '9876543210', '1995-07-10', 'password012');
+  const vendor2 = await createUser('Vendor', 'Michael Brown', 'michael@example.com', '1112223333', '1992-03-20', 'password345');
+  const vendor3 = await createUser('Vendor', 'Emily Davis', 'emily@example.com', '4445556666', '1988-09-15', 'password678');
 
-  const customerAccount1 = await prisma.accounts.create({
-    data: {
-      userId: customerUser.id,
-      name: 'Customer Checking Account',
-      type: 'Checking',
-    },
-  });
+  // Create customer users
+  const customer1 = await createUser('Customer', 'David Wilson', 'david@example.com', '7778889999', '1998-11-25', 'password901');
+  const customer2 = await createUser('Customer', 'Sophia Thompson', 'sophia@example.com', '2223334444', '1985-06-10', 'password234');
+  const customer3 = await createUser('Customer', 'Daniel Anderson', 'daniel@example.com', '5556667777', '1992-02-28', 'password567');
 
-  const customerAccount2 = await prisma.accounts.create({
-    data: {
-      userId: customerUser.id,
-      name: 'Customer Savings Account',
-      type: 'Savings',
-    },
-  });
+  // Create accounts and cards for each user
+  const [merchant1Accounts, merchant1Cards] = await createAccountsAndCards(merchant1.id, 2);
+  const [merchant2Accounts, merchant2Cards] = await createAccountsAndCards(merchant2.id, 2);
+  const [merchant3Accounts, merchant3Cards] = await createAccountsAndCards(merchant3.id, 2);
 
-  await prisma.customer.create({
-    data: {
-      userId: customerUser.id,
-      yearlyIncome: 50000,
-    },
-  });
+  const [vendor1Accounts, vendor1Cards] = await createAccountsAndCards(vendor1.id, 2);
+  const [vendor2Accounts, vendor2Cards] = await createAccountsAndCards(vendor2.id, 2);
+  const [vendor3Accounts, vendor3Cards] = await createAccountsAndCards(vendor3.id, 2);
 
-  const customerCardId1 = generateRandomCardId();
-  await prisma.cards.create({
-    data: {
-      id: customerCardId1,
-      accountNumber: customerAccount1.id,
-      cvv: 123,
-      physical: true,
-      PIN: 1234
-    },
-  });
+  const [customer1Accounts, customer1Cards] = await createAccountsAndCards(customer1.id, 2);
+  const [customer2Accounts, customer2Cards] = await createAccountsAndCards(customer2.id, 2);
+  const [customer3Accounts, customer3Cards] = await createAccountsAndCards(customer3.id, 2);
 
-  const customerCardId2 = generateRandomCardId();
-  await prisma.cards.create({
-    data: {
-      id: customerCardId2,
-      accountNumber: customerAccount2.id,
-      cvv: 456,
-      physical: false,
-      PIN: 1234
-    },
-  });
-
-  // Create a merchant user
-  const merchantUser = await prisma.users.create({
-    data: {
-      role: 'Merchant',
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      phone: '0987654321',
-      birth: new Date('1985-05-15'),
-      password: await bcrypt.hash('password456', 10),
-    },
-  });
-
-  const merchantAccount1 = await prisma.accounts.create({
-    data: {
-      userId: merchantUser.id,
-      name: 'Merchant Checking Account',
-      type: 'Checking',
-    },
-  });
-
-  const merchantAccount2 = await prisma.accounts.create({
-    data: {
-      userId: merchantUser.id,
-      name: 'Merchant Savings Account',
-      type: 'Savings',
-    },
-  });
-
-  await prisma.merchant.create({
-    data: {
-      userId: merchantUser.id,
-      category: 'Food',
-      workPermit: 'ABC123',
-    },
-  });
-
-  const merchantCardId1 = generateRandomCardId();
-  await prisma.cards.create({
-    data: {
-      id: merchantCardId1,
-      accountNumber: merchantAccount1.id,
-      cvv: 789,
-      physical: true,
-      PIN: 1234
-    },
-  });
-
-  const merchantCardId2 = generateRandomCardId();
-  await prisma.cards.create({
-    data: {
-      id: merchantCardId2,
-      accountNumber: merchantAccount2.id,
-      cvv: 102,
-      physical: false,
-      PIN: 1234
-    },
-  });
-
-  // Create a vendor user
-  const vendorUser = await prisma.users.create({
-    data: {
-      role: 'Vendor',
-      name: 'Bob Johnson',
-      email: 'bob@example.com',
-      phone: '5551234567',
-      birth: new Date('1980-12-25'),
-      password: await bcrypt.hash('password789', 10),
-    },
-  });
-
-  const vendorAccount1 = await prisma.accounts.create({
-    data: {
-      userId: vendorUser.id,
-      name: 'Vendor Checking Account',
-      type: 'Checking',
-    },
-  });
-
-  const vendorAccount2 = await prisma.accounts.create({
-    data: {
-      userId: vendorUser.id,
-      name: 'Vendor Savings Account',
-      type: 'Savings',
-    },
-  });
-
-  const vendorCardId1 = generateRandomCardId();
-  await prisma.cards.create({
-    data: {
-      id: vendorCardId1,
-      accountNumber: vendorAccount1.id,
-      cvv: 345,
-      physical: true,
-      PIN: 1234
-    },
-  });
-
-  const vendorCardId2 = generateRandomCardId();
-  await prisma.cards.create({
-    data: {
-      id: vendorCardId2,
-      accountNumber: vendorAccount2.id,
-      cvv: 678,
-      physical: false,
-      PIN: 1234
-    },
-  });
-
-  // Create an employee user
-  const employeeUser = await prisma.users.create({
-    data: {
-      role: 'Employee',
-      name: 'Emily Wilson',
-      email: 'emily@example.com',
-      phone: '9876543210',
-      birth: new Date('1995-07-10'),
-      password: await bcrypt.hash('password012', 10),
-    },
-  });
-
-  const employeeAccount1 = await prisma.accounts.create({
-    data: {
-      userId: employeeUser.id,
-      name: 'Employee Checking Account',
-      type: 'Checking',
-    },
-  });
-
-  const employeeAccount2 = await prisma.accounts.create({
-    data: {
-      userId: employeeUser.id,
-      name: 'Employee Savings Account',
-      type: 'Savings',
-    },
-  });
-
-  const employeeCardId1 = generateRandomCardId();
-  await prisma.cards.create({
-    data: {
-      id: employeeCardId1,
-      accountNumber: employeeAccount1.id,
-      cvv: 901,
-      physical: true,
-      PIN: 1234
-    },
-  });
-
-  const employeeCardId2 = generateRandomCardId();
-  await prisma.cards.create({
-    data: {
-      id: employeeCardId2,
-      accountNumber: employeeAccount2.id,
-      cvv: 234,
-      physical: false,
-      PIN: 1234
-    },
-  });
-
-  const transaction1 = await prisma.transactions.create({
-    data: {
-      amount: 1000,
-      sourceAccount: merchantAccount1.id,
-      destinationAccount: merchantAccount2.id,
-      type: 'Transferer',
-    },
-  });
+  // Create transactions
+  await createTransactions(merchant1Accounts, merchant2Accounts, 5);
+  await createTransactions(merchant2Accounts, merchant3Accounts, 5);
+  await createTransactions(vendor1Accounts, customer1Accounts, 5);
+  await createTransactions(vendor2Accounts, customer2Accounts, 5);
+  await createTransactions(vendor3Accounts, customer3Accounts, 5);
+  await createTransactions(customer1Accounts, customer2Accounts, 5);
+  await createTransactions(customer2Accounts, customer3Accounts, 5);
+  await createTransactions(customer3Accounts, merchant1Accounts, 5);
 
   console.log('Data populated successfully!');
+}
 
-  const transaction2 = await prisma.transactions.create({
+async function deleteAllData() {
+  const deleteTables = prisma.$transaction([
+    prisma.$executeRaw`TRUNCATE TABLE "Transactions" RESTART IDENTITY CASCADE`,
+    prisma.$executeRaw`TRUNCATE TABLE "Cards" RESTART IDENTITY CASCADE`,
+    prisma.$executeRaw`TRUNCATE TABLE "Accounts" RESTART IDENTITY CASCADE`,
+    prisma.$executeRaw`TRUNCATE TABLE "Beneficiaries" RESTART IDENTITY CASCADE`,
+    prisma.$executeRaw`TRUNCATE TABLE "Merchant" RESTART IDENTITY CASCADE`,
+    prisma.$executeRaw`TRUNCATE TABLE "Customer" RESTART IDENTITY CASCADE`,
+    prisma.$executeRaw`TRUNCATE TABLE "Users" RESTART IDENTITY CASCADE`,
+  ]);
+
+  await deleteTables;
+}
+
+async function createUser(role, name, email, phone, birth, password) {
+  const user = await prisma.users.create({
     data: {
-      amount: 2000,
-      sourceAccount: merchantAccount1.id,
-      destinationAccount: merchantAccount2.id,
-      type: 'Transferer',
+      role,
+      name,
+      email,
+      phone,
+      birth: new Date(birth),
+      password: await bcrypt.hash(password, 10),
     },
   });
 
-  const transaction3 = await prisma.transactions.create({
-    data: {
-      amount: 2000,
-      sourceAccount: merchantAccount2.id,
-      destinationAccount: merchantAccount1.id,
-      type: 'Transferer',
-    },
-  });
+  if (role === 'Merchant') {
+    await prisma.merchant.create({
+      data: {
+        userId: user.id,
+        category: 'Food',
+        workPermit: 'ABC123',
+      },
+    });
+  } else if (role === 'Customer') {
+    await prisma.customer.create({
+      data: {
+        userId: user.id,
+        yearlyIncome: 50000,
+      },
+    });
+  }
 
-  console.log('Data populated successfully!');
+  return user;
+}
+
+async function createAccountsAndCards(userId, numAccounts) {
+  const accounts = [];
+  const cards = [];
+
+  for (let i = 0; i < numAccounts; i++) {
+    const account = await prisma.accounts.create({
+      data: {
+        userId,
+        name: `Account ${i + 1}`,
+        type: i === 0 ? 'Checking' : 'Savings',
+      },
+    });
+    accounts.push(account);
+
+    const cardId = generateRandomCardId();
+    const card = await prisma.cards.create({
+      data: {
+        id: cardId,
+        accountNumber: account.id,
+        cvv: Math.floor(Math.random() * 900) + 100,
+        physical: true,
+        PIN: 1234,
+      },
+    });
+    cards.push(card);
+  }
+
+  return [accounts, cards];
+}
+
+async function createTransactions(sourceAccounts, destinationAccounts, numTransactions) {
+  for (let i = 0; i < numTransactions; i++) {
+    const sourceAccount = sourceAccounts[Math.floor(Math.random() * sourceAccounts.length)];
+    const destinationAccount = destinationAccounts[Math.floor(Math.random() * destinationAccounts.length)];
+    const amount = Math.floor(Math.random() * 1000) + 100;
+
+    await prisma.transactions.create({
+      data: {
+        amount,
+        sourceAccount: sourceAccount.id,
+        destinationAccount: destinationAccount.id,
+        type: 'Transferer',
+      },
+    });
+  }
 }
 
 function generateRandomCardId() {
