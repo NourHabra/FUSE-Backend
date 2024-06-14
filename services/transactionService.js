@@ -161,7 +161,7 @@ async function makeTransaction(transactions) {
 
 async function addTransactionDetails(id, details){
   return await prisma.transactionsDetails.create({
-    date:{
+    data:{
       transactionId : id,
       details
     }
