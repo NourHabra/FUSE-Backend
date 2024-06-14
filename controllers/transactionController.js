@@ -47,6 +47,9 @@ async function showTransactionsFromTo(req, res) {
 async function showTopUp(req, res) {
   try {
     transactions = await transactionService.findAllTopUp();
+    if(!transactions) {
+      return res.status(404).json(await makePayload({ code: "404", message: 'TopUp not found/Empty' }, req.user.id));
+    }
     console.log("TopUp is ready to be sent: ", transactions);
     return res.status(201).json(await makePayload(transactions, req.user.id));
   } catch (error) {
