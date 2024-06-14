@@ -36,7 +36,7 @@ async function showTransactionsFromTo(req, res) {
     if (!transactions) {
       return res.status(404).json(await makePayload({ code: "404", message: 'Transactions not found' }, req.user.id));
     }
-    console.log(transactions);
+    console.log("transactions from ", sourceRole, " to ", destinationRole, " are going to be returned");
     return res.json(await makePayload(transactions, req.user.id));
 
   } catch (error) {
@@ -298,5 +298,6 @@ module.exports = {
   payBill,
   update,
   destroy,
-  showTransactionsFromTo
+  showTransactionsFromTo,
+  showTopUp
 };
