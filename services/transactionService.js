@@ -3,7 +3,28 @@ const prisma = new PrismaClient();
 const accountService = require('../services/accountService');
 
 async function findAll() {
-  return await prisma.transactions.findMany();
+  return await prisma.transactions.findMany({
+    include: {
+      sAccount: {
+        select: {
+          user: {
+            select: {
+              name: true
+            }
+          }
+        }
+      },
+      dAccount: {
+        select: {
+          user: {
+            select: {
+              name: true
+            }
+          }
+        }
+      },
+    }
+  });
 }
 
 async function findById(id) {
