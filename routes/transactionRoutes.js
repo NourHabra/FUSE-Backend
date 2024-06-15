@@ -7,7 +7,7 @@ const { isAdminEmpVen } = require('../middleware/authRole');
 
 //router.get('/create', transactionController.create);
 
-router.get('/', transactionController.index);
+router.post('/', transactionController.index);
 router.post("/topUp", transactionController.showTopUp);
 router.post('/fromTo', transactionController.showTransactionsFromTo);
 //router.post('/', transactionController.store);
@@ -16,7 +16,7 @@ router.post('/transferer', validateRequest(createTransferSchema), transactionCon
 router.post('/deposit', isAdminEmpVen, validateRequest(createDepositSchema), transactionController.storeDeposit);
 router.post('/withdraw', validateRequest(createWithdrawSchema), transactionController.storeWithdraw);
 router.post('/payBill/:id', validateRequest(payBillSchema), transactionController.payBill);
-router.get('/:id', transactionController.show);
+router.post('/:id', transactionController.show);
 router.put('/:id', transactionController.update);
 router.delete('/:id', transactionController.destroy);
 
