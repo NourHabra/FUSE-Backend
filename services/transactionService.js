@@ -210,6 +210,15 @@ async function changeSourceAccount(id, oldAccount, newAcconnt, amount, newAmount
         data: { balance: { decrement: newAcconnt.user.role === 'Vendor' ? parseFloat(newAmount ?? amount) : 0 } }
       })
     );
+
+    if(newAmount !== amount){
+      transactions.push(
+        prisma.accounts.update({
+          where: { id: transaction.destinationAccount },
+          data: { balance: { increment: newAcconnt.user.role === 'Vendor' ? parseFloat(newAmount - amount) : 0 } }
+        })
+      );
+    }
   }
   
   transactions.push(
@@ -240,6 +249,15 @@ async function changeDestinationAccount(id, oldAccount, newAcconnt, amount, newA
         data: { balance: { increment: parseFloat(newAmount) } }
       })
     );
+
+    if(newAmount !== amount){
+      transactions.push(
+        prisma.accounts.update({
+          where: { id: transaction.sourceAccount },
+          data: { balance: { decrement: newAcconnt.user.role === 'Vendor' ? parseFloat(newAmount - amount) : 0 } }
+        })
+      );
+    }
   }
   
   transactions.push(
@@ -283,6 +301,26 @@ async function changeAmount(id, newAmount, oldAmount) {
   return await prisma.$transaction(transactions);
 }
 
+async function deleteById(id){
+  const transaction = await prisma.transactions.findUnique({ where: { id } });
+  const transactions = [
+    prisma.accounts.update({
+      where: { id: transaction.sourceAccount },
+      data: { balance: { increment: parseFloat(transaction.amount) } }
+    }),
+    prisma.accounts.update({
+      where: { id: transaction.destinationAccount },
+      data: { balance: { decrement: parseFloat(transaction.amount) } }
+    }),
+    prisma.transactions.update({
+      where: { id },
+      data: {status: "Deleted"}
+    })
+  ];
+
+  return await prisma.$transaction(transactions);
+}
+
 
 module.exports = {
   findAll,
@@ -298,5 +336,6 @@ module.exports = {
   findAllTopUp,
   changeSourceAccount,
   changeDestinationAccount,
-  changeAmount
+  changeAmount,
+  deleteById
 };
