@@ -7,7 +7,7 @@ const { isAdminEmpVen } = require('../middleware/authRole');
 
 //router.get('/create', transactionController.create);
 
-router.post('/', transactionController.index);
+router.post('/all', transactionController.index);
 router.post("/topUp", transactionController.showTopUp);
 router.post('/fromTo', transactionController.showTransactionsFromTo);
 //router.post('/', transactionController.store);
