@@ -24,6 +24,7 @@ model Users {
   accounts  Accounts[]
   merchant  Merchant?
   customer  Customer?
+  cashTransactions CashTransactions[]
 }
 
 model Merchant {
@@ -55,17 +56,18 @@ model Beneficiaries {
 }
 
 model Accounts {
-  id        Int            @id @default(autoincrement())
-  userId    Int
-  name      String
-  balance   Float          @default(0)
-  type      AccountType    @default(Checking)
-  status    AccountStatus  @default(Active)
-  createdAt DateTime       @default(now())
+  id        Int                 @id @default(autoincrement())
+  userId    Int     
+  name      String     
+  balance   Float               @default(0)
+  type      AccountType         @default(Checking)
+  status    AccountStatus       @default(Active)
+  createdAt DateTime            @default(now())
 
-  user     Users           @relation(fields: [userId], references: [id])
-  transS   Transactions[]  @relation("source")
-  transD   Transactions[]  @relation("destination")
+  user     Users                @relation(fields: [userId], references: [id])
+  transS   Transactions[]       @relation("source")
+  transD   Transactions[]       @relation("destination")
+  trans    CashTransactions[]
   card     Cards[]
 }
 
@@ -79,6 +81,19 @@ model Cards {
   createdAt     DateTime   @default(now())
 
   account       Accounts   @relation(fields: [accountNumber], references: [id])
+}
+
+model CashTransactions {
+  id                 Int                @id @default(autoincrement())
+  employee           Int
+  account            Int
+  type               TransactionType
+  amount             Float
+  status             TransactionStatus  @default(Pending)
+  createdAt          DateTime           @default(now())
+
+  supervisor           Users      @relation(fields: [employee], references: [id])
+  accountCustomer      Accounts   @relation(fields: [account], references: [id])
 }
 
 model Transactions {
@@ -100,7 +115,7 @@ model TransactionsDetails {
   transactionId   Int
   details         String
 
-  transaction    Transactions  @relation(fields: [transactionId], references: [id])
+  transaction        Transactions  @relation(fields: [transactionId], references: [id])
 }
 
 enum Role {
@@ -139,6 +154,7 @@ enum TransactionStatus {
   Failed
   Completed
   Refunded
+  Deleted
 }
 
 enum MerchantCategory {

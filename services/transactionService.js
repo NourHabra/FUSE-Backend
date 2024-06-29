@@ -118,7 +118,7 @@ async function create(type, sourceAccount, destinationAccount, amount) {
   });
 }
 
-async function updateById(id,  data ) {
+async function updateById(id, data) {
   return await prisma.transactions.update({ where: { id }, data });
 }
 
@@ -170,7 +170,6 @@ async function deposit(id, sourceAccount, destinationAccount, amount) {
   return await prisma.$transaction(transactions);
 }
 
-
 async function withdraw(id, sourceAccount, destinationAccount, amount) {
   const transactions = destinationAccount.user.role === "Vendor" ? [
     prisma.accounts.update({
@@ -199,15 +198,14 @@ async function withdraw(id, sourceAccount, destinationAccount, amount) {
   return await prisma.$transaction(transactions);
 }
 
-
 async function makeTransaction(transactions) {
   return await prisma.$transaction(transactions);
 }
 
-async function addTransactionDetails(id, details){
+async function addTransactionDetails(id, details) {
   return await prisma.transactionsDetails.create({
-    data:{
-      transactionId : id,
+    data: {
+      transactionId: id,
       details
     }
   })
@@ -217,35 +215,35 @@ async function changeSourceAccount(id, oldAccount, newAcconnt, amount, newAmount
   const transactions = [];
   const transaction = await prisma.transactions.findUnique({ where: { id } });
 
-  if(transaction.status === "Completed"){
+  if (transaction.status === "Completed") {
     transactions.push(
       prisma.accounts.update({
         where: { id: oldAccount.id },
-        data: { balance: { increment: oldAccount.user.role === 'Vendor' ? parseFloat(amount) : 0 } }
-      })
-    );
-  
-    transactions.push(
-      prisma.accounts.update({
-        where: { id: newAcconnt.id },
-        data: { balance: { decrement: newAcconnt.user.role === 'Vendor' ? parseFloat(newAmount ?? amount) : 0 } }
+        data: { balance: { increment: parseFloat(amount) } }
       })
     );
 
-    if(newAmount !== amount){
+    transactions.push(
+      prisma.accounts.update({
+        where: { id: newAcconnt.id },
+        data: { balance: { decrement: parseFloat(newAmount ?? amount) } }
+      })
+    );
+
+    if (newAmount != amount) {
       transactions.push(
         prisma.accounts.update({
           where: { id: transaction.destinationAccount },
-          data: { balance: { increment: newAcconnt.user.role === 'Vendor' ? parseFloat(newAmount - amount) : 0 } }
+          data: { balance: { increment: parseFloat(newAmount - amount) } }
         })
       );
     }
   }
-  
+
   transactions.push(
     prisma.transactions.update({
       where: { id },
-      data: { sourceAccount: newAcconnt.id }
+      data: { sourceAccount: newAcconnt.id, amount: newAmount ?? amount }
     })
   );
 
@@ -256,14 +254,14 @@ async function changeDestinationAccount(id, oldAccount, newAcconnt, amount, newA
   const transactions = [];
   const transaction = await prisma.transactions.findUnique({ where: { id } });
 
-  if(transaction.status === "Completed"){
+  if (transaction.status === "Completed") {
     transactions.push(
       prisma.accounts.update({
         where: { id: oldAccount.id },
         data: { balance: { decrement: parseFloat(amount) } }
       })
     );
-  
+
     transactions.push(
       prisma.accounts.update({
         where: { id: newAcconnt.id },
@@ -271,20 +269,20 @@ async function changeDestinationAccount(id, oldAccount, newAcconnt, amount, newA
       })
     );
 
-    if(newAmount !== amount){
+    if (newAmount != amount) {
       transactions.push(
         prisma.accounts.update({
           where: { id: transaction.sourceAccount },
-          data: { balance: { decrement: newAcconnt.user.role === 'Vendor' ? parseFloat(newAmount - amount) : 0 } }
+          data: { balance: { decrement: parseFloat(newAmount - amount) } }
         })
       );
     }
   }
-  
+
   transactions.push(
     prisma.transactions.update({
       where: { id },
-      data: { destinationAccount: newAcconnt.id }
+      data: { destinationAccount: newAcconnt.id, amount: newAmount ?? amount }
     })
   );
 
@@ -295,8 +293,9 @@ async function changeAmount(id, newAmount, oldAmount) {
   const transactions = [];
   const transaction = await prisma.transactions.findUnique({ where: { id } });
   const diff = newAmount - oldAmount;
+  const sourceAccount = await accountService.findById(transaction.sourceAccount);
 
-  if(transaction.status === "Completed"){
+  if (transaction.status === "Completed") {
     transactions.push(
       prisma.accounts.update({
         where: { id: transaction.sourceAccount },
@@ -322,7 +321,7 @@ async function changeAmount(id, newAmount, oldAmount) {
   return await prisma.$transaction(transactions);
 }
 
-async function deleteById(id){
+async function deleteById(id) {
   const transaction = await prisma.transactions.findUnique({ where: { id } });
   const transactions = [
     prisma.accounts.update({
@@ -335,11 +334,19 @@ async function deleteById(id){
     }),
     prisma.transactions.update({
       where: { id },
-      data: {status: "Deleted"}
+      data: { status: "Deleted" }
     })
   ];
 
   return await prisma.$transaction(transactions);
+}
+
+async function patchDeposit(id, amount, newAcconnt) {
+
+}
+
+async function patchWithdraw(id, amount, newAcconnt) {
+
 }
 
 
@@ -358,5 +365,7 @@ module.exports = {
   changeSourceAccount,
   changeDestinationAccount,
   changeAmount,
-  deleteById
+  deleteById,
+  patchDeposit,
+  patchWithdraw
 };

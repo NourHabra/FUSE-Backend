@@ -1,4 +1,5 @@
 const transactionService = require('../services/transactionService');
+const cashTransactionService = require('../services/cashTransactionService');
 const merchantService = require('../services/merchantService');
 const accountService = require('../services/accountService');
 const { handleError } = require('./errorController');
@@ -8,6 +9,7 @@ const { makePayload } = require('../middleware/encryptionMiddleware');
 async function index(req, res) {
   try {
     const allTransactions = await transactionService.findAll();
+    console.log("sending all transactions");
     return res.json(await makePayload(allTransactions, req.user.id));
   } catch (error) {
     await handleError(error, res);
@@ -46,11 +48,11 @@ async function showTransactionsFromTo(req, res) {
 
 async function showTopUp(req, res) {
   try {
-    transactions = await transactionService.findAllTopUp();
-    if(!transactions) {
+    transactions = await cashTransactionService.findAllTopUp();
+    if (!transactions) {
       return res.status(404).json(await makePayload({ code: "404", message: 'TopUp not found/Empty' }, req.user.id));
     }
-    console.log("TopUp is ready to be sent: ", transactions);
+    console.log("TopUp is ready to be sent");
     return res.status(201).json(await makePayload(transactions, req.user.id));
   } catch (error) {
     await handleError(error, res)
@@ -118,41 +120,29 @@ async function storeTransfer(req, res) {
 
 async function storeDeposit(req, res) {
   try {
-    const { destinationAccount, amount, details } = req.body;
+    const { account, amount } = req.body;
 
-    const dAccount = await accountService.findById(destinationAccount);
-    const sAccount = await accountService.findByUserId(req.user.id);
+    const Account = await accountService.findById(account);
+    const empID = req.user.id;
 
-    if (!dAccount) {
+    if (!Account) {
       return res.status(404).json(await makePayload({ code: "404", message: 'Destination account not found' }, req.user.id));
-    } else if (!sAccount) {
-      return res.status(404).json(await makePayload({ code: "404", message: 'Source account not found' }, req.user.id));
     } else if (amount <= 0) {
       return res.status(409).json(await makePayload({ error: 'Amount must be greater than 0' }, req.user.id));
     }
 
-    console.log(sAccount);
+    let transaction = await cashTransactionService.create("Deposit", empID, account, amount);
+    //if (details) transactionService.addTransactionDetails(transaction.id, details);
 
-    if (!["Vendor", "Employee", "Admin"].includes(sAccount.user.role)) {
-      return res.status(409).json(await makePayload({ error: "Only Admin, Employee or Vendor can deposit" }, req.user.id));
+    const deposit = await accountService.updateById(account, { balance: {increment: amount} });
+    if(!deposit){
+      transaction = await cashTransactionService.updateById(transaction.id, { status: "Failed" });
+      return res.status(409).json(await makePayload({ error: 'Failed to complete deposit' }, req.user.id));
     }
+    
+    transaction = await cashTransactionService.updateById(transaction.id, { status: "Completed" });
 
-    const transaction = await transactionService.create("Deposit", sAccount.id, dAccount.id, amount);
-    if (details) transactionService.addTransactionDetails(transaction.id, details);
-
-    if ((sAccount.balance - amount) < 0 && sAccount.user.role === "Vendor") {
-      await transactionService.updateById(transaction.id, { status: "Failed" });
-      return res.status(409).json(await makePayload({ error: 'Vendor has insufficient balance' }, req.user.id));
-    }
-
-    const transactions = await transactionService.deposit(transaction.id, sAccount, dAccount, amount);
-
-    if (!transactions) {
-      await transactionService.updateById(transaction.id, { status: "Failed" });
-      return res.status(409).json(await makePayload({ error: 'Failed to complete transaction' }, req.user.id));
-    }
-
-    return res.status(201).json(await makePayload({ transactions }, req.user.id));
+    return res.status(201).json(await makePayload({ transaction }, req.user.id));
   } catch (error) {
     await handleError(error, res);
   }
@@ -160,39 +150,31 @@ async function storeDeposit(req, res) {
 
 async function storeWithdraw(req, res) {
   try {
-    const { sourceAccount, destinationAccount, amount, details } = req.body;
+    const { account, amount } = req.body;
 
-    const dAccount = await accountService.findById(destinationAccount);
-    const sAccount = await accountService.findById(sourceAccount);
+    const Account = await accountService.findById(account);
+    const empID = req.user.id;
 
-    if (!dAccount) {
+    if (!Account) {
       return res.status(404).json(await makePayload({ code: "404", message: 'Destination account not found' }, req.user.id));
-    } else if (!sAccount) {
-      return res.status(404).json(await makePayload({ code: "404", message: 'Source account not found' }, req.user.id));
     } else if (amount <= 0) {
       return res.status(409).json(await makePayload({ error: 'Amount must be greater than 0' }, req.user.id));
+    } else if ((Account.balance - amount) < 0) {
+      return res.status(409).json(await makePayload({ error: 'Account has insufficient balance' }, req.user.id));
     }
 
-    if (!["Vendor", "Employee"].includes(dAccount.user.role)) {
-      return res.status(409).json(await makePayload({ error: "Only Employee or Vendor can withdraw" }, req.user.id));
+    let transaction = await cashTransactionService.create("Withdraw", empID, account, amount);
+    //if (details) transactionService.addTransactionDetails(transaction.id, details);
+
+    const withdraw = await accountService.updateById(account, { balance: {decrement: amount} });
+    if(!withdraw){
+      transaction = await cashTransactionService.updateById(transaction.id, { status: "Failed" });
+      return res.status(409).json(await makePayload({ error: 'Failed to complete withdraw' }, req.user.id));
     }
+    
+    transaction = await cashTransactionService.updateById(transaction.id, { status: "Completed" });
 
-    const transaction = await transactionService.create("Withdraw", sourceAccount, destinationAccount, amount);
-    if (details) transactionService.addTransactionDetails(transaction.id, details);
-
-    if ((sAccount.balance - amount) < 0) {
-      await transactionService.updateTransaction(transaction.id, "Failed");
-      return res.status(409).json(await makePayload({ error: 'User has insufficient balance' }, req.user.id));
-    }
-
-    const transactions = await transactionService.withdraw(transaction.id, sAccount, dAccount, amount);
-
-    if (!transactions) {
-      await transactionService.updateById(transaction.id, { status: "Failed" });
-      return res.status(409).json(await makePayload({ error: 'Failed to complete transaction' }, req.user.id));
-    }
-
-    return res.status(201).json(await makePayload({ transactions }, req.user.id));
+    return res.status(201).json(await makePayload({ transaction }, req.user.id));
   } catch (error) {
     await handleError(error, res);
   }
@@ -254,42 +236,67 @@ async function update(req, res) {
   const { sourceAccount, destinationAccount, amount } = req.body;
 
   const oldTransaction = await transactionService.findById(id);
-  const result = "";
+  let result = "";
 
-  if (sourceAccount !== oldTransaction.sourceAccount) {
-    const oldSourceAccount = await accountService.findById(oldTransaction.sourceAccount);
+  const oldSourceAccount = await accountService.findById(oldTransaction.sourceAccount);
+  const oldDestinationAccount = await accountService.findById(oldTransaction.destinationAccount);
+
+  if (sourceAccount != oldTransaction.sourceAccount) {
     const newSourceAccount = await accountService.findById(sourceAccount);
 
-    if(newSourceAccount.user.role === 'Vendor' && newSourceAccount.balance - amount < 0) {
-      return res.status(409).json(await makePayload({ error: 'New Vendon has insufficient balance' }, req.user.id));
+    if (newSourceAccount.balance - amount < 0) {
+      return res.status(409).json(await makePayload({ error: 'New Source has insufficient balance' }, req.user.id));
     }
     const transactions = await transactionService.changeSourceAccount(id, oldSourceAccount, newSourceAccount, oldTransaction.amount, amount);
-    if(transactions){
+    if (transactions) {
       result += "Source account changed from " + oldSourceAccount.id + " to " + newSourceAccount.id + "\n";
     }
   }
 
-  if (destinationAccount !== oldTransaction.destinationAccount) {
-    const oldDestinationAccount = await accountService.findById(oldTransaction.destinationAccount);
+  if (destinationAccount != oldTransaction.destinationAccount) {
     const newDestinationAccount = await accountService.findById(destinationAccount);
 
-    if(oldDestinationAccount.balance - oldTransaction.amount < 0) {
-      return res.status(409).json(await makePayload({ error: 'Old Account has insufficient balance' }, req.user.id));
+    if (oldDestinationAccount.balance - oldTransaction.amount < 0) {
+      return res.status(409).json(await makePayload({ error: 'Old Destination has insufficient balance' }, req.user.id));
     }
     const transactions = await transactionService.changeDestinationAccount(id, oldDestinationAccount, newDestinationAccount, oldTransaction.amount, amount);
-    if(transactions){
+    if (transactions) {
       result += "Destination account changed from " + oldDestinationAccount.id + " to " + newDestinationAccount.id + "\n";
     }
   }
 
-  if(result === "" && amount!== oldTransaction.amount){
-    const transactions = await transactionService.changeAmount(id, oldTransaction.amount, amount);
+  if (result === "" && amount != oldTransaction.amount) {
+    if (oldSourceAccount.balance - (amount - oldTransaction.amount) < 0) {
+      return res.status(409).json(await makePayload({ error: 'Source Account has insufficient balance' }, req.user.id));
+    }
+
+    const transactions = await transactionService.changeAmount(id, amount, oldTransaction.amount);
+    result += "Amount changed from " + oldTransaction.amount + " to " + amount + "\n";
   }
+  if (result === "") { result = "Nothing changed" }
+  console.log(result);
+
+  return res.status(200).json(await makePayload(result, req.user.id));
+
+}
+
+async function patchDeposit(req, res) {
+
+}
+
+async function patchWithdraw(req, res) {
 
 }
 
 async function destroy(req, res) {
-  // Implementation of the destroy function
+  const id = parseInt(await validate.isNumber(req.params.id, "id"));
+  const oldTransaction = await transactionService.deleteById(id);
+
+  if (!oldTransaction) {
+    return res.status(404).json(await makePayload({ code: "404", message: "Transaction not found" }, req.user.id));
+  } else {
+    return res.status(200).json(await makePayload("Transaction deleted", req.user.id));
+  }
 }
 
 module.exports = {
@@ -303,5 +310,7 @@ module.exports = {
   update,
   destroy,
   showTransactionsFromTo,
-  showTopUp
+  showTopUp,
+  patchDeposit,
+  patchWithdraw
 };

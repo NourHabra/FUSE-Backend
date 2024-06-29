@@ -98,15 +98,8 @@ const createTransferSchema = Joi.object({
   details: Joi.string(),
 });
 
-const createDepositSchema = Joi.object({
-  destinationAccount: Joi.number().integer().required(),
-  amount: Joi.number().positive().required(),
-  details: Joi.string(),
-});
-
-const createWithdrawSchema = Joi.object({
-  sourceAccount: Joi.number().integer().required(),
-  destinationAccount: Joi.number().integer().required(),
+const createDWSchema = Joi.object({
+  account: Joi.number().integer().required(),
   amount: Joi.number().positive().required(),
   details: Joi.string(),
 });
@@ -114,6 +107,13 @@ const createWithdrawSchema = Joi.object({
 const payBillSchema = Joi.object({
   sourceAccount: Joi.number().integer().required(),
   accepted: Joi.boolean().required(),
+});
+
+const updateTransactionSchema = Joi.object({
+  sourceAccount: Joi.number().integer().required(),
+  destinationAccount: Joi.number().integer().required(),
+  amount: Joi.number().positive().required(),
+  details: Joi.string(),
 });
 
 // User
@@ -139,9 +139,9 @@ module.exports = {
   updateMerchantSchema,
   createBillSchema,
   createTransferSchema,
-  createDepositSchema,
-  createWithdrawSchema,
+  createDWSchema,
   payBillSchema,
   updateUserSchema,
-  signUpSchemaEmployee
+  signUpSchemaEmployee,
+  updateTransactionSchema
 };
