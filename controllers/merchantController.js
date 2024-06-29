@@ -19,7 +19,9 @@ async function show(req, res) {
     const merchant = await merchantService.findById(id);
 
     if (!merchant) {
-      return res.status(404).json(await makePayload({ code: "404", message: 'Merchant not found' }, req.user.id));
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'Merchant not found' };
+      throw error;
     }
     return res.json(await makePayload(merchant, req.user.id));
   } catch (error) {
@@ -34,7 +36,9 @@ async function update(req, res) {
 
     const oldMerchant = await merchantService.findById(id);
     if (!oldMerchant) {
-      return res.status(404).json(await makePayload({ code: "404", message: 'Merchant not found' }, req.user.id));
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'Merchant not found' };
+      throw error;
     }
 
     const updatedMerchant = await merchantService.updateById(id, { name, email, phone, birth, status, category, workPermit });
@@ -50,7 +54,9 @@ async function destroy(req, res) {
 
     const deletedMerchant = await merchantService.deleteMerchant(id);
     if (!deletedMerchant) {
-      return res.status(404).json(await makePayload({ code: "404", message: 'Merchant not found' }, req.user.id));
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'Merchant not found' };
+      throw error;
     }
     return res.json(await makePayload({ message: 'Merchant deleted successfully' }, req.user.id));
   } catch (error) {

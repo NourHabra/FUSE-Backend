@@ -18,7 +18,9 @@ async function show(req, res) {
     const user = await userService.findById(id);
 
     if (!user) {
-      return res.status(404).json(await makePayload({ code: "404", message: 'User not found' }, req.user.id));
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'User not found' };
+      throw error;
     }
     return res.json(await makePayload(user, req.user.id));
   } catch (error) {
@@ -33,7 +35,9 @@ async function update(req, res) {
 
     const oldUser = await userService.findById(id);
     if (!oldUser) {
-      return res.status(404).json(await makePayload({ code: "404", message: 'User not found' }, req.user.id));
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'User not found' };
+      throw error;
     }
 
     const updatedUser = await userService.updateUser(id, name, email, phone, birth, status);
@@ -49,7 +53,9 @@ async function destroy(req, res) {
     const deletedUser = await userService.deleteUser(id);
 
     if (!deletedUser) {
-      return res.status(404).json(await makePayload({ code: "404", message: 'User not found' }, req.user.id));
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'User not found' };
+      throw error;
     }
     return res.json(await makePayload({ message: 'User deleted successfully' }, req.user.id));
   } catch (error) {

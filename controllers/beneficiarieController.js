@@ -19,7 +19,9 @@ async function show(req, res) {
     const beneficiaries = await beneficiarieService.findByUserId(id);
 
     if (beneficiaries.length <= 0) {
-      return res.status(404).json(await makePayload({ code: "404", message: 'Beneficiaries not found' }, req.user.id));
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'Beneficiaries not found' };
+      throw error;
     }
     return res.json(await makePayload(beneficiaries, req.user.id));
 
@@ -72,7 +74,9 @@ async function destroy(req, res) {
     const deletedBeneficiarie = await beneficiarieService.deleteById(id);
 
     if (!deletedBeneficiarie) {
-      return res.status(404).json(await makePayload({ code: "404", message: 'Beneficiarie not found' }, req.user.id));
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'Beneficiaries not found' };
+      throw error;
     }
     return res.json(await makePayload({ message: 'Beneficiarie deleted successfully' }, req.user.id));
 

@@ -19,7 +19,9 @@ async function show(req, res) {
     const card = await cardService.findById(id);
 
     if (!card) {
-      return res.status(404).json(await makePayload({ code: "404", message: 'Card not found' }, req.user.id));
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'Card not found' };
+      throw error;
     }
     return res.json(await makePayload(card, req.user.id));
   } catch (error) {
@@ -58,7 +60,9 @@ async function destroy(req, res) {
     const deletedCard = await cardService.deleteCard(id);
 
     if (!deletedCard) {
-      return res.status(404).json(await makePayload({ code: "404", message: 'Card not found' }, req.user.id));
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'Card not found' };
+      throw error;
     }
     return res.json(await makePayload({ message: 'Card deleted successfully' }, req.user.id));
   } catch (error) {

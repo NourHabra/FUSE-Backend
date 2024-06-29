@@ -127,13 +127,17 @@ async function login(req, res) {
     const user = await userService.findByEmail(email);
 
     if (!user) {
-      return res.status(404).json(await makePayload({ code:'404',message: 'User not found' }, user.id));
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'User not found' };
+      throw error;
     } else if (await bcrypt.compare(password, user.password)) {
       const token = jwt.sign({ id: user.id, role: user.role }, secretKey, { expiresIn: '30m' });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
       return res.json(await makePayload({jwt: token}, user.id));
     } else {
-      return res.status(409).json( await makePayload({error: 'Wrong password'}, user.id));
+      let error = new Error("Wrong password");
+      error.meta = { code: "409", error: 'Password is wrong' };
+      throw error;
     }
   } catch (error) {
     await handleError(error, res);
@@ -148,17 +152,23 @@ async function loginDashboard(req, res) {
 
     const user = await userService.findByEmail(email);
     if(!["Admin", "Employee"].includes(user.role)) {
-      return res.status(401).json(await makePayload({error: 'You are not authorized to login'}, user.id));
+      let error = new Error("Unauthorized");
+      error.meta = { code: "401", error: 'User not unauthorized to login' };
+      throw error;
     }
 
     if (!user) {
-      return res.status(404).json(await makePayload({ code:'404',message: 'User not found' }, user.id));
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'User not found' };
+      throw error;
     } else if (await bcrypt.compare(password, user.password)) {
       const token = jwt.sign({ id: user.id, role: user.role }, secretKey, { expiresIn: '30m' });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
       return res.json(await makePayload({jwt: token}, user.id));
     } else {
-      return res.status(409).json( await makePayload({error: 'Wrong password'}, user.id));
+      let error = new Error("Wrong password");
+      error.meta = { code: "409", error: 'Password is wrong' };
+      throw error;
     }
   } catch (error) {
     await handleError(error, res);
