@@ -46,7 +46,7 @@ const isVendor = async (req, res, next) => {
 }
 
 const isEmployee = async (req, res, next) => {
-    if (req.user.role === "Employee") {
+    if (req.user.role === "Admin" || req.user.role === "Employee") {
         const user = await userService.findById(req.user.id);
         if (user && ["Deleted", "Banned", "Stopped"].includes(user.status)) {
             return res.status(401).json({ message: `Employee is ${user.status}` });

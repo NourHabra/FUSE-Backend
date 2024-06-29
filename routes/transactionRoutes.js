@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const transactionController = require('../controllers/transactionController');
 const { validateRequest } = require('../middleware/validationMiddleware');
-const { isAdminEmpVen } = require('../middleware/authRole');
+const { isEmployee } = require('../middleware/authRole');
 const { 
     createTransferSchema,
     createBillSchema, 
@@ -10,17 +10,18 @@ const {
     payBillSchema, 
     updateTransactionSchema 
 } = require('../validationSchemas');
+const encry = require('../middleware/encryptionMiddleware')
 
 //router.get('/create', transactionController.create);
 
 router.post('/all', transactionController.index);
-router.post("/topUp", transactionController.showTopUp);
-router.post('/fromTo', transactionController.showTransactionsFromTo);
+router.post("/topUp", encry.decryption, transactionController.showTopUp);
+router.post('/fromTo', encry.decryption, transactionController.showTransactionsFromTo);
 //router.post('/', transactionController.store);
 router.post('/bill', validateRequest(createBillSchema), transactionController.storeBill);
 router.post('/transferer', validateRequest(createTransferSchema), transactionController.storeTransfer);
-router.post('/deposit', isAdminEmpVen, validateRequest(createDWSchema), transactionController.storeDeposit);
-router.post('/withdraw', validateRequest(createDWSchema), transactionController.storeWithdraw);
+router.post('/cash/deposit', isEmployee, encry.decryption, validateRequest(createDWSchema), transactionController.storeDeposit);
+router.post('/cash/withdraw', isEmployee, encry.decryption, validateRequest(createDWSchema), transactionController.storeWithdraw);
 router.post('/payBill/:id', validateRequest(payBillSchema), transactionController.payBill);
 router.post('/:id', transactionController.show);
 router.put('/:id', validateRequest(updateTransactionSchema), transactionController.update);

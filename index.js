@@ -46,7 +46,7 @@ app.use("/auth", authRouter);
 
 app.use(authenticateJWT);
 
-app.use(encry.decryption);
+//app.use(encry.decryption);
 
 app.use("/user", userRoutes);
 app.use("/beneficiarie", beneficiarieRouter);
