@@ -18,6 +18,13 @@ async function findById(id) {
   });
 }
 
+async function findByAccountId(id) {
+  return await prisma.cards.findMany({
+    where: { accountNumber: id },
+    orderBy: [{ expiryDate: "desc" }],
+  });
+}
+
 async function create(accountNumber, PIN) {
   let id, checkID;
     do {
@@ -57,4 +64,5 @@ module.exports = {
   create,
   updateById,
   deleteCard,
+  findByAccountId
 };

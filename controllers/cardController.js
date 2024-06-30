@@ -1,7 +1,7 @@
 const cardService = require('../services/cardService');
 const { handleError } = require('./errorController');
 const validate = require('./validateController');
-const { makePayload } = require('../middleware/encryptionMiddleware');
+const { makePayload, makePayloadMobile } = require('../middleware/encryptionMiddleware');
 
 async function index(req, res) {
   try {
@@ -25,6 +25,24 @@ async function show(req, res) {
     }
     return res.json(await makePayload(card, req.user.id));
   } catch (error) {
+    await handleError(error, res);
+  }
+}
+
+async function showByAccountId(req, res) {
+  try {
+    const id = await validate.checkEmpty(req.params.id, "id");
+
+    const cards = await cardService.findByAccountId(id);
+
+    if (!cards) {
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'Cards not found' };
+      throw error;
+    }
+
+    return res.json(await makePayloadMobile(cards, req.user.id));
+  }catch (error) {
     await handleError(error, res);
   }
 }
@@ -82,4 +100,4 @@ async function destroy(req, res) {
   }
 }
 
-module.exports = { index, show, store, update, destroy, updatePIN };
+module.exports = { index, show, store, update, destroy, updatePIN, showByAccountId };
