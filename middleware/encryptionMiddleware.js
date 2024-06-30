@@ -48,6 +48,7 @@ async function getAESkey(req, res) {
     console.log(`AES key for user ${user.id} is ${decryptedAesKey.toString('hex')}`);
 
     keys[user.id] = decryptedAesKey.toString('hex');
+    return res.status(200);
   } catch (error) {
     await handleError(error, res);
   }
