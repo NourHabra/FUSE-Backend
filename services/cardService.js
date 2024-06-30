@@ -25,14 +25,24 @@ async function findByAccountId(id) {
   });
 }
 
+async function findByUserId(id) {
+  return await prisma.cards.findMany({
+    where: {
+      account: {
+        userId: id
+      }
+    }
+  });
+}
+
 async function create(accountNumber, PIN) {
   let id, checkID;
-    do {
-      let randomNumber = Math.floor(Math.random() * 9000000000000000) + 1000000000000000;
-      id = randomNumber.toString();
+  do {
+    let randomNumber = Math.floor(Math.random() * 9000000000000000) + 1000000000000000;
+    id = randomNumber.toString();
 
-      checkID = await findById(id);
-    } while (checkID);
+    checkID = await findById(id);
+  } while (checkID);
 
   return await prisma.cards.create({
     data: {
@@ -44,7 +54,7 @@ async function create(accountNumber, PIN) {
   });
 }
 
-async function updateById(id,  data ) {
+async function updateById(id, data) {
   if (data.expiryDate) data.expiryDate = new Date(data.expiryDate).toISOString();
   return await prisma.cards.update({
     where: { id },
@@ -64,5 +74,6 @@ module.exports = {
   create,
   updateById,
   deleteCard,
-  findByAccountId
+  findByAccountId,
+  findByUserId
 };

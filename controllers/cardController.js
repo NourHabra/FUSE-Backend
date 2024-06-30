@@ -47,6 +47,22 @@ async function showByAccountId(req, res) {
   }
 }
 
+async function showByUserId(req, res) {
+  try {
+    const cards = await cardService.findByUserId(req.user.id);
+
+    if(!cards) {
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'Cards not found' };
+      throw error;
+    }
+
+    return res.json(await makePayloadMobile(cards, req.user.id));
+  }catch (error) {
+    await handleError(error, res);
+  }
+}
+
 async function store(req, res) {
   try {
     const { accountNumber, PIN } = req.body;
@@ -100,4 +116,4 @@ async function destroy(req, res) {
   }
 }
 
-module.exports = { index, show, store, update, destroy, updatePIN, showByAccountId };
+module.exports = { index, show, store, update, destroy, updatePIN, showByAccountId, showByUserId };
