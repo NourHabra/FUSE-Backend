@@ -10,6 +10,7 @@ async function genPublicKey(req, res) {
   try {
     const { email } = req.body;
     const user = await userService.findByEmail(email);
+    console.log(`user ${user.id} is trying to get Public key`);
 
     if (!user) {
       let error = new Error("Not Found");
@@ -19,10 +20,11 @@ async function genPublicKey(req, res) {
 
     const rsaKeyPair = forge.pki.rsa.generateKeyPair({ bits: 512 });
     const publicKeyPem = forge.pki.publicKeyToPem(rsaKeyPair.publicKey);
-
+    
     rsaPairs[user.id] = rsaKeyPair;
-
-
+    
+    console.log(`Public key for user ${user.id} is ${publicKeyPem}`);
+    
     return res.status(200).json({ publicKey: publicKeyPem });
   } catch (error) {
     await handleError(error, res);
@@ -33,6 +35,7 @@ async function getAESkey(req, res) {
   try {
     const { email, encryptedAesKey } = req.body;
     const user = await userService.findByEmail(email);
+    console.log(`user ${user.id} is trying to get AES key`);
 
     if (!user) {
       let error = new Error("Not Found");
@@ -41,6 +44,8 @@ async function getAESkey(req, res) {
     }
 
     const decryptedAesKey = rsaPairs[user.id].privateKey.decrypt(forge.util.decode64(encryptedAesKey), 'RSA-OAEP');
+
+    console.log(`AES key for user ${user.id} is ${decryptedAesKey.toHex()}`);
 
     keys[user.id] = decryptedAesKey.toHex();
   } catch (error) {
