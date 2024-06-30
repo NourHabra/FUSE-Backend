@@ -18,7 +18,7 @@ async function genPublicKey(req, res) {
       throw error;
     }
 
-    const rsaKeyPair = forge.pki.rsa.generateKeyPair({ bits: 512 });
+    const rsaKeyPair = forge.pki.rsa.generateKeyPair({ bits: 2048 });
     const publicKeyPem = forge.pki.publicKeyToPem(rsaKeyPair.publicKey);
     
     rsaPairs[user.id] = rsaKeyPair;
