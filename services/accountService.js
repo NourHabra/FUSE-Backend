@@ -45,11 +45,6 @@ async function findByUserId(id){
       type: true,
       balance: true,
       status: true,
-      user: {
-        select:{
-          role: true,
-        }
-      }
     }
   });
 }
