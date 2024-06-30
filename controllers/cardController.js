@@ -53,6 +53,18 @@ async function update(req, res) {
   }
 }
 
+async function updatePIN(req, res) {
+  try {
+    const id = await validate.checkEmpty(req.params.id, "id");
+    const { PIN } = req.body;
+
+    const updatedCard = await cardService.updateById(id, {PIN});
+    res.json(await makePayload(updatedCard, req.user.id));
+  } catch (error) {
+    await handleError(error, res)
+  }
+}
+
 async function destroy(req, res) {
   try {
     const id = await validate.checkEmpty(req.params.id, "id");
@@ -70,4 +82,4 @@ async function destroy(req, res) {
   }
 }
 
-module.exports = { index, show, store, update, destroy };
+module.exports = { index, show, store, update, destroy, updatePIN };

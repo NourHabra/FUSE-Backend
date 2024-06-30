@@ -71,6 +71,11 @@ const updateCardSchema = Joi.object({
   physical: Joi.boolean().required(),
 });
 
+const updatePINSchema = Joi.object({
+  PIN: Joi.number().integer().required().min(1000).max(9999),
+  rPIN: Joi.ref('PIN'),
+});
+
 // Merchant
 
 const updateMerchantSchema = Joi.object({
@@ -143,5 +148,6 @@ module.exports = {
   payBillSchema,
   updateUserSchema,
   signUpSchemaEmployee,
-  updateTransactionSchema
+  updateTransactionSchema,
+  updatePINSchema
 };
