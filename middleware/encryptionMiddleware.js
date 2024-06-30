@@ -225,8 +225,6 @@ const decryptData = (encryptedData, aesKey) => {
   }
 };
 
-const forge = require('node-forge');
-
 async function makePayloadMobile(data, userId, email) {
   try {
     const user = userId? await userService.findById(userId) : await userService.findByEmail(email);
