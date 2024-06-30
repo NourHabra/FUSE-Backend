@@ -44,7 +44,7 @@ async function showByUserId(req, res) {
       throw error;
     }
 
-    return res.json(await makePayloadMobile(accounts, req,user.id));
+    return res.json(await makePayloadMobile(accounts, req.user.id));
 
   }catch(error){
     await handleError(error, res);
