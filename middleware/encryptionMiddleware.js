@@ -1,38 +1,68 @@
 const crypto = require('crypto');
 const { handleError } = require('../controllers/errorController');
 const userService = require('../services/userService');
+const forge = require('node-forge');
 
 let keys = {};
+let rsaPairs = {};
 
-async function genKeys(req, res) {
-  try{
-    const { email, clientPublicKey } = req.body;
-
+async function genPublicKey(req, res) {
+  try {
+    const { email } = req.body;
     const user = await userService.findByEmail(email);
-    if (!user) return res.status(404).json({ error: "User not found" });
 
-    const server = crypto.createECDH('prime256v1');
-    server.generateKeys();
+    if (!user) {
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'User not found' };
+      throw error;
+    }
 
-    const serverPublicKeyBase64 = server.getPublicKey().toString('base64');
-    const sharedKey = server.computeSecret(Buffer.from(clientPublicKey, 'base64'), null, 'hex');
-    keys[user.id] = sharedKey;
+    const rsaKeyPair = forge.pki.rsa.generateKeyPair({ bits: 512 });
+    const publicKeyPem = forge.pki.publicKeyToPem(rsaKeyPair.publicKey);
 
-    console.log(`Shared Key: ${sharedKey} for ${email}`);
+    rsaPairs[user.id] = rsaKeyPair;
 
-    return res.json({ serverPublicKey: serverPublicKeyBase64 });
-  }catch(error){
+
+    return res.status(200).json({ publicKey: publicKeyPem });
+  } catch (error) {
+    await handleError(error, res);
+  }
+}
+
+async function getAESkey(req, res) {
+  try {
+    const { email, encryptedAesKey } = req.body;
+    const user = await userService.findByEmail(email);
+
+    if (!user) {
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'User not found' };
+      throw error;
+    }
+
+    const decryptedAesKey = rsaPairs[user.id].privateKey.decrypt(forge.util.decode64(encryptedAesKey), 'RSA-OAEP');
+
+    keys[user.id] = decryptedAesKey.toHex();
+  } catch (error) {
     await handleError(error, res);
   }
 }
 
 async function genKeysDashboard(req, res) {
-  try{
+  try {
     const { email, clientPublicKey } = req.body;
 
     const user = await userService.findByEmail(email);
-    if (!user) return res.status(404).json({ error: "User not found" });
-    if (!["Admin", "Employee"].includes(user.role)) return res.status(403).json({ error: "User not authorized" });
+    if (!user) {
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'User not found' };
+      throw error;
+    }
+    if (!["Admin", "Employee"].includes(user.role)) {
+      let error = new Error("Unauthorized");
+      error.meta = { code: "403", error: 'User not found' };
+      throw error;
+    }
 
     const server = crypto.createECDH('prime256v1');
     server.generateKeys();
@@ -44,7 +74,7 @@ async function genKeysDashboard(req, res) {
     console.log(`Shared Key: ${sharedKey} for ${email}`);
 
     return res.json({ serverPublicKey: serverPublicKeyBase64 });
-  }catch(error){
+  } catch (error) {
     await handleError(error, res);
   }
 }
@@ -74,13 +104,12 @@ async function decryption(req, res, next) {
   }
 }
 
-
 async function encryption(data, userId, email) {
-  if (typeof email !== 'undefined'){
+  if (typeof email !== 'undefined') {
     const user = await userService.findByEmail(email);
     if (!user) return null;
     userId = user.id;
-  } 
+  }
 
   try {
     data = JSON.stringify(data);
@@ -134,9 +163,10 @@ async function makePayload(data, userId, email) {
 }
 
 module.exports = {
-  genKeys,
+  genPublicKey,
   encryption,
   decryption,
   makePayload,
-  genKeysDashboard
+  genKeysDashboard,
+  getAESkey,
 };
