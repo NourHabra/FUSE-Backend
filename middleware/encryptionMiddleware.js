@@ -225,6 +225,58 @@ const decryptData = (encryptedData, aesKey) => {
   }
 };
 
+const forge = require('node-forge');
+
+async function makePayloadMobile(data, userId, email) {
+  try {
+    const user = userId? await userService.findById(userId) : await userService.findByEmail(email);
+    if (!user) {
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'User not found' };
+      throw error;
+    }
+
+    const aesKey = keys[user.id];
+    if (!aesKey) {
+      let error = new Error("Key not found");
+      error.meta = { code: "404", error: 'AES key not found for the user' };
+      throw error;
+    }
+
+    const payload = encryptMobile(data, aesKey);
+    return { payload };
+  } catch (error) {
+    console.error('Error creating payload:', error);
+    throw error;
+  }
+}
+
+const encryptMobile = (data, aesKey) => {
+  try {
+    const iv = forge.random.getBytesSync(12); // Generate a random IV
+    const cipher = forge.cipher.createCipher(
+      "AES-GCM",
+      forge.util.hexToBytes(aesKey)
+    );
+    cipher.start({ iv: iv });
+    cipher.update(forge.util.createBuffer(JSON.stringify(data), "utf8"));
+    cipher.finish();
+    const encrypted = cipher.output.getBytes();
+    const authTag = cipher.mode.tag.getBytes();
+    console.log("data encrypted successfully");
+    return forge.util.encode64(
+      forge.util
+        .createBuffer(iv)
+        .putBytes(encrypted)
+        .putBytes(authTag)
+        .getBytes()
+    );
+  } catch (error) {
+    console.error("Encryption error:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   genPublicKey,
   encryption,
@@ -233,5 +285,8 @@ module.exports = {
   genKeysDashboard,
   getAESkey,
   decryptionMobile,
+  encryptMobile,
+  makePayloadMobile,
 };
+
 

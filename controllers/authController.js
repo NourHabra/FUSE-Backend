@@ -10,7 +10,7 @@ const customerService = require('../services/customerService');
 const accountService = require('../services/accountService');
 const { handleError } = require('./errorController');
 const { revokedTokens } = require('../middleware/authMiddleware');
-const { makePayload } = require('../middleware/encryptionMiddleware');
+const { makePayload, makePayloadMobile } = require('../middleware/encryptionMiddleware');
 const validate = require('./validateController');
 
 const secretKey = process.env.JWT_SECRET;
@@ -133,7 +133,7 @@ async function login(req, res) {
     } else if (await bcrypt.compare(password, user.password)) {
       const token = jwt.sign({ id: user.id, role: user.role }, secretKey, { expiresIn: '30m' });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
-      return res.json(await makePayload({jwt: token}, user.id));
+      return res.json(await makePayloadMobile({jwt: token}, user.id));
     } else {
       let error = new Error("Wrong password");
       error.meta = { code: "409", error: 'Password is wrong' };
