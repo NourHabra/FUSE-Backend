@@ -169,6 +169,62 @@ async function makePayload(data, userId, email) {
   return { payload };
 }
 
+async function decryptionMobile(req, res, next) {
+  if (!req.body.payload) return next();
+  try {
+    if (typeof req.body.email === 'undefined' && typeof req.user === 'undefined') {
+      return res.status(400).json({ error: "Can't find keys without email or JWT" });
+    }
+    const { email } = req.body;
+    const user = email ? await userService.findByEmail(email) : null;
+    const userId = user ? user.id : (req.user ? req.user.id : undefined);
+    if (typeof userId === 'undefined') {
+      return res.status(401).json({ error: 'Invalid or missing JWT token' });
+    }
+    const { payload } = req.body;
+    const decrypted = decryptData(payload, keys[user.id]);
+    req.body = JSON.parse(decrypted);
+
+    console.log('Message Decrypted', req.body);
+
+    next();
+  } catch (error) {
+    console.error('Error decrypting message:', error);
+    res.status(500).json({ error: "Failed to decrypt message" });
+  }
+}
+
+const decryptData = (encryptedData, aesKey) => {
+  try {
+    const decodedData = forge.util.decode64(encryptedData);
+    const iv = decodedData.slice(0, 12);
+    const encrypted = decodedData.slice(12, decodedData.length - 16);
+    const authTag = decodedData.slice(decodedData.length - 16);
+
+    const decipher = forge.cipher.createDecipher(
+      "AES-GCM",
+      forge.util.hexToBytes(aesKey)
+    );
+    decipher.start({
+      iv: iv,
+      tagLength: 128,
+      tag: authTag,
+    });
+    decipher.update(forge.util.createBuffer(encrypted));
+    const pass = decipher.finish();
+
+    if (pass) {
+      console.log("data decrypted successfully");
+      return decipher.output.toString("utf8");
+    } else {
+      throw new Error("Authentication failed during decryption");
+    }
+  } catch (error) {
+    console.error("Decryption error:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   genPublicKey,
   encryption,
@@ -176,4 +232,6 @@ module.exports = {
   makePayload,
   genKeysDashboard,
   getAESkey,
+  decryptionMobile,
 };
+
