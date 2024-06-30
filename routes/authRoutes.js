@@ -9,7 +9,7 @@ const encry = require('../middleware/encryptionMiddleware')
 
 // router.use(encry.decryption);
 
-router.post('/login', encry.decryption, validateRequest(signInSchema), authController.login);
+router.post('/login', encry.decryptionMobile, validateRequest(signInSchema), authController.login);
 router.post('/register', validateRequest(signUpSchema), authController.register);
 router.post('/dashboard/login', encry.decryption, validateRequest(signInSchema), authController.loginDashboard);
 router.post('/register/employee', authenticateJWT, isAdmin, encry.decryption, validateRequest(signUpSchemaEmployee), authController.registerEmployee);
