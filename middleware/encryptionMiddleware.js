@@ -45,7 +45,7 @@ async function getAESkey(req, res) {
 
     const decryptedAesKey = rsaPairs[user.id].privateKey.decrypt(forge.util.decode64(encryptedAesKey), 'RSA-OAEP');
 
-    console.log(`AES key for user ${user.id} is ${decryptedAesKey.toString('hex')}`);
+    console.log(`AES key for user ${user.id} is ${decryptedAesKey.toString('hex')}, ${decryptedAesKey.toString('base64')}`);
 
     keys[user.id] = decryptedAesKey.toString('hex');
 
