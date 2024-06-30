@@ -35,14 +35,12 @@ async function findById(id) {
 }
 
 async function findByUserId(id){
-  return await prisma.accounts.findFirst({
+  return await prisma.accounts.findMany({
     where: {
       userId: parseInt(id),
-      type: "Checking"
     },
     select: {
       id: true,
-      userId: true,
       name: true,
       type: true,
       balance: true,
