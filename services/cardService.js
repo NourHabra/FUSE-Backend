@@ -35,7 +35,7 @@ async function findByUserId(id) {
   });
 }
 
-async function create(accountNumber, PIN) {
+async function create(cardName ,accountNumber, PIN) {
   let id, checkID;
   do {
     let randomNumber = Math.floor(Math.random() * 9000000000000000) + 1000000000000000;
@@ -47,6 +47,7 @@ async function create(accountNumber, PIN) {
   return await prisma.cards.create({
     data: {
       id,
+      cardName,
       accountNumber: parseInt(accountNumber),
       cvv: Math.floor(Math.random() * 900) + 100,
       PIN

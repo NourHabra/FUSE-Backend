@@ -61,11 +61,13 @@ const updateBeneficiarySchema = Joi.object({
 // Card
 
 const createCardSchema = Joi.object({
+  cardName: Joi.string().required(),
   accountNumber: Joi.number().integer().required(),
   PIN: Joi.number().required().min(1000).max(9999)
 });
 
 const updateCardSchema = Joi.object({
+  cardName: Joi.string().required(),
   accountNumber: Joi.number().integer(),
   expiryDate: Joi.date().iso().required(),
   physical: Joi.boolean().required(),

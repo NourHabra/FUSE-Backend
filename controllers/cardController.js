@@ -65,9 +65,9 @@ async function showByUserId(req, res) {
 
 async function store(req, res) {
   try {
-    const { accountNumber, PIN } = req.body;
+    const { cardName, accountNumber, PIN } = req.body;
 
-    const newCard = await cardService.create(accountNumber, PIN);
+    const newCard = await cardService.create(cardName, accountNumber, PIN);
     return res.json(await makePayload(newCard, req.user.id));
   } catch (error) {
     await handleError(error, res);
@@ -78,9 +78,9 @@ async function update(req, res) {
   try {
     const id = await validate.checkEmpty(req.params.id, "id");
 
-    const { accountNumber, expiryDate, physical } = req.body;
+    const { cardName, accountNumber, expiryDate, physical } = req.body;
 
-    const updatedCard = await cardService.updateById(id, { accountNumber, expiryDate, physical });
+    const updatedCard = await cardService.updateById(id, { cardName, accountNumber, expiryDate, physical });
     res.json(await makePayload(updatedCard, req.user.id));
   } catch (error) {
     await handleError(error, res);

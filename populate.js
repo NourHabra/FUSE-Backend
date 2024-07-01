@@ -112,8 +112,10 @@ async function createAccountsAndCards(userId, numAccounts) {
     const card = await prisma.cards.create({
       data: {
         id: cardId,
+        cardName: account.name + " card",
         accountNumber: account.id,
         cvv: Math.floor(Math.random() * 900) + 100,
+        balance: 1111,
         physical: true,
         PIN: 1234,
       },
