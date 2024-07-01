@@ -95,8 +95,13 @@ const updateCardSchema = Joi.object({
 });
 
 const updatePINSchema = Joi.object({
-  PIN: Joi.number().integer().required().min(1000).max(9999),
+  PIN: Joi.string().length(4).pattern(/^[0-9]+$/).required(),
   rPIN: Joi.ref('PIN'),
+});
+
+const updateBalanceSchema = Joi.object({
+  amount: Joi.number().integer().required(),
+  type: Joi.string().valid(...["Deposit", "Withdraw"]).required(),
 });
 
 // Merchant
@@ -172,5 +177,6 @@ module.exports = {
   updateUserSchema,
   signUpSchemaEmployee,
   updateTransactionSchema,
-  updatePINSchema
+  updatePINSchema,
+  updateBalanceSchema
 };

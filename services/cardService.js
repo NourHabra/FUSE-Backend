@@ -80,9 +80,35 @@ async function updateById(id, data) {
   });
 }
 
-async function deleteCard(id) {
+async function updateBalance(id, amount, type) {
+  let transaction = [];
+
+  transaction.push(
+    prisma.cards.update({
+      where: { id },
+      data: {
+        balance: type === "deposit"? { increment: amount } : { decrement: amount }
+      }
+    })
+  )
+
+  transaction.push(
+    prisma.accounts.update({
+      where: {
+        id: parseInt(id)
+      },
+      data: {
+        balance: type === "deposit"? { decrement: amount } : { increment: amount }
+      }
+    })
+  )
+
+  return await prisma.$transaction(transaction);
+}
+
+async function deleteCard(id, userId) {
   return await prisma.cards.delete({
-    where: { id },
+    where: { id, account: { user: { id: userId } } },
   });
 }
 
@@ -93,5 +119,6 @@ module.exports = {
   updateById,
   deleteCard,
   findByAccountId,
-  findByUserId
+  findByUserId,
+  updateBalance
 };

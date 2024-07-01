@@ -9,6 +9,8 @@ async function handleError(error, res) {
     } else if (error.code === "P2002") {
       res.status(409).json({ error: `${error.meta.modelName} Unique constraint failed on the fields`, fields: `${error.meta.target}` });
     }
+  } else if (error .code === "ERR_INVALID_ARG_TYPE") {
+    res.status(409).json({ error: 'Invalid argument type (decryption error)' });
   } else if (error.meta) {
     res.status(409).json(error.meta);
   } else {

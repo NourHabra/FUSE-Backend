@@ -124,13 +124,60 @@ async function update(req, res) {
 	}
 }
 
+async function updateBalance(req, res) {
+	try {
+		const id = await validate.checkEmpty(req.params.id, "id");
+		const { amount, type } = req.body;
+
+		if(type === "deposit") {
+			const checkingAccount = await accountService.findCheckingById(
+				req.user.id
+			);
+			if(checkingAccount.balance - amount < 0) {
+				let error = new Error("Insufficient Balance");
+				error.meta = {
+					code: "409",
+					error: "Checking Account has insufficient balance",
+				};
+				throw error;
+			}
+		}else {
+			const card = await cardService.findById(id);
+			if(card.balance - amount < 0) {
+				let error = new Error("Insufficient Balance");
+				error.meta = {
+					code: "409",
+					error: "Card has insufficient balance",
+				};
+				throw error;
+			}
+		}
+
+		const updatedCard = await cardService.updateBalance(
+			id,
+			amount,
+			type,
+		);
+
+		if (!updatedCard) {
+			let error = new Error("Failed");
+			error.meta = { code: "409", error: "Failed to update balance" };
+			throw error;
+		}
+		return res.json(await makePayloadMobile(updatedCard[0], req.user.id));
+
+	} catch (error) {
+		await handleError(error, res);
+	}
+}
+
 async function updatePIN(req, res) {
 	try {
 		const id = await validate.checkEmpty(req.params.id, "id");
 		const { PIN } = req.body;
 
 		const updatedCard = await cardService.updateById(id, { PIN });
-		res.json(await makePayload(updatedCard, req.user.id));
+		res.json(await makePayloadMobile(updatedCard, req.user.id));
 	} catch (error) {
 		await handleError(error, res);
 	}
@@ -140,7 +187,7 @@ async function destroy(req, res) {
 	try {
 		const id = await validate.checkEmpty(req.params.id, "id");
 
-		const deletedCard = await cardService.deleteCard(id);
+		const deletedCard = await cardService.deleteCard(id, req.user.id);
 
 		if (!deletedCard) {
 			let error = new Error("Not Found");
@@ -148,7 +195,7 @@ async function destroy(req, res) {
 			throw error;
 		}
 		return res.json(
-			await makePayload(
+			await makePayloadMobile(
 				{ message: "Card deleted successfully" },
 				req.user.id
 			)
@@ -167,4 +214,5 @@ module.exports = {
 	updatePIN,
 	showByAccountId,
 	showByUserId,
+	updateBalance
 };
