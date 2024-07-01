@@ -28,7 +28,6 @@ async function main() {
   for (const category of categories) {
     await prisma.merchantCategory.create({
       data: {
-        id: categories.indexOf(category),
         name: category,
       },
     });
@@ -107,7 +106,7 @@ async function createUser(role, name, email, phone, birth, password) {
     await prisma.merchant.create({
       data: {
         userId: user.id,
-        category: 'Food',
+        categoryId: 1,
         workPermit: 'ABC123',
       },
     });
