@@ -2,8 +2,37 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const bcrypt = require('bcrypt');
 
+const categories = [
+  'Rent/Mortgage',
+  'Healthcare',
+  'Insurance',
+  'Utilities',
+  'Food/Groceries',
+  'Childcare',
+  'Transportation',
+  'Personal Spending',
+  'Home Goods',
+  'Clothing',
+  'Pets',
+  'Restaurants',
+  'Travel & Entertainment',
+  'Electronics',
+  'Beauty Products',
+  'Services',
+  'Subscriptions',
+];
+
 async function main() {
   await deleteAllData();
+
+  for (const category of categories) {
+    await prisma.merchantCategory.create({
+      data: {
+        id: categories.indexOf(category),
+        name: category,
+      },
+    });
+  }
 
   const admin = await createUser('Admin', 'The Admin', 'admin@mail.com', '1234560000', '1990-01-01', 'admin12345');
   const [adminAccount, adminCard] = await createAccountsAndCards(admin.id, 2);

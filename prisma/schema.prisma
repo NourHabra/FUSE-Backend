@@ -30,10 +30,11 @@ model Users {
 model Merchant {
   id          Int     @id @default(autoincrement())
   userId      Int     @unique
-  category    MerchantCategory
+  category    Int
   workPermit  String
 
-  user     Users    @relation(fields: [userId], references: [id])
+  user        Users    @relation(fields: [userId], references: [id])
+  mCategory   MerchantCategory    @relation(fields: [category], references: [id])
 }
 
 model Customer {
@@ -159,10 +160,11 @@ enum TransactionStatus {
   Deleted
 }
 
-enum MerchantCategory {
-  Food
-  Health
-  Transport
+model MerchantCategory {
+  id    Int      @id
+  name  String
+
+  merchants Merchant[]
 }
 
 enum userStatus {
