@@ -35,7 +35,8 @@ async function findAllTopUp() {
     include: {
       supervisor: {
         select: {
-          name: true
+          name: true,
+          role: true
         }
       },
       accountCustomer: {
