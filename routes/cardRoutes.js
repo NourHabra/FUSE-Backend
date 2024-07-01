@@ -11,8 +11,8 @@ router.post('/', decryptionMobile, validateRequest(createCardSchema), cardContro
 router.post('/account/:id', decryptionMobile, cardController.showByAccountId);
 router.post('/user', decryptionMobile, cardController.showByUserId);
 router.post('/:id', cardController.show);
-router.put('pin/:id', decryptionMobile, validateRequest(updatePINSchema), cardController.updatePIN);
-router.put('balance/:id', decryptionMobile, validateRequest(updateBalanceSchema), cardController.updateBalance);
+router.put('/pin/:id', decryptionMobile, validateRequest(updatePINSchema), cardController.updatePIN);
+router.put('/balance/:id', decryptionMobile, validateRequest(updateBalanceSchema), cardController.updateBalance);
 //router.put('/:id', validateRequest(updateCardSchema), cardController.update);
 router.delete('/:id', cardController.destroy);
 
