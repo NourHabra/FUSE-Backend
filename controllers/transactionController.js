@@ -145,7 +145,7 @@ async function storeDeposit(req, res) {
     const { account, amount } = req.body;
 
     const Account = await accountService.findById(account);
-    const empID = req.user.id;
+    const supervisorId = req.user.id;
 
     if (!Account) {
       let error = new Error("Not Found");
@@ -157,7 +157,7 @@ async function storeDeposit(req, res) {
       throw error;
     }
 
-    let transaction = await cashTransactionService.create("Deposit", empID, account, amount);
+    let transaction = await cashTransactionService.create("Deposit", empID, account, amount, supervisorId);
     //if (details) transactionService.addTransactionDetails(transaction.id, details);
 
     const deposit = await accountService.updateById(account, { balance: {increment: amount} });
@@ -181,7 +181,7 @@ async function storeWithdraw(req, res) {
     const { account, amount } = req.body;
 
     const Account = await accountService.findById(account);
-    const empID = req.user.id;
+    const supervisorId = req.user.id;
 
     if (!Account) {
       let error = new Error("Not Found");
@@ -197,7 +197,7 @@ async function storeWithdraw(req, res) {
       throw error;
     }
 
-    let transaction = await cashTransactionService.create("Withdraw", empID, account, amount);
+    let transaction = await cashTransactionService.create("Withdraw", empID, account, amount, supervisorId);
     //if (details) transactionService.addTransactionDetails(transaction.id, details);
 
     const withdraw = await accountService.updateById(account, { balance: {decrement: amount} });
