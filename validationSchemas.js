@@ -1,8 +1,26 @@
 const Joi = require('joi');
 const { Role, AccountType, AccountStatus, userStatus } = require('@prisma/client');
-const prisma = new PrismaClient();
 
-const MerchantCategories = await prisma.merchantCategory.findMany();
+const MerchantCategories = [
+  'Rent/Mortgage',
+  'Healthcare',
+  'Insurance',
+  'Utilities',
+  'Food/Groceries',
+  'Childcare',
+  'Transportation',
+  'Personal Spending',
+  'Home Goods',
+  'Clothing',
+  'Pets',
+  'Restaurants',
+  'Travel & Entertainment',
+  'Electronics',
+  'Beauty Products',
+  'Services',
+  'Subscriptions',
+];
+
 // Auth
 
 const signUpSchema = Joi.object({
