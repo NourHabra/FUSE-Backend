@@ -107,9 +107,31 @@ async function updateBalance(id, amount, type) {
 }
 
 async function deleteCard(id, userId) {
-  return await prisma.cards.delete({
-    where: { id, account: { user: { id: userId } } },
+  const card = await prisma.cards.findUnique({
+    where: { id },
   });
+
+  let transaction = [];
+
+  transaction.push(
+    prisma.accounts.update({
+      where: {
+        id: card.accountNumber
+      },
+      data: {
+        balance: { increment: card.balance }
+      }
+    })
+  )
+  
+  transaction.push(
+    prisma.cards.delete({
+      where: { id , account: { user : { id: userId } } }
+    })
+  )
+
+
+  return await prisma.$transaction(transaction);
 }
 
 module.exports = {
