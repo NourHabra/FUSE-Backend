@@ -35,7 +35,7 @@ async function findByUserId(id) {
   });
 }
 
-async function create(cardName ,accountNumber, PIN) {
+async function create(cardName, accountNumber, PIN, balance) {
   let id, checkID;
   do {
     let randomNumber = Math.floor(Math.random() * 9000000000000000) + 1000000000000000;
@@ -44,15 +44,32 @@ async function create(cardName ,accountNumber, PIN) {
     checkID = await findById(id);
   } while (checkID);
 
-  return await prisma.cards.create({
-    data: {
-      id,
-      cardName,
-      accountNumber: parseInt(accountNumber),
-      cvv: Math.floor(Math.random() * 900) + 100,
-      PIN
-    }
-  });
+  let transaction = [];
+
+  transaction.push(
+    prisma.cards.create({
+      data: {
+        id,
+        cardName,
+        balance,
+        accountNumber: parseInt(accountNumber),
+        cvv: Math.floor(Math.random() * 900) + 100,
+        PIN
+      }
+    })
+  )
+  transaction.push(
+    prisma.accounts.update({
+      where: {
+        id: accountNumber
+      },
+      data: {
+        balance: { decrement: balance }
+      }
+    })
+  )
+
+  return await prisma.$transaction(transaction);
 }
 
 async function updateById(id, data) {

@@ -1,4 +1,5 @@
 const cardService = require('../services/cardService');
+const accountService = require('../services/accountService');
 const { handleError } = require('./errorController');
 const validate = require('./validateController');
 const { makePayload, makePayloadMobile } = require('../middleware/encryptionMiddleware');
@@ -65,10 +66,24 @@ async function showByUserId(req, res) {
 
 async function store(req, res) {
   try {
-    const { cardName, accountNumber, PIN } = req.body;
+    const { cardName, balance, PIN } = req.body;
 
-    const newCard = await cardService.create(cardName, accountNumber, PIN);
-    return res.json(await makePayload(newCard, req.user.id));
+    const checkingAccount = await accountService.findCheckingById(req.user.id);
+
+    if(!checkingAccount){
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'No User Checking Account' };
+      throw error;
+    }
+
+    if(checkingAccount.balance - balance < 0){
+      let error = new Error("Insufficient Balance");
+      error.meta = { code: "409", error: "Checking Account has insufficient balance" };
+      throw error;
+    }
+
+    const newCard = await cardService.create(cardName, checkingAccount.id, PIN, balance);
+    return res.json(await makePayloadMobile(newCard, req.user.id));
   } catch (error) {
     await handleError(error, res);
   }

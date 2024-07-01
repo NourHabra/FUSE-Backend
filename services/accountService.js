@@ -49,6 +49,15 @@ async function findByUserId(id){
   });
 }
 
+async function findCheckingById(userId) {
+  return await prisma.accounts.findFirst({
+    where:{
+      user: { id: userId },
+      type: "Checking"
+    }
+  });
+}
+
 async function create(userId, balance, type) {
   return await prisma.accounts.create({
     data: {
@@ -79,5 +88,6 @@ module.exports = {
   create,
   updateById,
   disconnect,
-  findByUserId
+  findByUserId,
+  findCheckingById
 };
