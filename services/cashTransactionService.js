@@ -3,9 +3,24 @@ const prisma = new PrismaClient();
 const accountService = require('../services/accountService');
 
 async function create(type, employee, account, amount) {
-  return await prisma.cashTransactions.create({
-    data: { type, employee, account, amount }
-  });
+  let transaction = [];
+
+  transaction.push(
+    prisma.cashTransactions.create({
+      data: { type, employee, account, amount }
+    })
+  );
+  transaction.push(
+    prisma.accounts.update({
+      where: {
+        id: account
+      },
+      data: {
+        balance:
+          type == "Withdraw" ? { decrement: amount } : { increment: amount }
+      }
+    })
+  );
 }
 
 async function updateById(id, data) {
