@@ -2,9 +2,9 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const accountService = require('../services/accountService');
 
-async function create(type, employee, account, amount, supervisorId) {
+async function create(type, account, amount, supervisorId) {
   return await prisma.cashTransactions.create({
-    data: { type, employee, accountNumber: account, amount, supervisorId }
+    data: { type, accountNumber: account, amount, supervisorId }
   })
 }
 

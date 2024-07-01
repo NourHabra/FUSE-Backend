@@ -157,7 +157,7 @@ async function storeDeposit(req, res) {
       throw error;
     }
 
-    let transaction = await cashTransactionService.create("Deposit", empID, account, amount, supervisorId);
+    let transaction = await cashTransactionService.create("Deposit", account, amount, supervisorId);
     //if (details) transactionService.addTransactionDetails(transaction.id, details);
 
     const deposit = await accountService.updateById(account, { balance: {increment: amount} });
@@ -197,7 +197,7 @@ async function storeWithdraw(req, res) {
       throw error;
     }
 
-    let transaction = await cashTransactionService.create("Withdraw", empID, account, amount, supervisorId);
+    let transaction = await cashTransactionService.create("Withdraw", account, amount, supervisorId);
     //if (details) transactionService.addTransactionDetails(transaction.id, details);
 
     const withdraw = await accountService.updateById(account, { balance: {decrement: amount} });
