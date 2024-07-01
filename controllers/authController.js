@@ -24,6 +24,7 @@ async function register(req, res) {
     const { yearlyIncome } = req.body;
 
     const newUser = await userService.create(name, role, email, phone, birth, await bcrypt.hash(password, salt));
+    const account = await accountService.create(newUser.id, 0, "Checking");
 
     if (role === "Merchant") {
       await merchantService.create(newUser.id, category, workPermit);

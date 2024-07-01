@@ -2,8 +2,9 @@ const crypto = require('crypto');
 const { handleError } = require('../controllers/errorController');
 const userService = require('../services/userService');
 const forge = require('node-forge');
+const {getAESKey, setAESKey, } = require('./keysDB/keysDB')
 
-let keys = {};
+//let keys = {};
 let rsaPairs = {};
 
 async function genPublicKey(req, res) {
@@ -47,7 +48,10 @@ async function getAESkey(req, res) {
 
     console.log(`AES key for user ${user.id} is ${decryptedAesKey.toString('hex')}, ${decryptedAesKey.toString('base64')}`);
 
-    keys[user.id] = decryptedAesKey.toString('hex');
+    //keys[user.id] = decryptedAesKey.toString('hex');
+    await setAESKey(user.id, decryptedAesKey.toString('hex'));
+
+    rsaPairs[user.id] = null;
 
     return res.status(200).json({ done: "success" });
   } catch (error) {
@@ -76,7 +80,8 @@ async function genKeysDashboard(req, res) {
 
     const serverPublicKeyBase64 = server.getPublicKey().toString('base64');
     const sharedKey = server.computeSecret(Buffer.from(clientPublicKey, 'base64'), null, 'hex');
-    keys[user.id] = sharedKey;
+    //keys[user.id] = sharedKey;
+    await setAESKey(user.id, sharedKey);
 
     console.log(`Shared Key: ${sharedKey} for ${email}`);
 
@@ -99,7 +104,8 @@ async function decryption(req, res, next) {
       return res.status(401).json({ error: 'Invalid or missing JWT token' });
     }
     const { payload } = req.body;
-    const decrypted = decrypt(payload, keys[userId]);
+    const key = await getAESKey(userId);
+    const decrypted = decrypt(payload, key);
     req.body = JSON.parse(decrypted);
 
     console.log('Message Decrypted', req.body);
@@ -120,7 +126,8 @@ async function encryption(data, userId, email) {
 
   try {
     data = JSON.stringify(data);
-    const encrypted = encrypt(data, keys[userId]);
+    const key = await getAESKey(userId);
+    const encrypted = encrypt(data, key);
     // console.log('Encrypted message: ', encrypted);
     console.log('Message encrypted');
     return encrypted;
@@ -182,7 +189,8 @@ async function decryptionMobile(req, res, next) {
       return res.status(401).json({ error: 'Invalid or missing JWT token' });
     }
     const { payload } = req.body;
-    const decrypted = decryptData(payload, keys[user.id]);
+    const key = await getAESKey(userId);
+    const decrypted = decryptData(payload, key);
     req.body = JSON.parse(decrypted);
 
     console.log('Message Decrypted', req.body);
@@ -234,7 +242,7 @@ async function makePayloadMobile(data, userId, email) {
       throw error;
     }
 
-    const aesKey = keys[user.id];
+    const aesKey = await getAESKey(user.id);
     if (!aesKey) {
       let error = new Error("Key not found");
       error.meta = { code: "404", error: 'AES key not found for the user' };
