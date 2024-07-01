@@ -111,6 +111,8 @@ async function deleteCard(id, userId) {
     where: { id },
   });
 
+  if(!card) console.log("cant find card");
+
   let transaction = [];
 
   transaction.push(
