@@ -145,7 +145,7 @@ async function createAccountsAndCards(userId, numAccounts) {
         cvv: Math.floor(Math.random() * 900) + 100,
         balance: 1111,
         physical: true,
-        PIN: 1234,
+        PIN: "1234",
       },
     });
     cards.push(card);
