@@ -27,7 +27,7 @@ async function show(req, res) {
 			error.meta = { code: "404", error: "Card not found" };
 			throw error;
 		}
-		return res.json(await makePayload(card, req.user.id));
+		return res.json(await makePayloadMobile(card, req.user.id));
 	} catch (error) {
 		await handleError(error, res);
 	}
@@ -99,7 +99,8 @@ async function store(req, res) {
 			PIN,
 			balance
 		);
-		return res.json(await makePayloadMobile(newCard, req.user.id));
+
+		return res.json(await makePayloadMobile(newCard[0], req.user.id));
 	} catch (error) {
 		await handleError(error, res);
 	}

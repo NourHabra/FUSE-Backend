@@ -7,10 +7,10 @@ const { decryptionMobile } = require('../middleware/encryptionMiddleware');
 
 
 router.get('/', cardController.index);
-router.post('/', decryptionMobile,validateRequest(createCardSchema), cardController.store);
+router.post('/', decryptionMobile, validateRequest(createCardSchema), cardController.store);
 router.post('/account/:id', decryptionMobile, cardController.showByAccountId);
 router.post('/user', decryptionMobile, cardController.showByUserId);
-router.get('/:id', cardController.show);
+router.post('/:id', cardController.show);
 router.put('/:id', validateRequest(updateCardSchema), cardController.update);
 router.put('/:id', validateRequest(updatePINSchema), cardController.updatePIN);
 router.delete('/:id', cardController.destroy);
