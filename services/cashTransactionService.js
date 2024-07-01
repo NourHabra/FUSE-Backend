@@ -4,7 +4,7 @@ const accountService = require('../services/accountService');
 
 async function create(type, employee, account, amount) {
   return await prisma.cashTransactions.create({
-    data: { type, employee, account, amount }
+    data: { type, employee, accountNumber: account, amount }
   })
 }
 
@@ -24,7 +24,7 @@ async function findAllTopUp() {
           role: true
         }
       },
-      accountCustomer: {
+      account: {
         select: {
           user: {
             select: {

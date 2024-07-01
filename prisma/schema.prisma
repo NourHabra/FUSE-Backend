@@ -30,11 +30,11 @@ model Users {
 model Merchant {
   id          Int     @id @default(autoincrement())
   userId      Int     @unique
-  category    Int
+  categoryId    Int
   workPermit  String
 
   user        Users    @relation(fields: [userId], references: [id])
-  mCategory   MerchantCategory    @relation(fields: [category], references: [id])
+  Category    MerchantCategory    @relation(fields: [categoryId], references: [id])
 }
 
 model Customer {
@@ -88,15 +88,15 @@ model Cards {
 
 model CashTransactions {
   id                 Int                @id @default(autoincrement())
-  employee           Int
-  account            Int
+  supervisorId       Int
+  accountNumber      Int
   type               TransactionType
   amount             Float
   status             TransactionStatus  @default(Pending)
   createdAt          DateTime           @default(now())
 
-  supervisor           Users      @relation(fields: [employee], references: [id])
-  accountCustomer      Accounts   @relation(fields: [account], references: [id])
+  supervisor           Users      @relation(fields: [supervisorId], references: [id])
+  account      Accounts   @relation(fields: [accountNumber], references: [id])
 }
 
 model Transactions {
