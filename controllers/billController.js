@@ -6,6 +6,23 @@ const { handleError } = require('./errorController');
 const validate = require('./validateController');
 const { makePayload, makePayloadMobile } = require('../middleware/encryptionMiddleware');
 
+
+async function show(req, res) {
+  try {
+		const id = await validate.checkEmpty(req.params.id, "id");
+    const bill = await billService.findById(id);
+    if (!bill) {
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: "Bill not found" };
+      throw error;
+    }
+
+    return res.json(await makePayloadMobile(bill, req.user.id));
+  } catch (error) {
+    await handleError(error, res);
+  }
+}
+
 async function store(req, res) {
   try {
     const { amount, details } = req.body;
@@ -37,7 +54,7 @@ async function store(req, res) {
 
 async function pay(req, res) {
   try {
-    const id = req.params.id;
+		const id = await validate.checkEmpty(req.params.id, "id");
     const { cardId, cvv, month, year } = req.body;
     const bill = await billService.findById(id);
     const card = await cardService.findById(cardId);
@@ -77,5 +94,6 @@ async function pay(req, res) {
 
 module.exports = {
   store,
-  pay
+  pay,
+  show
 };
