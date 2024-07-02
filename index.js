@@ -10,6 +10,7 @@ const accountRoutes = require("./routes/accountRoutes");
 const cardRoutes = require("./routes/cardRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
 const keyRoutes = require("./routes/keyRoutes");
+const billRoutes = require("./routes/billRoutes");
 const encry = require("./middleware/encryptionMiddleware");
 const {authenticateJWT} = require('./middleware/authMiddleware');
 
@@ -54,6 +55,7 @@ app.use("/merchant", merchantRoutes);
 app.use("/account", accountRoutes);
 app.use("/card", cardRoutes);
 app.use("/transaction", transactionRoutes);
+app.use("/bill", billRoutes);
 
 app.listen(PORT, () => {
 	console.log("Server listening on port ", PORT);
