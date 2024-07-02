@@ -29,7 +29,7 @@ async function store(req, res) {
 
     const user = await merchantService.findById(req.user.id)
     const dAccount = await accountService.findCheckingById(req.user.id);
-    console.log(dAccount);
+    console.log(user);
 
     if (!dAccount) {
       let error = new Error("Not Found");
