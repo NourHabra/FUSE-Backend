@@ -36,9 +36,10 @@ async function store(req, res) {
 async function pay(req, res) {
   try {
     const id = req.params.id;
-    const { cardId, cvv, expiryDate } = req.body;
+    const { cardId, cvv, month, year } = req.body;
     const bill = await billService.findById(id);
     const card = await cardService.findById(cardId);
+    const expiryDate = new Date(card.expiryDate);
 
     if (!bill) {
       let error = new Error("Not Found");
@@ -48,7 +49,7 @@ async function pay(req, res) {
       let error = new Error("Not Found");
       error.meta = { code: "404", error: 'Card not found' };
       throw error;
-    } else if (card.cvv !== cvv, card.expiryDate!== expiryDate) {
+    } else if (card.cvv !== cvv, expiryDate.getMonth() + 1 !== month, expiryDate.getFullYear() !== year) {
       let error = new Error("Invalid Card Details");
       error.meta = { code: "409", error: `Card details are invalid` };
       throw error;
