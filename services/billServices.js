@@ -13,7 +13,7 @@ async function findById(id) {
 async function create(merchantAccount,  amount, details, categoryId) {
   const category = await prisma.merchantCategory.findUnique({
     where: {
-      categoryId
+      id: categoryId
     }
   })
 
