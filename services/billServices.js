@@ -16,6 +16,7 @@ async function create(merchantAccount,  amount, details, categoryId) {
       id: categoryId
     }
   })
+  console.log(category);
 
   return await prisma.bills.create({
     data: {
