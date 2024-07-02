@@ -1,5 +1,6 @@
 const billService = require('../services/billServices');
 const accountService = require('../services/accountService');
+const merchantService = require('../services/merchantService');
 const cardService = require('../services/cardService');
 const { handleError } = require('./errorController');
 const validate = require('./validateController');
@@ -9,7 +10,8 @@ async function store(req, res) {
   try {
     const { amount, details } = req.body;
 
-    const dAccount = await accountService.findByUserId(req.user.id);
+    const user = await merchantService.findById()
+    const dAccount = await merchantService.findById(req.user.id);
 
     if (!dAccount) {
       let error = new Error("Not Found");
@@ -25,7 +27,7 @@ async function store(req, res) {
       throw error;
     }
 
-    const bill = await billService.create(destinationAccount, amount, details | null);
+    const bill = await billService.create(dAccount.id , amount, details | null, user.merchant.category);
 
     res.status(201).json(await makePayloadMobile({ bill }, req.user.id));
   } catch (error) {
