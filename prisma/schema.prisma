@@ -70,6 +70,7 @@ model Accounts {
   transD   Transactions[]       @relation("destination")
   trans    CashTransactions[]
   card     Cards[]
+  bills    Bills[]
 }
 
 model Cards {
@@ -84,6 +85,7 @@ model Cards {
   createdAt     DateTime   @default(now())
 
   account       Accounts   @relation(fields: [accountNumber], references: [id])
+  bills         Bills[]
 }
 
 model CashTransactions {
@@ -111,6 +113,19 @@ model Transactions {
   sAccount     Accounts?   @relation("source", fields: [sourceAccount], references: [id])
   dAccount     Accounts   @relation("destination", fields: [destinationAccount], references: [id])
   details      TransactionsDetails[]
+}
+
+model Bills {
+  id                       Int                @id @default(autoincrement())
+  cardId                   String
+  merchantAccountNumber    Int
+  category                 String
+  amount                   Float
+  status             TransactionStatus  @default(Pending)
+  createdAt          DateTime           @default(now())
+
+  card                Cards      @relation(fields: [cardId], references: [id])
+  merchantAccount     Accounts   @relation(fields: [merchantAccountNumber], references: [id])
 }
 
 model TransactionsDetails {
