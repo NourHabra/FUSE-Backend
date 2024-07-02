@@ -81,6 +81,10 @@ async function updateById(id, data) {
 }
 
 async function updateBalance(id, amount, type) {
+  const card = await prisma.cards.findUnique({
+    where: { id },
+  });
+
   let transaction = [];
 
   transaction.push(
@@ -95,7 +99,7 @@ async function updateBalance(id, amount, type) {
   transaction.push(
     prisma.accounts.update({
       where: {
-        id: parseInt(id)
+        id: card.accountNumber
       },
       data: {
         balance: type === "deposit"? { decrement: amount } : { increment: amount }
