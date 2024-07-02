@@ -44,7 +44,7 @@ async function store(req, res) {
       throw error;
     }
 
-    const bill = await billService.create(dAccount.id , amount, details | null, user.merchant.categoryId);
+    const bill = await billService.create(dAccount.id , amount, details? details : null, user.merchant.categoryId);
 
     res.status(201).json(await makePayloadMobile({ bill }, req.user.id));
   } catch (error) {
