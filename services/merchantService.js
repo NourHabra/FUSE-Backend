@@ -39,7 +39,7 @@ async function findById(id) {
       role: true,
       merchant: {
         select: {
-          category: true,
+          categoryId: true,
           workPermit: true
         }
       }
