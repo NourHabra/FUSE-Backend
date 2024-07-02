@@ -121,7 +121,9 @@ model Bills {
   merchantAccountNumber    Int
   category                 String
   amount                   Float
+  details                  String
   status             TransactionStatus  @default(Pending)
+  payedAt            DateTime?
   createdAt          DateTime           @default(now())
 
   card                Cards      @relation(fields: [cardId], references: [id])
@@ -173,6 +175,7 @@ enum TransactionStatus {
   Completed
   Refunded
   Deleted
+  Paid
 }
 
 model MerchantCategory {

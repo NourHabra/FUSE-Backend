@@ -1,6 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const accountService = require('../services/accountService');
 
 async function create(type, account, amount, supervisorId) {
   return await prisma.cashTransactions.create({

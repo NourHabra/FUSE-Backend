@@ -65,35 +65,6 @@ async function showTopUp(req, res) {
   }
 }
 
-async function storeBill(req, res) {
-  try {
-    const { destinationAccount, amount, details } = req.body;
-
-    const dAccount = await accountService.findById(destinationAccount);
-
-    if (!dAccount) {
-      let error = new Error("Not Found");
-      error.meta = { code: "404", error: 'Destination account not found' };
-      throw error;
-    } else if (dAccount.status !== "Active") {
-      let error = new Error("Not Active");
-      error.meta = { code: "409", error: `Destination account is not active (${dAccount.status})` };
-      throw error;
-    } else if (amount <= 0) {
-      let error = new Error("Wrong Amount");
-      error.meta = { code: "409", error: "Amount must be greater than 0" };
-      throw error;
-    }
-
-    const transaction = await transactionService.create("Bill", null, destinationAccount, amount);
-    if (details) transactionService.addTransactionDetails(transaction.id, details);
-
-    res.status(201).json(await makePayload({ message: "Bill created", bill: transaction }, req.user.id));
-  } catch (error) {
-    await handleError(error, res);
-  }
-}
-
 async function storeTransfer(req, res) {
   try {
     const { sourceAccount, destinationAccount, amount, details } = req.body;
@@ -358,7 +329,6 @@ async function destroy(req, res) {
 module.exports = {
   index,
   show,
-  storeBill,
   storeTransfer,
   storeDeposit,
   storeWithdraw,

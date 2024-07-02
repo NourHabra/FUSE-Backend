@@ -18,7 +18,6 @@ router.post('/all', transactionController.index);
 router.post("/topUp", encry.decryption, transactionController.showTopUp);
 router.post('/fromTo', encry.decryption, transactionController.showTransactionsFromTo);
 //router.post('/', transactionController.store);
-router.post('/bill', validateRequest(createBillSchema), transactionController.storeBill);
 router.post('/transferer', validateRequest(createTransferSchema), transactionController.storeTransfer);
 router.post('/cash/deposit', isEmployee, encry.decryption, validateRequest(createDWSchema), transactionController.storeDeposit);
 router.post('/cash/withdraw', isEmployee, encry.decryption, validateRequest(createDWSchema), transactionController.storeWithdraw);
