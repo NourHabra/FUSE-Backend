@@ -29,7 +29,6 @@ async function store(req, res) {
 
     const user = await merchantService.findById(req.user.id)
     const dAccount = await accountService.findCheckingById(req.user.id);
-    console.log(user);
 
     if (!dAccount) {
       let error = new Error("Not Found");
@@ -45,7 +44,7 @@ async function store(req, res) {
       throw error;
     }
 
-    const bill = await billService.create(dAccount.id , amount, details | null, user.merchant.category);
+    const bill = await billService.create(dAccount.id , amount, details | null, user.merchant.categoryId);
 
     res.status(201).json(await makePayloadMobile({ bill }, req.user.id));
   } catch (error) {
