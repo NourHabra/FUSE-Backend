@@ -10,7 +10,7 @@ async function store(req, res) {
   try {
     const { amount, details } = req.body;
 
-    const user = await merchantService.findById()
+    const user = await merchantService.findById(req.user.id)
     const dAccount = await merchantService.findById(req.user.id);
 
     if (!dAccount) {
