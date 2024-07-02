@@ -28,7 +28,7 @@ async function store(req, res) {
     const { amount, details } = req.body;
 
     const user = await merchantService.findById(req.user.id)
-    const dAccount = await merchantService.findById(req.user.id);
+    const dAccount = await accountService.findByUserId(req.user.id);
 
     if (!dAccount) {
       let error = new Error("Not Found");
