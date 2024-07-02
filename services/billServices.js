@@ -21,7 +21,7 @@ async function create(merchantAccount,  amount, details, categoryId) {
     data: {
       merchantAccountNumber: merchantAccount,
       amount: amount,
-      details: details | "",
+      details: details? details : "",
       category: category.name
     }
   })

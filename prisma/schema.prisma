@@ -117,7 +117,7 @@ model Transactions {
 
 model Bills {
   id                       Int                @id @default(autoincrement())
-  cardId                   String
+  cardId                   String?
   merchantAccountNumber    Int
   category                 String
   amount                   Float
@@ -126,7 +126,7 @@ model Bills {
   payedAt            DateTime?
   createdAt          DateTime           @default(now())
 
-  card                Cards      @relation(fields: [cardId], references: [id])
+  card                Cards?        @relation(fields: [cardId], references: [id])
   merchantAccount     Accounts   @relation(fields: [merchantAccountNumber], references: [id])
 }
 
