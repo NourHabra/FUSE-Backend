@@ -70,9 +70,6 @@ async function showByUserId(req, res) {
 async function store(req, res) {
 	try {
 		const { cardName, balance, PIN } = req.body;
-		console.log(cardName);
-		console.log(balance);
-		console.log(PIN);
 
 		const checkingAccount = await accountService.findCheckingById(
 			req.user.id
