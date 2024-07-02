@@ -126,7 +126,7 @@ async function updateBalance(req, res) {
 		const id = await validate.checkEmpty(req.params.id, "id");
 		const { amount, type } = req.body;
 
-		if(type === "deposit") {
+		if(type === "Deposit") {
 			const checkingAccount = await accountService.findCheckingById(
 				req.user.id
 			);
