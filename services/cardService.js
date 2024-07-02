@@ -91,7 +91,7 @@ async function updateBalance(id, amount, type) {
     prisma.cards.update({
       where: { id },
       data: {
-        balance: type === "deposit"? { increment: amount } : { decrement: amount }
+        balance: type === "Deposit"? { increment: amount } : { decrement: amount }
       }
     })
   )
@@ -102,7 +102,7 @@ async function updateBalance(id, amount, type) {
         id: card.accountNumber
       },
       data: {
-        balance: type === "deposit"? { decrement: amount } : { increment: amount }
+        balance: type === "Deposit"? { decrement: amount } : { increment: amount }
       }
     })
   )
