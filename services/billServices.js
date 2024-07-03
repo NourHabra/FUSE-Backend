@@ -10,7 +10,11 @@ async function findById(id) {
     include: {
       merchantAccount: {
         include: {
-          name: true,
+          user: {
+            include: {
+              name: true,
+            }
+          }
         }
       }
     }
