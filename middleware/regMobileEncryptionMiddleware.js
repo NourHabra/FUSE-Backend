@@ -2,30 +2,28 @@ const crypto = require('crypto');
 const { handleError } = require('../controllers/errorController');
 const userService = require('../services/userService');
 const forge = require('node-forge');
-const {getAESKey, setAESKey, } = require('./keysDB/keysDB')
+const { getAESKey, setAESKey, } = require('./keysDB/keysDB')
 
-//let keys = {};
+let keys = {};
 let rsaPairs = {};
 
-async function genPublicKey(req, res) {
+async function genPublicKeyForReg(req, res) {
   try {
     const { email } = req.body;
     const user = await userService.findByEmail(email);
-    console.log(`user ${user.id} is trying to get Public key`);
-
-    if (!user) {
-      let error = new Error("Not Found");
-      error.meta = { code: "404", error: 'User not found' };
+    if (user) {
+      let error = new Error("User already exists");
+      error.meta = { code: "409", error: 'Email is already Registered' };
       throw error;
     }
 
     const rsaKeyPair = forge.pki.rsa.generateKeyPair({ bits: 2048 });
     const publicKeyPem = forge.pki.publicKeyToPem(rsaKeyPair.publicKey);
-    
-    rsaPairs[user.id] = rsaKeyPair;
-    
+
+    rsaPairs[email] = rsaKeyPair;
+
     console.log(`Public key for user ${user.id} is ${publicKeyPem}`);
-    
+
     return res.status(200).json({ publicKey: publicKeyPem });
   } catch (error) {
     await handleError(error, res);
@@ -35,23 +33,20 @@ async function genPublicKey(req, res) {
 async function getAESkey(req, res) {
   try {
     const { email, encryptedAesKey } = req.body;
-    const user = await userService.findByEmail(email);
-    console.log(`user ${user.id} is trying to get AES key`);
-
-    if (!user) {
+    if (rsaPairs[email] == null) {
       let error = new Error("Not Found");
-      error.meta = { code: "404", error: 'User not found' };
+      error.meta = { code: "404", error: 'Email not found' };
       throw error;
     }
+    console.log(`user ${email} is trying to get AES key for registration`);
 
-    const decryptedAesKey = rsaPairs[user.id].privateKey.decrypt(forge.util.decode64(encryptedAesKey), 'RSA-OAEP');
+    const decryptedAesKey = rsaPairs[email].privateKey.decrypt(forge.util.decode64(encryptedAesKey), 'RSA-OAEP');
 
-    console.log(`AES key for user ${user.id} is ${decryptedAesKey.toString('hex')}, ${decryptedAesKey.toString('base64')}`);
+    console.log(`AES key for user ${email} is ${decryptedAesKey.toString('hex')}, ${decryptedAesKey.toString('base64')}`);
 
-    //keys[user.id] = decryptedAesKey.toString('hex');
-    await setAESKey(user.id, decryptedAesKey.toString('hex'));
+    keys[email] = decryptedAesKey.toString('hex');
 
-    rsaPairs[user.id] = null;
+    rsaPairs[email] = null;
 
     return res.status(200).json({ done: "success" });
   } catch (error) {
@@ -59,20 +54,17 @@ async function getAESkey(req, res) {
   }
 }
 
+
 async function decryptionMobile(req, res, next) {
   if (!req.body.payload) return next();
   try {
-    if (typeof req.body.email === 'undefined' && typeof req.user === 'undefined') {
-      return res.status(400).json({ error: "Can't find keys without email or JWT" });
+    if (typeof req.body.email === 'undefined') {
+      return res.status(400).json({ error: "Can't find keys without email" });
     }
     const { email } = req.body;
-    const user = email ? await userService.findByEmail(email) : null;
-    const userId = user ? user.id : (req.user ? req.user.id : undefined);
-    if (typeof userId === 'undefined') {
-      return res.status(401).json({ error: 'Invalid or missing JWT token' });
-    }
+
     const { payload } = req.body;
-    const key = await getAESKey(userId);
+    const key = keys[email];
     const decrypted = decryptData(payload, key);
     req.body = JSON.parse(decrypted);
 
@@ -116,16 +108,16 @@ const decryptData = (encryptedData, aesKey) => {
   }
 };
 
-async function makePayloadMobile(data, userId, email) {
+async function makePayloadRegMobile(data, userId, email) {
   try {
-    const user = userId? await userService.findById(userId) : await userService.findByEmail(email);
-    if (!user) {
+
+    if(!email){
       let error = new Error("Not Found");
-      error.meta = { code: "404", error: 'User not found' };
+      error.meta = { code: "404", error: 'Email not found for making payload' };
       throw error;
     }
-
-    const aesKey = await getAESKey(user.id);
+    const aesKey = keys[email];
+    await setAESKey(userId, aesKey);
     if (!aesKey) {
       let error = new Error("Key not found");
       error.meta = { code: "404", error: 'AES key not found for the user' };
@@ -133,6 +125,7 @@ async function makePayloadMobile(data, userId, email) {
     }
 
     const payload = encryptMobile(data, aesKey);
+    keys[email] = null;
     return { payload };
   } catch (error) {
     console.error('Error creating payload:', error);
@@ -166,14 +159,9 @@ const encryptMobile = (data, aesKey) => {
   }
 };
 
-
 module.exports = {
-  genPublicKey,
+  genPublicKeyForReg,
   getAESkey,
   decryptionMobile,
-  encryptMobile,
-  makePayloadMobile,
-
+  makePayloadRegMobile,
 };
-
-
