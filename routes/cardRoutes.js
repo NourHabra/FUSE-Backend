@@ -3,7 +3,7 @@ const router = express.Router();
 const cardController = require('../controllers/cardController');
 const { validateRequest } = require('../middleware/validationMiddleware');
 const { createCardSchema, updateCardSchema, updatePINSchema, updateBalanceSchema } = require('../validationSchemas');
-const { decryptionMobile } = require('../middleware/encryptionMiddleware');
+const { decryptionMobile } = require('../middleware/mobileEncryptionMiddleware');
 
 
 router.get('/', cardController.index);
