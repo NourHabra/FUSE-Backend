@@ -1,6 +1,7 @@
 const accountService = require('../services/accountService');
 const { handleError } = require('./errorController');
-const { makePayload, makePayloadMobile } = require('../middleware/encryptionMiddleware');
+const { makePayload } = require('../middleware/encryptionMiddleware');
+const { makePayloadMobile } = require('../middleware/mobileEncryptionMiddleware');
 const validate = require('./validateController');
 
 async function index(req, res) {

@@ -4,7 +4,8 @@ const merchantService = require('../services/merchantService');
 const cardService = require('../services/cardService');
 const { handleError } = require('./errorController');
 const validate = require('./validateController');
-const { makePayload, makePayloadMobile } = require('../middleware/encryptionMiddleware');
+const { makePayload } = require('../middleware/encryptionMiddleware');
+const { makePayloadMobile } = require('../middleware/mobileEncryptionMiddleware');
 
 
 async function show(req, res) {

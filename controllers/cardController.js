@@ -4,8 +4,8 @@ const { handleError } = require("./errorController");
 const validate = require("./validateController");
 const {
 	makePayload,
-	makePayloadMobile,
 } = require("../middleware/encryptionMiddleware");
+const { makePayloadMobile } = require('../middleware/mobileEncryptionMiddleware');
 
 async function index(req, res) {
 	try {
