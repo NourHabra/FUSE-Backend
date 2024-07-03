@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 async function findById(id) {
   return await prisma.bills.findUnique({
     where: {
-      id: id
+      id: parseInt(id)  
     }
   })
 }
