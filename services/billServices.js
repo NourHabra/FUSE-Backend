@@ -1,86 +1,126 @@
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-
 async function findById(id) {
-  return await prisma.bills.findUnique({
-    where: {
-      id: parseInt(id)  
-    },
-    include: {
-      merchantAccount: {
-        select: {
-          user: {
-            select: {
-              name: true
-            }
-          }
-        }
-      }
-    }
-  })
+	return await prisma.bills.findUnique({
+		where: {
+			id: parseInt(id),
+		},
+		include: {
+			merchantAccount: {
+				select: {
+					user: {
+						select: {
+							name: true,
+						},
+					},
+				},
+			},
+		},
+	});
 }
 
-async function create(merchantAccount,  amount, details, categoryId) {
-  const category = await prisma.merchantCategory.findUnique({
-    where: {
-      id: categoryId
-    }
-  })
+async function create(merchantAccount, amount, details, categoryId) {
+	const category = await prisma.merchantCategory.findUnique({
+		where: {
+			id: categoryId,
+		},
+	});
 
-  return await prisma.bills.create({
-    data: {
-      merchantAccountNumber: merchantAccount,
-      amount: amount,
-      details: details? details : "",
-      category: category.name
-    }
-  })
+	return await prisma.bills.create({
+		data: {
+			merchantAccountNumber: merchantAccount,
+			amount: amount,
+			details: details ? details : "",
+			category: category.name,
+		},
+	});
 }
 
-async function pay(id, cardId, amount, merchantAccount) {
-  let transaction = [];
+// async function pay(id, cardId, amount, merchantAccount) {
+//   let transaction = [];
 
-  transaction.push(
-    prisma.bills.update({
-      where: {
-        id
-      },
-      data: {
-        status: "Paid",
-        cardId,
-        payedAt: new Date()
-      }
-    })
-  );
+//   transaction.push(
+//     prisma.bills.update({
+//       where: {
+//         id
+//       },
+//       data: {
+//         status: "Paid",
+//         cardId,
+//         payedAt: new Date()
+//       }
+//     })
+//   );
 
-  transaction.push(
-    prisma.cards.update({
-      where: {
-        id: cardId
-      },
-      data: {
-        balance: { decrement: amount}
-      }
-    })
-  );
+//   transaction.push(
+//     prisma.cards.update({
+//       where: {
+//         id: cardId
+//       },
+//       data: {
+//         balance: { decrement: amount}
+//       }
+//     })
+//   );
 
-  transaction.push(
-    prisma.accounts.update({
-      where: {
-        id: merchantAccount
-      },
-      data: {
-        balance: { increment: amount}
-      }
-    })
-  )
+//   transaction.push(
+//     prisma.accounts.update({
+//       where: {
+//         id: merchantAccount
+//       },
+//       data: {
+//         balance: { increment: amount}
+//       }
+//     })
+//   )
 
-  return await prisma.$transaction(transaction);
+//   return await prisma.$transaction(transaction);
+// }
+
+async function pay(id, cardId, amount, merchantAccountId) {
+	let transaction = [];
+
+	transaction.push(
+		prisma.bills.update({
+			where: {
+				id: parseInt(id),
+			},
+			data: {
+				status: "Paid",
+				cardId: parseInt(cardId),
+				payedAt: new Date(),
+			},
+		})
+	);
+
+	transaction.push(
+		prisma.cards.update({
+			where: {
+				id: parseInt(cardId),
+			},
+			data: {
+				balance: { decrement: amount },
+			},
+		})
+	);
+
+	transaction.push(
+		prisma.accounts.update({
+			where: {
+				id: parseInt(merchantAccountId),
+			},
+			data: {
+				balance: { increment: amount },
+			},
+		})
+	);
+
+	return await prisma.$transaction(transaction);
 }
 
 module.exports = {
-  create,
-  findById,
-  pay
-}
+	create,
+	findById,
+	pay,
+};
