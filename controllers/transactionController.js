@@ -268,7 +268,6 @@ module.exports = {
   storeTransfer,
   storeDeposit,
   storeWithdraw,
-  payBill,
   update,
   destroy,
   showTransactionsFromTo,
