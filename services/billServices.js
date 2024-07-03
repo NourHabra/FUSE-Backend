@@ -7,7 +7,7 @@ async function findById(id) {
     where: {
       id: parseInt(id)  
     },
-    select: {
+    include: {
       merchantAccount: {
         select: {
           user: {
