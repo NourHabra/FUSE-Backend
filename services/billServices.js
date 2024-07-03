@@ -37,86 +37,45 @@ async function create(merchantAccount, amount, details, categoryId) {
 	});
 }
 
-// async function pay(id, cardId, amount, merchantAccount) {
-//   let transaction = [];
+async function pay(id, cardId, amount, merchantAccount) {
+  let transaction = [];
 
-//   transaction.push(
-//     prisma.bills.update({
-//       where: {
-//         id
-//       },
-//       data: {
-//         status: "Paid",
-//         cardId,
-//         payedAt: new Date()
-//       }
-//     })
-//   );
+  transaction.push(
+    prisma.bills.update({
+      where: {
+        id
+      },
+      data: {
+        status: "Paid",
+        cardId,
+        payedAt: new Date()
+      }
+    })
+  );
 
-//   transaction.push(
-//     prisma.cards.update({
-//       where: {
-//         id: cardId
-//       },
-//       data: {
-//         balance: { decrement: amount}
-//       }
-//     })
-//   );
+  transaction.push(
+    prisma.cards.update({
+      where: {
+        id: cardId
+      },
+      data: {
+        balance: { decrement: amount}
+      }
+    })
+  );
 
-//   transaction.push(
-//     prisma.accounts.update({
-//       where: {
-//         id: merchantAccount
-//       },
-//       data: {
-//         balance: { increment: amount}
-//       }
-//     })
-//   )
+  transaction.push(
+    prisma.accounts.update({
+      where: {
+        id: merchantAccount
+      },
+      data: {
+        balance: { increment: amount}
+      }
+    })
+  )
 
-//   return await prisma.$transaction(transaction);
-// }
-
-async function pay(id, cardId, amount, merchantAccountId) {
-	let transaction = [];
-
-	transaction.push(
-		prisma.bills.update({
-			where: {
-				id: parseInt(id),
-			},
-			data: {
-				status: "Paid",
-				cardId: cardId.toString(),
-				payedAt: new Date(),
-			},
-		})
-	);
-
-	transaction.push(
-		prisma.cards.update({
-			where: {
-				id: parseInt(cardId),
-			},
-			data: {
-				balance: { decrement: amount },
-			},
-		})
-	);
-
-	transaction.push(
-		prisma.accounts.update({
-			where: {
-				id: parseInt(merchantAccountId),
-			},
-			data: {
-				balance: { increment: amount },
-			},
-		})
-	);
-
-	return await prisma.$transaction(transaction);
+  return await prisma.$transaction(transaction);
 }
 
 module.exports = {
