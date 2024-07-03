@@ -44,7 +44,7 @@ async function pay(id, cardId, amount, merchantAccount) {
   transaction.push(
     prisma.bills.update({
       where: {
-        id: parseInt(id)
+        id
       },
       data: {
         status: "Paid",
