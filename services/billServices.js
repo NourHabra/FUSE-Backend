@@ -6,6 +6,13 @@ async function findById(id) {
   return await prisma.bills.findUnique({
     where: {
       id: parseInt(id)  
+    },
+    include: {
+      merchantAccount: {
+        include: {
+          name: true,
+        }
+      }
     }
   })
 }
