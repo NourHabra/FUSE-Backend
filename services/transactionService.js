@@ -141,7 +141,6 @@ async function makeTransfer(id, sourceAccount, destinationAccount, amount) {
   return await prisma.$transaction(transactions);
 }
 
-
 async function deposit(id, sourceAccount, destinationAccount, amount) {
   const transactions = sourceAccount.user.role === "Vendor" ? [
     prisma.accounts.update({

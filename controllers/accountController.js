@@ -25,7 +25,7 @@ async function show(req, res) {
       error.meta = { code: "404", error: 'Account not found' };
       throw error;
     }
-    return res.json(await makePayload(account, req,user.id));
+    return res.json(await makePayloadMobile(account, req,user.id));
 
   } catch (error) {
     await handleError(error, res);

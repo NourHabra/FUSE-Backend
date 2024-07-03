@@ -5,6 +5,7 @@ const accountService = require('../services/accountService');
 const { handleError } = require('./errorController');
 const validate = require('./validateController');
 const { makePayload } = require('../middleware/encryptionMiddleware');
+const { makePayloadMobile } = require('../middleware/mobileEncryptionMiddleware');
 
 async function index(req, res) {
   try {
@@ -96,7 +97,7 @@ async function storeTransfer(req, res) {
       throw error;
     }
 
-    const transactions = await transactionService.transfer(transaction.id, sourceAccount, destinationAccount, amount);
+    const transactions = await transactionService.makeTransaction(transaction.id, sourceAccount, destinationAccount, amount);
 
     if (!transactions) {
       await transactionService.updateById(transaction.id, { status: "Failed" });
@@ -105,7 +106,7 @@ async function storeTransfer(req, res) {
       throw error;
     }
 
-    return res.status(201).json(await makePayload({ transactions }, req.user.id));
+    return res.status(201).json(await makePayloadMobile({ transactions }, req.user.id));
   } catch (error) {
     await handleError(error, res);
   }
@@ -129,7 +130,6 @@ async function storeDeposit(req, res) {
     }
 
     let transaction = await cashTransactionService.create("Deposit", account, amount, supervisorId);
-    //if (details) transactionService.addTransactionDetails(transaction.id, details);
 
     const deposit = await accountService.updateById(account, { balance: {increment: amount} });
     if(!deposit){
@@ -169,7 +169,6 @@ async function storeWithdraw(req, res) {
     }
 
     let transaction = await cashTransactionService.create("Withdraw", account, amount, supervisorId);
-    //if (details) transactionService.addTransactionDetails(transaction.id, details);
 
     const withdraw = await accountService.updateById(account, { balance: {decrement: amount} });
     if(!withdraw){
@@ -182,69 +181,6 @@ async function storeWithdraw(req, res) {
     transaction = await cashTransactionService.updateById(transaction.id, { status: "Completed" });
 
     return res.status(201).json(await makePayload({ transaction }, req.user.id));
-  } catch (error) {
-    await handleError(error, res);
-  }
-}
-
-async function payBill(req, res) {
-  try {
-    const billId = parseInt(await validate.isNumber(req.params.id, "Bill ID"));
-    const { sourceAccount, accepted } = req.body;
-
-    const sAccount = await accountService.findById(sourceAccount);
-    const bill = await transactionService.findById(billId);
-
-    if (bill.sourceAccount) {
-      if (bill.sourceAccount !== sourceAccount) {
-        let error = new Error("Miss Matched");
-        error.meta = { code: "409", error: "Source account does not match bill source account" };
-        throw error;
-      }
-    } else {
-      await transactionService.updateById(billId, { sourceAccount });
-    }
-
-    if (!sAccount) {
-      let error = new Error("Not Found");
-      error.meta = { code: "404", error: "User account not found" };
-      throw error;
-    } else if (!bill) {
-      let error = new Error("Not Found");
-      error.meta = { code: "404", error: "Bill not found" };
-      throw error;
-    } else if (bill.status !== "Pending") {
-      let error = new Error("Invalid Status");
-      error.meta = { code: "409", error: "Bill status is not valid" };
-      throw error;
-    }
-
-    const dAccount = await accountService.findById(bill.destinationAccount);
-
-    if ((sAccount.balance - bill.amount) < 0) {
-      let error = new Error("Insufficient Balance");
-      error.meta = { code: "409", error: "User has insufficient balance" };
-      throw error;
-    }
-
-    if (accepted) {
-      const transactions = await transactionService.makeTransaction([
-        accountService.updateById(sourceAccount, { balance: sAccount.balance - bill.amount }),
-        accountService.updateById(bill.destinationAccount, { balance: dAccount.balance + bill.amount }),
-        transactionService.updateById(billId, { status: "Completed" })
-      ]);
-
-      if (!transactions) {
-        await transactionService.updateById(billId, { status: "Failed" });
-        let error = new Error("Failed");
-        error.meta = { code: "409", error: "Failed to pay bill" };
-        throw error;
-      }
-      return res.status(201).json(await makePayload(transactions, req.user.id));
-    } else {
-      const transaction = await transactionService.updateById(billId, { status: "Declined" });
-      return res.status(400).json(await makePayload(transaction, req.user.id));
-    }
   } catch (error) {
     await handleError(error, res);
   }
