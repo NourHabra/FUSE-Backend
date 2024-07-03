@@ -69,7 +69,7 @@ async function pay(req, res) {
       let error = new Error("Not Found");
       error.meta = { code: "404", error: 'Card not found' };
       throw error;
-    } else if (card.cvv !== cvv, expiryDate.getMonth() + 1 !== month, expiryDate.getFullYear() !== year) {
+    } else if (card.cvv !== cvv, expiryDate.getMonth() + 1 !== parseInt(month), expiryDate.getFullYear() !== parseInt(year)) {
       let error = new Error("Invalid Card Details");
       error.meta = { code: "409", error: `Card details are invalid` };
       throw error;
