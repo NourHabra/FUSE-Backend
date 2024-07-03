@@ -88,7 +88,7 @@ async function pay(id, cardId, amount, merchantAccountId) {
 			},
 			data: {
 				status: "Paid",
-				cardId: parseInt(cardId),
+				cardId: cardId.toString(),
 				payedAt: new Date(),
 			},
 		})
