@@ -55,7 +55,7 @@ async function store(req, res) {
 
 async function pay(req, res) {
   try {
-		const id = await validate.checkEmpty(req.params.id, "id");
+		const id = parseInt(await validate.checkEmpty(req.params.id, "id"));
     const { cardId, cvv, month, year } = req.body;
     const bill = await billService.findById(id);
     const card = await cardService.findById(cardId);
