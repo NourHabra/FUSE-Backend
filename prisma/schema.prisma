@@ -161,7 +161,7 @@ enum AccountStatus {
 }
 
 enum TransactionType {
-  Transferer
+  Transfer
   Bill
   Deposit
   Withdraw

@@ -165,7 +165,7 @@ async function createTransactions(sourceAccounts, destinationAccounts, numTransa
         amount,
         sourceAccount: sourceAccount.id,
         destinationAccount: destinationAccount.id,
-        type: 'Transferer',
+        type: 'Transfer',
       },
     });
   }
