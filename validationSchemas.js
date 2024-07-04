@@ -151,7 +151,7 @@ const updateUserSchema = Joi.object({
 // Bill
 
 const payBillSchema = Joi.object({
-  cardId: Joi.number().integer().required(),
+  cardId: Joi.string().length(16).required(),
   cvv: Joi.number().positive().required(),
   month: Joi.string().max(2).pattern(/^[0-9]+$/).required(),
   year: Joi.string().length(4).pattern(/^[0-9]+$/).required(),
