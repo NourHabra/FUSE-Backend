@@ -68,10 +68,10 @@ async function showTopUp(req, res) {
 
 async function storeTransfer(req, res) {
   try {
-    const { sourceAccount, destinationAccount, amount, details } = req.body;
+    const { type, destinationAccount, amount, details } = req.body;
 
     const dAccount = await accountService.findById(destinationAccount);
-    const sAccount = await accountService.findById(sourceAccount);
+    const sAccount = await accountService.findCheckingById(req.user.id);
 
     if (!dAccount) {
       let error = new Error("Not Found");
@@ -81,13 +81,9 @@ async function storeTransfer(req, res) {
       let error = new Error("Not Found");
       error.meta = { code: "404", error: 'Source account not found' };
       throw error;
-    } else if (amount <= 0) {
-      let error = new Error("Wrong Amount");
-      error.meta = { code: "409", error: "Amount must be greater than 0" };
-      throw error;
     }
 
-    const transaction = await transactionService.create("Transferer", sourceAccount, destinationAccount, amount);
+    const transaction = await transactionService.create(type, sAccount.id, dAccount.id, amount);
     if (details) transactionService.addTransactionDetails(transaction.id, details);
 
     if ((sAccount.balance - amount) < 0) {
@@ -97,7 +93,7 @@ async function storeTransfer(req, res) {
       throw error;
     }
 
-    const transactions = await transactionService.makeTransaction(transaction.id, sourceAccount, destinationAccount, amount);
+    const transactions = await transactionService.makeTransfer(transaction.id, sAccount, dAccount, amount);
 
     if (!transactions) {
       await transactionService.updateById(transaction.id, { status: "Failed" });
@@ -131,14 +127,14 @@ async function storeDeposit(req, res) {
 
     let transaction = await cashTransactionService.create("Deposit", account, amount, supervisorId);
 
-    const deposit = await accountService.updateById(account, { balance: {increment: amount} });
-    if(!deposit){
+    const deposit = await accountService.updateById(account, { balance: { increment: amount } });
+    if (!deposit) {
       transaction = await cashTransactionService.updateById(transaction.id, { status: "Failed" });
       let error = new Error("Failed");
       error.meta = { code: "409", error: "Failed to complete deposit" };
       throw error;
     }
-    
+
     transaction = await cashTransactionService.updateById(transaction.id, { status: "Completed" });
 
     return res.status(201).json(await makePayload({ transaction }, req.user.id));
@@ -170,14 +166,14 @@ async function storeWithdraw(req, res) {
 
     let transaction = await cashTransactionService.create("Withdraw", account, amount, supervisorId);
 
-    const withdraw = await accountService.updateById(account, { balance: {decrement: amount} });
-    if(!withdraw){
+    const withdraw = await accountService.updateById(account, { balance: { decrement: amount } });
+    if (!withdraw) {
       transaction = await cashTransactionService.updateById(transaction.id, { status: "Failed" });
       let error = new Error("Failed");
       error.meta = { code: "409", error: "Failed to complete withdraw" };
       throw error;
     }
-    
+
     transaction = await cashTransactionService.updateById(transaction.id, { status: "Completed" });
 
     return res.status(201).json(await makePayload({ transaction }, req.user.id));

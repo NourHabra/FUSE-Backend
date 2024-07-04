@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { Role, AccountType, AccountStatus, userStatus } = require('@prisma/client');
+const { Role, AccountType, AccountStatus, userStatus, TransactionType } = require('@prisma/client');
 
 const MerchantCategories = [
   'Rent/Mortgage',
@@ -119,7 +119,7 @@ const updateMerchantSchema = Joi.object({
 // Transaction
 
 const createTransferSchema = Joi.object({
-  sourceAccount: Joi.number().integer().required(),
+  type: Joi.string().valid(...Object.values(TransactionType)).required(),
   destinationAccount: Joi.number().integer().required(),
   amount: Joi.number().positive().required(),
   details: Joi.string(),
