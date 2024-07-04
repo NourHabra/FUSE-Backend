@@ -136,7 +136,7 @@ async function login(req, res) {
     } else if (await bcrypt.compare(password, user.password)) {
       const token = jwt.sign({ id: user.id, role: user.role }, secretKey, { expiresIn: '30m' });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
-      userAccounts = await accountService.findByUserId(user.id);
+      userAccounts = await accountService.findCheckingById(user.id);
       return res.json(await makePayloadMobile({jwt: token, user, userAccounts}, user.id));
     } else {
       let error = new Error("Wrong password");
