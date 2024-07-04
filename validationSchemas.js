@@ -126,20 +126,20 @@ const createTransferSchema = Joi.object({
   destinationAccount: Joi.number().integer().required(),
   sourceAccount: Joi.number().integer(),
   amount: Joi.number().positive().required(),
-  details: Joi.string(),
+  details: Joi.string().optional().allow(''),
 });
 
 const createDWSchema = Joi.object({
   account: Joi.number().integer().required(),
   amount: Joi.number().positive().required(),
-  details: Joi.string(),
+  details: Joi.string().optional().allow(''),
 });
 
 const updateTransactionSchema = Joi.object({
   sourceAccount: Joi.number().integer().required(),
   destinationAccount: Joi.number().integer().required(),
   amount: Joi.number().positive().required(),
-  details: Joi.string(),
+  details: Joi.string().optional().allow(''),
 });
 
 // User
@@ -163,7 +163,7 @@ const payBillSchema = Joi.object({
 
 const createBillSchema = Joi.object({
   amount: Joi.number().integer().required(),
-  details: Joi.string(),
+  details: Joi.string().optional().allow(''),
 });
 
 

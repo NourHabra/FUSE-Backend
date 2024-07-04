@@ -68,10 +68,13 @@ async function showTopUp(req, res) {
 
 async function storeTransfer(req, res) {
   try {
-    const { type, destinationAccount, amount, details } = req.body;
+    const { type, destinationAccount, sourceAccount, amount, details } = req.body;
 
     const dAccount = await accountService.findById(destinationAccount);
-    const sAccount = await accountService.findCheckingById(req.user.id);
+    let sAccount = await accountService.findCheckingById(req.user.id);
+    if( sourceAccount ){
+      sAccount = await accountService.findById(sourceAccount);
+    }
 
     if (!dAccount) {
       let error = new Error("Not Found");
@@ -102,6 +105,7 @@ async function storeTransfer(req, res) {
       throw error;
     }
 
+    console.log(type, " is done form", sAccount.id, " to ", dAccount.id, " with amount", amount);
     return res.status(201).json(await makePayloadMobile({ transactions }, req.user.id));
   } catch (error) {
     await handleError(error, res);
