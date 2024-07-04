@@ -36,7 +36,7 @@ async function register(req, res) {
 
     const token = jwt.sign({ id: newUser.id, role }, secretKey, { expiresIn: '30m' });
     res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
-    return res.json(await makePayloadRegMobile({ jwt: token, user }, user.id, email));
+    return res.json(await makePayloadRegMobile({ jwt: token, newUser }, newUser.id, email));
 
   } catch (error) {
     await handleError(error, res);
