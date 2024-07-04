@@ -54,7 +54,6 @@ async function getAESkey(req, res) {
   }
 }
 
-
 async function decryptionMobile(req, res, next) {
   if (!req.body.payload) return next();
   try {

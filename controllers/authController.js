@@ -23,7 +23,7 @@ async function register(req, res) {
     const salt = await bcrypt.genSalt();
     const { name, role, email, phone, birth, password } = req.body;
     const { category, workPermit } = req.body;
-    const { monthlyIncome } = req.body;
+    const monthlyIncome = parseInt(req.body.monthlyIncome);
 
     const newUser = await userService.create(name, role, email, phone, birth, await bcrypt.hash(password, salt));
     const account = await accountService.create(newUser.id, 0, "Checking");
@@ -36,7 +36,7 @@ async function register(req, res) {
 
     const token = jwt.sign({ id: newUser.id, role }, secretKey, { expiresIn: '30m' });
     res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
-    return res.json(await makePayloadRegMobile({jwt: token, user}, user.id, email));
+    return res.json(await makePayloadRegMobile({ jwt: token, user }, user.id, email));
 
   } catch (error) {
     await handleError(error, res);
@@ -53,10 +53,10 @@ async function registerEmployee(req, res) {
     const newUser = await userService.create(name, "Employee", email, phone, birth, await bcrypt.hash(password, salt));
     const account = await accountService.create(newUser.id, 0, "Checking");
 
-    if(newUser && account){
+    if (newUser && account) {
       console.log("New Employee created successfully ID", newUser.id);
       res.status(201).json(await makePayload(newUser, req.user.id));
-    }else{
+    } else {
       console.log("Error creating new Employee");
       res.status(400).json({ message: 'Error creating new Employee' });
     }
@@ -137,7 +137,7 @@ async function login(req, res) {
       const token = jwt.sign({ id: user.id, role: user.role }, secretKey, { expiresIn: '30m' });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
       userAccounts = await accountService.findCheckingById(user.id);
-      return res.json(await makePayloadMobile({jwt: token, user, userAccounts}, user.id));
+      return res.json(await makePayloadMobile({ jwt: token, user, userAccounts }, user.id));
     } else {
       let error = new Error("Wrong password");
       error.meta = { code: "409", error: 'Password is wrong' };
@@ -155,7 +155,7 @@ async function loginDashboard(req, res) {
     const { email, password } = req.body;
 
     const user = await userService.findByEmail(email);
-    if(!["Admin", "Employee"].includes(user.role)) {
+    if (!["Admin", "Employee"].includes(user.role)) {
       let error = new Error("Unauthorized");
       error.meta = { code: "401", error: 'User not unauthorized to login' };
       throw error;
@@ -168,7 +168,7 @@ async function loginDashboard(req, res) {
     } else if (await bcrypt.compare(password, user.password)) {
       const token = jwt.sign({ id: user.id, role: user.role }, secretKey, { expiresIn: '30m' });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
-      return res.json(await makePayload({jwt: token}, user.id));
+      return res.json(await makePayload({ jwt: token }, user.id));
     } else {
       let error = new Error("Wrong password");
       error.meta = { code: "409", error: 'Password is wrong' };
