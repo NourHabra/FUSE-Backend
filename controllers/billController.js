@@ -93,8 +93,18 @@ async function pay(req, res) {
   }
 }
 
+async function showUnpaid (req, res) {
+  try {
+    const bills = await billService.findByMerchantId(req.user.id);
+    return res.json(await makePayloadMobile(bills, req.user.id));
+  } catch (error) {
+    await handleError(error, res);
+  }
+}
+
 module.exports = {
   store,
   pay,
-  show
+  show,
+  showUnpaid
 };

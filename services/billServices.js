@@ -20,6 +20,24 @@ async function findById(id) {
 	});
 }
 
+async function findByMerchantId(id) {
+  const merchantAccount = await prisma.accounts.findFirst({
+    where: {
+      user: {
+        id
+      },
+      type: "Checking",
+    }
+  });
+
+  return await prisma.bills.findMany({
+    where: {
+      merchantAccountNumber: merchantAccount.id,
+      status: "Pending"
+    },
+  });
+}
+
 async function create(merchantAccount, amount, details, categoryId) {
 	const category = await prisma.merchantCategory.findUnique({
 		where: {
@@ -84,5 +102,6 @@ async function payBill(id, cardId, amount, merchantAccount) {
 module.exports = {
   create,
   findById,
-  payBill
+  payBill,
+  findByMerchantId
 }
