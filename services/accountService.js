@@ -49,6 +49,17 @@ async function findByUserId(id){
   });
 }
 
+async function findUserById(accountId) {
+  return await prisma.accounts.findUnique({
+    where: {
+      id: accountId
+    },
+    include: {
+      user: true
+    }
+  })
+}
+
 async function findCheckingById(userId) {
   return await prisma.accounts.findFirst({
     where:{
@@ -89,5 +100,6 @@ module.exports = {
   updateById,
   disconnect,
   findByUserId,
-  findCheckingById
+  findCheckingById,
+  findUserById
 };

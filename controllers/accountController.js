@@ -35,9 +35,26 @@ async function show(req, res) {
   }
 }
 
-async function showByUserId(req, res) {
+async function showUserAccounts(req, res) {
   try {
     const accounts = await accountService.findByUserId(req.user.id);
+
+    if(!accounts){
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'Accounts not found' };
+      throw error;
+    }
+
+    return res.json(await makePayloadMobile(accounts, req.user.id));
+
+  }catch(error){
+    await handleError(error, res);
+  }
+}
+
+async function showByUserId(req, res) {
+  try {
+    const accounts = await accountService.findUserById(req.params.id);
 
     if(!accounts){
       let error = new Error("Not Found");
@@ -97,4 +114,4 @@ async function destroy(req, res) {
   }
 }
 
-module.exports = { index, show, store, update, destroy, showByUserId };
+module.exports = { index, show, store, update, destroy, showByUserId, showUserAccounts };
