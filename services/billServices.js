@@ -38,49 +38,52 @@ async function create(merchantAccount,  amount, details, categoryId) {
   })
 }
 
-async function pay(id, cardId, amount, merchantAccount) {
-  let transaction = [];
+async function payBill(id, cardId, amount, merchantAccount) {
+  const bill = await prisma.bills.findUnique({
+    where: { id: parseInt(id) }
+  });
 
-  transaction.push(
+  if (!bill) {
+    throw new Error('Bill not found');
+  }
+
+  const transaction = await prisma.$transaction([
     prisma.bills.update({
-      where: {
-        id
-      },
+      where: { id: bill.id },
       data: {
         status: "Paid",
         cardId,
         payedAt: new Date()
       }
-    })
-  );
-
-  transaction.push(
+    }),
     prisma.cards.update({
       where: {
         id: cardId
       },
       data: {
-        balance: { decrement: amount}
+        balance: { decrement: amount }
       }
-    })
-  );
-
-  transaction.push(
+    }),
     prisma.accounts.update({
       where: {
         id: merchantAccount
       },
       data: {
-        balance: { increment: amount}
+        balance: { increment: amount }
       }
     })
-  )
+  ]);
 
-  return await prisma.$transaction(transaction);
+  if (!transaction) {
+    throw new Error('Transaction failed');
+  }
+
+  return transaction;
 }
+
 
 module.exports = {
   create,
   findById,
-  pay
+  payBill
 }
