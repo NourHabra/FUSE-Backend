@@ -32,7 +32,7 @@ const signUpSchema = Joi.object({
   password: Joi.string().pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/).required(),
   rPassword: Joi.ref('password'),
   category: Joi.string().valid(...MerchantCategories),
-  workPermit: Joi.string(),
+  workPermit: Joi.string().not().required(),
   monthlyIncome: Joi.number(),
   // category: Joi.string().valid(...MerchantCategories).when('role', { is: 'Merchant', then: Joi.required() }),
   // workPermit: Joi.string().when('role', { is: 'Merchant', then: Joi.required() }),
