@@ -22,7 +22,7 @@ async function genPublicKeyForReg(req, res) {
 
     rsaPairs[email] = rsaKeyPair;
 
-    console.log(`Public key for user ${user.id} is ${publicKeyPem}`);
+    console.log(`Public key for user ${email} is ${publicKeyPem}`);
 
     return res.status(200).json({ publicKey: publicKeyPem });
   } catch (error) {
