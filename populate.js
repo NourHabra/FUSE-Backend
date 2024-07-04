@@ -114,7 +114,7 @@ async function createUser(role, name, email, phone, birth, password) {
     await prisma.customer.create({
       data: {
         userId: user.id,
-        yearlyIncome: 50000,
+        monthlyIncome: 50000,
       },
     });
   }

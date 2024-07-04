@@ -23,15 +23,15 @@ async function register(req, res) {
     const salt = await bcrypt.genSalt();
     const { name, role, email, phone, birth, password } = req.body;
     const { category, workPermit } = req.body;
-    const { yearlyIncome } = req.body;
+    const { monthlyIncome } = req.body;
 
     const newUser = await userService.create(name, role, email, phone, birth, await bcrypt.hash(password, salt));
     const account = await accountService.create(newUser.id, 0, "Checking");
 
     if (role === "Merchant") {
-      await merchantService.create(newUser.id, category, workPermit);
+      await merchantService.create(newUser.id, category, workPermit | "");
     } else if (role === "Customer") {
-      await customerService.create(newUser.id, yearlyIncome);
+      await customerService.create(newUser.id, monthlyIncome);
     }
 
     const token = jwt.sign({ id: newUser.id, role }, secretKey, { expiresIn: '30m' });
@@ -99,7 +99,7 @@ async function registerEmployee(req, res) {
 // async function registerCustomer(req, res) {
 //   try {
 //     const salt = await bcrypt.genSalt();
-//     let { name, email, phone, birth, password, rPassword, yearlyIncome } = req.body;
+//     let { name, email, phone, birth, password, rPassword, monthlyIncome } = req.body;
 
 //     email = await validate.isEmail(email);
 //     phone = await validate.isPhone(phone);
@@ -107,10 +107,10 @@ async function registerEmployee(req, res) {
 //     name = await validate.checkEmpty(name, "name");
 //     password = await validate.matchPassword(password, rPassword);
 //     password = await bcrypt.hash(password, salt);
-//     yearlyIncome = parseFloat(await validate.isNumber(yearlyIncome));
+//     monthlyIncome = parseFloat(await validate.isNumber(monthlyIncome));
 
 //     const newUser = await userService.create(name, "Customer", email, phone, birth, password);
-//     await customerService.create(newUser.id, yearlyIncome);
+//     await customerService.create(newUser.id, monthlyIncome);
 
 //     const token = jwt.sign({ id: newUser.id, role: "Customer" }, secretKey, { expiresIn: '30m' });
 //     res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });

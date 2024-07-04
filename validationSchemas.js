@@ -31,9 +31,12 @@ const signUpSchema = Joi.object({
   birth: Joi.string().pattern(/^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[0-2])\/\d{4}$/).required(),
   password: Joi.string().pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/).required(),
   rPassword: Joi.ref('password'),
-  category: Joi.string().valid(...MerchantCategories).when('role', { is: 'Merchant', then: Joi.required() }),
-  workPermit: Joi.string().when('role', { is: 'Merchant', then: Joi.required() }),
-  yearlyIncome: Joi.number().when('role', { is: 'Customer', then: Joi.required() }),
+  category: Joi.string().valid(...MerchantCategories),
+  workPermit: Joi.string(),
+  monthlyIncome: Joi.number(),
+  // category: Joi.string().valid(...MerchantCategories).when('role', { is: 'Merchant', then: Joi.required() }),
+  // workPermit: Joi.string().when('role', { is: 'Merchant', then: Joi.required() }),
+  // monthlyIncome: Joi.number().when('role', { is: 'Customer', then: Joi.required() }),
 });
 
 const signUpSchemaEmployee = Joi.object({
@@ -121,6 +124,7 @@ const updateMerchantSchema = Joi.object({
 const createTransferSchema = Joi.object({
   type: Joi.string().valid(...Object.values(TransactionType)).required(),
   destinationAccount: Joi.number().integer().required(),
+  sourceAccount: Joi.number().integer(),
   amount: Joi.number().positive().required(),
   details: Joi.string(),
 });
