@@ -52,7 +52,7 @@ async function findByUserId(id){
 async function findUserById(accountId) {
   return await prisma.accounts.findUnique({
     where: {
-      id: accountId
+      id: parseInt(accountId)
     },
     include: {
       user: true
