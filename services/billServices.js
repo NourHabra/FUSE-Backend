@@ -1,41 +1,40 @@
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-
 async function findById(id) {
-  return await prisma.bills.findUnique({
-    where: {
-      id: parseInt(id)  
-    },
-    include: {
-      merchantAccount: {
-        select: {
-          user: {
-            select: {
-              name: true
-            }
-          }
-        }
-      }
-    }
-  })
+	return await prisma.bills.findUnique({
+		where: {
+			id: parseInt(id),
+		},
+		include: {
+			merchantAccount: {
+				select: {
+					user: {
+						select: {
+							name: true,
+						},
+					},
+				},
+			},
+		},
+	});
 }
 
-async function create(merchantAccount,  amount, details, categoryId) {
-  const category = await prisma.merchantCategory.findUnique({
-    where: {
-      id: categoryId
-    }
-  })
+async function create(merchantAccount, amount, details, categoryId) {
+	const category = await prisma.merchantCategory.findUnique({
+		where: {
+			id: categoryId,
+		},
+	});
 
-  return await prisma.bills.create({
-    data: {
-      merchantAccountNumber: merchantAccount,
-      amount: amount,
-      details: details? details : "",
-      category: category.name
-    }
-  })
+	return await prisma.bills.create({
+		data: {
+			merchantAccountNumber: merchantAccount,
+			amount: amount,
+			details: details ? details : "",
+			category: category.name,
+		},
+	});
 }
 
 async function payBill(id, cardId, amount, merchantAccount) {
