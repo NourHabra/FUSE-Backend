@@ -20,8 +20,8 @@ PORT = process.env.PORT | 3030;
 const app = express();
 
 const corsOptions = {
-	origin: '*', // Allow requests from all origins
-	optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
+	origin: '*', 
+	optionsSuccessStatus: 200 
 }
 
 app.use(cors(corsOptions));
