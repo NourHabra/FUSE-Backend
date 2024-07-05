@@ -15,3 +15,5 @@ async function logServer(req, res) {
 	console.log("Requset Suscessful");
 	return;
 }
+
+module.exports = { logServer };
