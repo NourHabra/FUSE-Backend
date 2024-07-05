@@ -7,17 +7,17 @@ const validate = require('./validateController');
 const { makePayload } = require('../middleware/encryptionMiddleware');
 const { makePayloadMobile } = require('../middleware/mobileEncryptionMiddleware');
 
-async function index(req, res) {
+async function index(req, res, next) {
   try {
     const allTransactions = await transactionService.findAll();
     console.log("sending all transactions");
-    return res.json(await makePayload(allTransactions, req.user.id));
+    return res.json(await makePayload(allTransactions, req.user.id)).next();
   } catch (error) {
     await handleError(error, res, req);
   }
 }
 
-async function show(req, res) {
+async function show(req, res, next) {
   try {
     const id = parseInt(await validate.isNumber(req.params.id, "id"));
     const transaction = await transactionService.findById(id);
@@ -27,13 +27,13 @@ async function show(req, res) {
       error.meta = { code: "404", error: 'Transaction not found' };
       throw error;
     }
-    return res.json(await makePayload(transaction, req.user.id));
+    return res.json(await makePayload(transaction, req.user.id)).next();
   } catch (error) {
     await handleError(error, res, req);
   }
 }
 
-async function showTransactionsFromTo(req, res) {
+async function showTransactionsFromTo(req, res, next) {
   try {
     const { sourceRole, destinationRole } = req.body;
     const transactions = await transactionService.findAllFromTo(sourceRole, destinationRole);
@@ -44,14 +44,14 @@ async function showTransactionsFromTo(req, res) {
       throw error;
     }
     console.log("transactions from ", sourceRole, " to ", destinationRole, " are going to be returned");
-    return res.json(await makePayload(transactions, req.user.id));
+    return res.json(await makePayload(transactions, req.user.id)).next();
 
   } catch (error) {
     await handleError(error, res, req);
   }
 }
 
-async function showTopUp(req, res) {
+async function showTopUp(req, res, next) {
   try {
     transactions = await cashTransactionService.findAllTopUp();
     if (!transactions) {
@@ -60,13 +60,13 @@ async function showTopUp(req, res) {
       throw error;
     }
     console.log("TopUp is ready to be sent");
-    return res.status(201).json(await makePayload(transactions, req.user.id));
+    return res.status(201).json(await makePayload(transactions, req.user.id)).next();
   } catch (error) {
-    await handleError(error, res)
+    await handleError(error, res, next)
   }
 }
 
-async function storeTransfer(req, res) {
+async function storeTransfer(req, res, next) {
   try {
     const { type, destinationAccount, sourceAccount, amount, details } = req.body;
 
@@ -106,13 +106,13 @@ async function storeTransfer(req, res) {
     }
 
     console.log(type, " is done form", sAccount.id, " to ", dAccount.id, " with amount", amount);
-    return res.status(201).json(await makePayloadMobile({ transactions }, req.user.id));
+    return res.status(201).json(await makePayloadMobile({ transactions }, req.user.id)).next();
   } catch (error) {
     await handleError(error, res, req);
   }
 }
 
-async function storeDeposit(req, res) {
+async function storeDeposit(req, res, next) {
   try {
     const { account, amount } = req.body;
 
@@ -141,13 +141,13 @@ async function storeDeposit(req, res) {
 
     transaction = await cashTransactionService.updateById(transaction.id, { status: "Completed" });
 
-    return res.status(201).json(await makePayload({ transaction }, req.user.id));
+    return res.status(201).json(await makePayload({ transaction }, req.user.id)).next();
   } catch (error) {
     await handleError(error, res, req);
   }
 }
 
-async function storeWithdraw(req, res) {
+async function storeWithdraw(req, res, next) {
   try {
     const { account, amount } = req.body;
 
@@ -180,13 +180,13 @@ async function storeWithdraw(req, res) {
 
     transaction = await cashTransactionService.updateById(transaction.id, { status: "Completed" });
 
-    return res.status(201).json(await makePayload({ transaction }, req.user.id));
+    return res.status(201).json(await makePayload({ transaction }, req.user.id)).next();
   } catch (error) {
     await handleError(error, res, req);
   }
 }
 
-async function update(req, res) {
+async function update(req, res, next) {
   const id = parseInt(await validate.isNumber(req.params.id, "id"));
   const { sourceAccount, destinationAccount, amount } = req.body;
 
@@ -237,19 +237,19 @@ async function update(req, res) {
   if (result === "") { result = "Nothing changed" }
   //console.log(result);
 
-  return res.status(200).json(await makePayload(result, req.user.id));
+  return res.status(200).json(await makePayload(result, req.user.id)).next();
 
 }
 
-async function patchDeposit(req, res) {
+async function patchDeposit(req, res, next) {
 
 }
 
-async function patchWithdraw(req, res) {
+async function patchWithdraw(req, res, next) {
 
 }
 
-async function destroy(req, res) {
+async function destroy(req, res, next) {
   const id = parseInt(await validate.isNumber(req.params.id, "id"));
   const oldTransaction = await transactionService.deleteById(id);
 
@@ -258,7 +258,7 @@ async function destroy(req, res) {
     error.meta = { code: "404", error: "Transaction not found" };
     throw error;
   } else {
-    return res.status(200).json(await makePayload("Transaction deleted", req.user.id));
+    return res.status(200).json(await makePayload("Transaction deleted", req.user.id)).next();
   }
 }
 

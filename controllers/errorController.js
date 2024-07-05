@@ -29,7 +29,7 @@ async function handleError(error, res, req) {
 	  delete requestBody.jwt;
 	}
 
-	if( req.user.id){
+	if( req.user.id ){
 		requestBody.userID = req.user.id;
 	}
   
