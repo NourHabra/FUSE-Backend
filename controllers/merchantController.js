@@ -8,7 +8,7 @@ async function index(req, res) {
     const allMerchants = await merchantService.findAll();
     return res.json(await makePayload(allMerchants, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -25,7 +25,7 @@ async function show(req, res) {
     }
     return res.json(await makePayload(merchant, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -44,7 +44,7 @@ async function update(req, res) {
     const updatedMerchant = await merchantService.updateById(id, { name, email, phone, birth, status, category, workPermit });
     return res.status(200).json(await makePayload(updatedMerchant, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -60,7 +60,7 @@ async function destroy(req, res) {
     }
     return res.json(await makePayload({ message: 'Merchant deleted successfully' }, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 

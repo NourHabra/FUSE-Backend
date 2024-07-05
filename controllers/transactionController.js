@@ -13,7 +13,7 @@ async function index(req, res) {
     console.log("sending all transactions");
     return res.json(await makePayload(allTransactions, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -29,7 +29,7 @@ async function show(req, res) {
     }
     return res.json(await makePayload(transaction, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -47,7 +47,7 @@ async function showTransactionsFromTo(req, res) {
     return res.json(await makePayload(transactions, req.user.id));
 
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -108,7 +108,7 @@ async function storeTransfer(req, res) {
     console.log(type, " is done form", sAccount.id, " to ", dAccount.id, " with amount", amount);
     return res.status(201).json(await makePayloadMobile({ transactions }, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -143,7 +143,7 @@ async function storeDeposit(req, res) {
 
     return res.status(201).json(await makePayload({ transaction }, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -182,7 +182,7 @@ async function storeWithdraw(req, res) {
 
     return res.status(201).json(await makePayload({ transaction }, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 

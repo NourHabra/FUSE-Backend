@@ -9,7 +9,7 @@ async function index(req, res) {
     const allAccounts = await accountService.findAll();
     return res.json(await makePayload(allAccounts, req,user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   } finally {
     await accountService.disconnect();
   }
@@ -29,7 +29,7 @@ async function show(req, res) {
     return res.json(await makePayloadMobile(account, req,user.id));
 
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   } finally {
     await accountService.disconnect();
   }
@@ -48,7 +48,7 @@ async function showUserAccounts(req, res) {
     return res.json(await makePayloadMobile(accounts, req.user.id));
 
   }catch(error){
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -65,7 +65,7 @@ async function showByUserId(req, res) {
     return res.json(await makePayloadMobile(accounts, req.user.id));
 
   }catch(error){
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -76,7 +76,7 @@ async function store(req, res) {
     const newAccount = await accountService.create(userId, balance, type);
     return res.json(await makePayload(newAccount, req,user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   } finally {
     await accountService.disconnect();
   }
@@ -90,7 +90,7 @@ async function update(req, res) {
     const updatedAccount = await accountService.updateById(id, { userId, balance, type, status, name });
     res.json(await makePayload(updatedAccount, req,user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   } finally {
     await accountService.disconnect();
   }
@@ -108,7 +108,7 @@ async function destroy(req, res) {
     }
     return res.json(await makePayload({ message: 'Account deleted successfully' }, req,user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   } finally {
     await accountService.disconnect();
   }

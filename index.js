@@ -41,19 +41,6 @@ app.use("/auth", authRouter);
 
 app.use(authenticateJWT);
 
-app.use((req, res, next) => {
-	const requestBody = { ...req.body };
-	if (requestBody.jwt) {
-	  delete requestBody.jwt;
-	}
-	requestBody.userID = req.user.id;
-  
-	console.log(`Destination: ${req.originalUrl}`);
-	console.log(`Request Body: ${JSON.stringify(requestBody)}`);
-	next();
-  });
-
-
 app.use("/user", userRoutes);
 app.use("/beneficiarie", beneficiarieRouter);
 app.use("/merchant", merchantRoutes);
@@ -61,6 +48,24 @@ app.use("/account", accountRoutes);
 app.use("/card", cardRoutes);
 app.use("/transaction", transactionRoutes);
 app.use("/bill", billRoutes);
+
+// for log Server
+app.use((req, res, next) => {
+	const requestBody = { ...req.body };
+	if (requestBody.jwt) {
+	  delete requestBody.jwt;
+	}
+
+	if( req.user.id){
+		requestBody.userID = req.user.id;
+	}
+  
+	console.log(`Destination: ${req.originalUrl}`);
+	console.log(`Request Body: ${JSON.stringify(requestBody)}`);
+	console.log("Requset Suscessful");
+	next();
+  });
+
 
 app.listen(PORT, () => {
 	console.log("Server listening on port ", PORT);

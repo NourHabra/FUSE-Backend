@@ -8,7 +8,7 @@ async function index(req, res) {
     const allBeneficiaries = await beneficiarieService.findAll();
     return res.json(await makePayload(allBeneficiaries, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -26,7 +26,7 @@ async function show(req, res) {
     return res.json(await makePayload(beneficiaries, req.user.id));
 
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -49,7 +49,7 @@ async function store(req, res) {
     return res.status(201).json(await makePayload({ message: 'sent' }, req.user.id));
 
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -64,7 +64,7 @@ async function update(req, res) {
     }
 
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -81,7 +81,7 @@ async function destroy(req, res) {
     return res.json(await makePayload({ message: 'Beneficiarie deleted successfully' }, req.user.id));
 
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 

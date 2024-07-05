@@ -28,7 +28,7 @@ async function genPublicKey(req, res) {
     
     return res.status(200).json({ publicKey: publicKeyPem });
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -55,7 +55,7 @@ async function getAESkey(req, res) {
 
     return res.status(200).json({ done: "success" });
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 

@@ -39,7 +39,7 @@ async function register(req, res) {
     return res.json(await makePayloadRegMobile({ jwt: token, newUser }, newUser.id, email));
 
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   } finally {
     await authService.disconnect();
   }
@@ -62,7 +62,7 @@ async function registerEmployee(req, res) {
     }
 
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   } finally {
     await authService.disconnect();
   }
@@ -89,7 +89,7 @@ async function login(req, res) {
       throw error;
     }
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   } finally {
     await authService.disconnect();
   }
@@ -120,7 +120,7 @@ async function loginDashboard(req, res) {
       throw error;
     }
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   } finally {
     await authService.disconnect();
   }
@@ -135,7 +135,7 @@ async function logout(req, res) {
     res.clearCookie('jwt');
     res.json({ message: 'Logout successful' });
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 

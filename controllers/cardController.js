@@ -12,7 +12,7 @@ async function index(req, res) {
 		const allCards = await cardService.findAll();
 		return res.json(await makePayload(allCards, req.user.id));
 	} catch (error) {
-		await handleError(error, res);
+		await handleError(error, res, req);
 	}
 }
 
@@ -29,7 +29,7 @@ async function show(req, res) {
 		}
 		return res.json(await makePayloadMobile(card, req.user.id));
 	} catch (error) {
-		await handleError(error, res);
+		await handleError(error, res, req);
 	}
 }
 
@@ -47,7 +47,7 @@ async function showByAccountId(req, res) {
 
 		return res.json(await makePayloadMobile(cards, req.user.id));
 	} catch (error) {
-		await handleError(error, res);
+		await handleError(error, res, req);
 	}
 }
 
@@ -63,7 +63,7 @@ async function showByUserId(req, res) {
 
 		return res.json(await makePayloadMobile(cards, req.user.id));
 	} catch (error) {
-		await handleError(error, res);
+		await handleError(error, res, req);
 	}
 }
 
@@ -99,7 +99,7 @@ async function store(req, res) {
 
 		return res.json(await makePayloadMobile(newCard[0], req.user.id));
 	} catch (error) {
-		await handleError(error, res);
+		await handleError(error, res, req);
 	}
 }
 
@@ -117,7 +117,7 @@ async function update(req, res) {
 		});
 		res.json(await makePayload(updatedCard, req.user.id));
 	} catch (error) {
-		await handleError(error, res);
+		await handleError(error, res, req);
 	}
 }
 
@@ -164,7 +164,7 @@ async function updateBalance(req, res) {
 		return res.json(await makePayloadMobile(updatedCard[0], req.user.id));
 
 	} catch (error) {
-		await handleError(error, res);
+		await handleError(error, res, req);
 	}
 }
 
@@ -176,7 +176,7 @@ async function updatePIN(req, res) {
 		const updatedCard = await cardService.updateById(id, { PIN });
 		res.json(await makePayloadMobile(updatedCard, req.user.id));
 	} catch (error) {
-		await handleError(error, res);
+		await handleError(error, res, req);
 	}
 }
 
@@ -198,7 +198,7 @@ async function destroy(req, res) {
 			)
 		);
 	} catch (error) {
-		await handleError(error, res);
+		await handleError(error, res, req);
 	}
 }
 

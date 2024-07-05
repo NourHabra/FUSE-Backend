@@ -20,7 +20,7 @@ async function show(req, res) {
 
     return res.json(await makePayloadMobile(bill, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -49,7 +49,7 @@ async function store(req, res) {
 
     res.status(201).json(await makePayloadMobile({ bill }, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -89,7 +89,7 @@ async function pay(req, res) {
     return res.status(201).json(await makePayloadMobile({ payedBill }, req.user.id));
 
   }catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -98,7 +98,7 @@ async function showUnpaid (req, res) {
     const bills = await billService.findByMerchantId(req.user.id);
     return res.json(await makePayloadMobile(bills, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 

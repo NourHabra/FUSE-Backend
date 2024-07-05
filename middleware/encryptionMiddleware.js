@@ -28,7 +28,7 @@ async function genPublicKey(req, res) {
     
     return res.status(200).json({ publicKey: publicKeyPem });
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -60,7 +60,7 @@ async function genKeysDashboard(req, res) {
 
     return res.json({ serverPublicKey: serverPublicKeyBase64 });
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 

@@ -8,7 +8,7 @@ async function index(req, res) {
     const allUsers = await userService.findAll();
     return res.json(await makePayload(allUsers, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -24,7 +24,7 @@ async function show(req, res) {
     }
     return res.json(await makePayload(user, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -43,7 +43,7 @@ async function update(req, res) {
     const updatedUser = await userService.updateUser(id, name, email, phone, birth, status);
     return res.status(200).json(await makePayload(updatedUser, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
@@ -59,7 +59,7 @@ async function destroy(req, res) {
     }
     return res.json(await makePayload({ message: 'User deleted successfully' }, req.user.id));
   } catch (error) {
-    await handleError(error, res);
+    await handleError(error, res, req);
   }
 }
 
