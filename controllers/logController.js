@@ -1,14 +1,17 @@
 // for log Server
 
 async function logServer(req, res) {
+	const requestBody = { ...req.body };
+	if (req.user) {
     const requestBody = { ...req.body };
-	if (requestBody.jwt) {
-	  delete requestBody.jwt;
-	}
+    if (requestBody.jwt) {
+      delete requestBody.jwt;
+    }
 
-	if( req.user.id){
-		requestBody.userID = req.user.id;
-	}
+    if (typeof req.user.id !== 'undefined') {
+      requestBody.userID = req.user.id;
+    }
+  }
   
 	console.log(`Destination: ${req.originalUrl}`);
 	console.log(`Request Body: ${JSON.stringify(requestBody)}`);
