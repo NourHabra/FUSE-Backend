@@ -24,7 +24,7 @@ async function genPublicKey(req, res) {
     
     rsaPairs[user.id] = rsaKeyPair;
     
-    console.log(`Public key for user ${user.id} is ${publicKeyPem}`);
+    console.log(`Public key for user ${user.id} is sent`);
     
     return res.status(200).json({ publicKey: publicKeyPem });
   } catch (error) {
@@ -56,7 +56,7 @@ async function genKeysDashboard(req, res) {
     //keys[user.id] = sharedKey;
     await setAESKey(user.id, sharedKey);
 
-    console.log(`Shared Key: ${sharedKey} for ${email}`);
+    console.log(`Shared Key for ${email} is sent`);
 
     return res.json({ serverPublicKey: serverPublicKeyBase64 });
   } catch (error) {
@@ -81,7 +81,7 @@ async function decryption(req, res, next) {
     const decrypted = decrypt(payload, key);
     req.body = JSON.parse(decrypted);
 
-    console.log('Message Decrypted', req.body);
+    console.log('Message Decrypted');
 
     next();
   } catch (error) {

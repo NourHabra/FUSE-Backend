@@ -22,7 +22,7 @@ async function genPublicKeyForReg(req, res) {
 
     rsaPairs[email] = rsaKeyPair;
 
-    console.log(`Public key for user ${email} is ${publicKeyPem}`);
+    console.log(`Public key for user ${email} is sent`);
 
     return res.status(200).json({ publicKey: publicKeyPem });
   } catch (error) {
@@ -42,7 +42,7 @@ async function getAESkey(req, res) {
 
     const decryptedAesKey = rsaPairs[email].privateKey.decrypt(forge.util.decode64(encryptedAesKey), 'RSA-OAEP');
 
-    console.log(`AES key for user ${email} is ${decryptedAesKey.toString('hex')}, ${decryptedAesKey.toString('base64')}`);
+    //console.log(`AES key for user ${email} is ${decryptedAesKey.toString('hex')}, ${decryptedAesKey.toString('base64')}`);
 
     keys[email] = decryptedAesKey.toString('hex');
 
@@ -67,7 +67,7 @@ async function decryptionMobile(req, res, next) {
     const decrypted = decryptData(payload, key);
     req.body = JSON.parse(decrypted);
 
-    console.log('Message Decrypted', req.body);
+    console.log('Message Decrypted');
 
     next();
   } catch (error) {

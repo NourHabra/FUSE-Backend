@@ -235,7 +235,7 @@ async function update(req, res) {
     result += "Amount changed from " + oldTransaction.amount + " to " + amount + "\n";
   }
   if (result === "") { result = "Nothing changed" }
-  console.log(result);
+  //console.log(result);
 
   return res.status(200).json(await makePayload(result, req.user.id));
 

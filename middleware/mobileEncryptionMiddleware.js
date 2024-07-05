@@ -24,7 +24,7 @@ async function genPublicKey(req, res) {
     
     rsaPairs[user.id] = rsaKeyPair;
     
-    console.log(`Public key for user ${user.id} is ${publicKeyPem}`);
+    console.log(`Public key for user ${user.id} is sent`);
     
     return res.status(200).json({ publicKey: publicKeyPem });
   } catch (error) {
@@ -46,7 +46,7 @@ async function getAESkey(req, res) {
 
     const decryptedAesKey = rsaPairs[user.id].privateKey.decrypt(forge.util.decode64(encryptedAesKey), 'RSA-OAEP');
 
-    console.log(`AES key for user ${user.id} is ${decryptedAesKey.toString('hex')}, ${decryptedAesKey.toString('base64')}`);
+    //console.log(`AES key for user ${user.id} is ${decryptedAesKey.toString('hex')}, ${decryptedAesKey.toString('base64')}`);
 
     //keys[user.id] = decryptedAesKey.toString('hex');
     await setAESKey(user.id, decryptedAesKey.toString('hex'));
@@ -76,7 +76,7 @@ async function decryptionMobile(req, res, next) {
     const decrypted = decryptData(payload, key);
     req.body = JSON.parse(decrypted);
 
-    console.log('Message Decrypted', req.body);
+    console.log('Message Decrypted');
 
     next();
   } catch (error) {
