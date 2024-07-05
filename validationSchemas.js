@@ -33,7 +33,7 @@ const signUpSchema = Joi.object({
   rPassword: Joi.ref('password'),
   category: Joi.string().valid(...MerchantCategories).optional().allow('', null),
   workPermit: Joi.string().optional().allow(''),
-  monthlyIncome: Joi.number(),
+  monthlyIncome: Joi.number().optional().allow(''),
   // category: Joi.string().valid(...MerchantCategories).when('role', { is: 'Merchant', then: Joi.required() }),
   // workPermit: Joi.string().when('role', { is: 'Merchant', then: Joi.required() }),
   // monthlyIncome: Joi.number().when('role', { is: 'Customer', then: Joi.required() }),
