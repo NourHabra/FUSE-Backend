@@ -2,7 +2,6 @@ const { PrismaClient, Prisma, Role } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function handleError(error, res, req) {
-  //console.log(error);
   let error_message = "";
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code === "P2003") {
@@ -19,6 +18,7 @@ async function handleError(error, res, req) {
     res.status(409).json(error.meta);
   } else {
     error_message = error;
+    console.log(error);
     res.status(500).json({ error: 'An unknown error occurred' });
   }
 
