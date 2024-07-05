@@ -4,10 +4,10 @@ const { makePayload } = require('../middleware/encryptionMiddleware');
 const { makePayloadMobile } = require('../middleware/mobileEncryptionMiddleware');
 const validate = require('./validateController');
 
-async function index(req, res, next) {
+async function index(req, res) {
   try {
     const allAccounts = await accountService.findAll();
-    return res.json(await makePayload(allAccounts, req,user.id)).next();
+    return res.json(await makePayload(allAccounts, req,user.id));
   } catch (error) {
     await handleError(error, res, req);
   } finally {
@@ -15,7 +15,7 @@ async function index(req, res, next) {
   }
 }
 
-async function show(req, res, next) {
+async function show(req, res) {
   try {
     const id = await validate.isNumber(req.params.id, "id");
 
@@ -26,7 +26,7 @@ async function show(req, res, next) {
       error.meta = { code: "404", error: 'Account not found' };
       throw error;
     }
-    return res.json(await makePayloadMobile(account, req,user.id)).next();
+    return res.json(await makePayloadMobile(account, req,user.id));
 
   } catch (error) {
     await handleError(error, res, req);
@@ -35,7 +35,7 @@ async function show(req, res, next) {
   }
 }
 
-async function showUserAccounts(req, res, next) {
+async function showUserAccounts(req, res) {
   try {
     const accounts = await accountService.findByUserId(req.user.id);
 
@@ -45,14 +45,14 @@ async function showUserAccounts(req, res, next) {
       throw error;
     }
 
-    return res.json(await makePayloadMobile(accounts, req.user.id)).next();
+    return res.json(await makePayloadMobile(accounts, req.user.id));
 
   }catch(error){
     await handleError(error, res, req);
   }
 }
 
-async function showByUserId(req, res, next) {
+async function showByUserId(req, res) {
   try {
     const accounts = await accountService.findUserById(req.params.id);
 
@@ -62,19 +62,19 @@ async function showByUserId(req, res, next) {
       throw error;
     }
 
-    return res.json(await makePayloadMobile(accounts, req.user.id)).next();
+    return res.json(await makePayloadMobile(accounts, req.user.id));
 
   }catch(error){
     await handleError(error, res, req);
   }
 }
 
-async function store(req, res, next) {
+async function store(req, res) {
   try {
     const { userId, balance, type } = req.body;
 
     const newAccount = await accountService.create(userId, balance, type);
-    return res.json(await makePayload(newAccount, req,user.id)).next();
+    return res.json(await makePayload(newAccount, req,user.id));
   } catch (error) {
     await handleError(error, res, req);
   } finally {
@@ -82,13 +82,13 @@ async function store(req, res, next) {
   }
 }
 
-async function update(req, res, next) {
+async function update(req, res) {
   try {
     const id = await validate.isNumber(req.params.id, "id");
     const { userId, balance, type, status, name } = req.body;
 
     const updatedAccount = await accountService.updateById(id, { userId, balance, type, status, name });
-    res.json(await makePayload(updatedAccount, req,user.id)).next();
+    res.json(await makePayload(updatedAccount, req,user.id));
   } catch (error) {
     await handleError(error, res, req);
   } finally {
@@ -96,7 +96,7 @@ async function update(req, res, next) {
   }
 }
 
-async function destroy(req, res, next) {
+async function destroy(req, res) {
   try {
     const id = await validate.isNumber(req.params.id, "id");
 
@@ -106,7 +106,7 @@ async function destroy(req, res, next) {
       error.meta = { code: "404", error: 'Account not found' };
       throw error;
     }
-    return res.json(await makePayload({ message: 'Account deleted successfully' }, req,user.id)).next();
+    return res.json(await makePayload({ message: 'Account deleted successfully' }, req,user.id));
   } catch (error) {
     await handleError(error, res, req);
   } finally {

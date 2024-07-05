@@ -7,16 +7,16 @@ const {
 } = require("../middleware/encryptionMiddleware");
 const { makePayloadMobile } = require('../middleware/mobileEncryptionMiddleware');
 
-async function index(req, res, next) {
+async function index(req, res) {
 	try {
 		const allCards = await cardService.findAll();
-		return res.json(await makePayload(allCards, req.user.id)).next();
+		return res.json(await makePayload(allCards, req.user.id));
 	} catch (error) {
 		await handleError(error, res, req);
 	}
 }
 
-async function show(req, res, next) {
+async function show(req, res) {
 	try {
 		const id = await validate.checkEmpty(req.params.id, "id");
 
@@ -27,13 +27,13 @@ async function show(req, res, next) {
 			error.meta = { code: "404", error: "Card not found" };
 			throw error;
 		}
-		return res.json(await makePayloadMobile(card, req.user.id)).next();
+		return res.json(await makePayloadMobile(card, req.user.id));
 	} catch (error) {
 		await handleError(error, res, req);
 	}
 }
 
-async function showByAccountId(req, res, next) {
+async function showByAccountId(req, res) {
 	try {
 		const id = await validate.checkEmpty(req.params.id, "id");
 
@@ -45,13 +45,13 @@ async function showByAccountId(req, res, next) {
 			throw error;
 		}
 
-		return res.json(await makePayloadMobile(cards, req.user.id)).next();
+		return res.json(await makePayloadMobile(cards, req.user.id));
 	} catch (error) {
 		await handleError(error, res, req);
 	}
 }
 
-async function showByUserId(req, res, next) {
+async function showByUserId(req, res) {
 	try {
 		const cards = await cardService.findByUserId(req.user.id);
 
@@ -61,13 +61,13 @@ async function showByUserId(req, res, next) {
 			throw error;
 		}
 
-		return res.json(await makePayloadMobile(cards, req.user.id)).next();
+		return res.json(await makePayloadMobile(cards, req.user.id));
 	} catch (error) {
 		await handleError(error, res, req);
 	}
 }
 
-async function store(req, res, next) {
+async function store(req, res) {
 	try {
 		const { cardName, balance, PIN } = req.body;
 
@@ -97,13 +97,13 @@ async function store(req, res, next) {
 			balance
 		);
 
-		return res.json(await makePayloadMobile(newCard[0], req.user.id)).next();
+		return res.json(await makePayloadMobile(newCard[0], req.user.id));
 	} catch (error) {
 		await handleError(error, res, req);
 	}
 }
 
-async function update(req, res, next) {
+async function update(req, res) {
 	try {
 		const id = await validate.checkEmpty(req.params.id, "id");
 
@@ -115,13 +115,13 @@ async function update(req, res, next) {
 			expiryDate,
 			physical,
 		});
-		res.json(await makePayload(updatedCard, req.user.id)).next();
+		res.json(await makePayload(updatedCard, req.user.id));
 	} catch (error) {
 		await handleError(error, res, req);
 	}
 }
 
-async function updateBalance(req, res, next) {
+async function updateBalance(req, res) {
 	try {
 		const id = await validate.checkEmpty(req.params.id, "id");
 		const { amount, type } = req.body;
@@ -161,26 +161,26 @@ async function updateBalance(req, res, next) {
 			error.meta = { code: "409", error: "Failed to update balance" };
 			throw error;
 		}
-		return res.json(await makePayloadMobile(updatedCard[0], req.user.id)).next();
+		return res.json(await makePayloadMobile(updatedCard[0], req.user.id));
 
 	} catch (error) {
 		await handleError(error, res, req);
 	}
 }
 
-async function updatePIN(req, res, next) {
+async function updatePIN(req, res) {
 	try {
 		const id = await validate.checkEmpty(req.params.id, "id");
 		const { PIN } = req.body;
 
 		const updatedCard = await cardService.updateById(id, { PIN });
-		res.json(await makePayloadMobile(updatedCard, req.user.id)).next();
+		res.json(await makePayloadMobile(updatedCard, req.user.id));
 	} catch (error) {
 		await handleError(error, res, req);
 	}
 }
 
-async function destroy(req, res, next) {
+async function destroy(req, res) {
 	try {
 		const id = await validate.checkEmpty(req.params.id, "id");
 
@@ -196,7 +196,7 @@ async function destroy(req, res, next) {
 				{ message: "Card deleted successfully" },
 				req.user.id
 			)
-		).next();
+		);
 	} catch (error) {
 		await handleError(error, res, req);
 	}

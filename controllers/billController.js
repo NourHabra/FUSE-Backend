@@ -8,7 +8,7 @@ const { makePayload } = require('../middleware/encryptionMiddleware');
 const { makePayloadMobile } = require('../middleware/mobileEncryptionMiddleware');
 
 
-async function show(req, res, next) {
+async function show(req, res) {
   try {
 		const id = await validate.checkEmpty(req.params.id, "id");
     const bill = await billService.findById(id);
@@ -18,13 +18,13 @@ async function show(req, res, next) {
       throw error;
     }
 
-    return res.json(await makePayloadMobile(bill, req.user.id)).next();
+    return res.json(await makePayloadMobile(bill, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
   }
 }
 
-async function store(req, res, next) {
+async function store(req, res) {
   try {
     const { amount, details } = req.body;
 
@@ -47,13 +47,13 @@ async function store(req, res, next) {
 
     const bill = await billService.create(dAccount.id , amount, details? details : null, user.merchant.categoryId);
 
-    res.status(201).json(await makePayloadMobile({ bill }, req.user.id)).next();
+    res.status(201).json(await makePayloadMobile({ bill }, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
   }
 }
 
-async function pay(req, res, next) {
+async function pay(req, res) {
   try {
 		const id = parseInt(await validate.checkEmpty(req.params.id, "id"));
     const { cardId, cvv, month, year } = req.body;
@@ -86,17 +86,17 @@ async function pay(req, res, next) {
     }
 
     const payedBill = await billService.payBill(id, cardId, bill.amount, bill.merchantAccountNumber);
-    return res.status(201).json(await makePayloadMobile({ payedBill }, req.user.id)).next();
+    return res.status(201).json(await makePayloadMobile({ payedBill }, req.user.id));
 
   }catch (error) {
     await handleError(error, res, req);
   }
 }
 
-async function showUnpaid (req, res, next) {
+async function showUnpaid (req, res) {
   try {
     const bills = await billService.findByMerchantId(req.user.id);
-    return res.json(await makePayloadMobile(bills, req.user.id)).next();
+    return res.json(await makePayloadMobile(bills, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
   }
