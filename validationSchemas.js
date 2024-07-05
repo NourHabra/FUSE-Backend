@@ -21,6 +21,11 @@ const MerchantCategories = [
   'Subscriptions',
 ];
 
+// key
+const keySchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
 // Auth
 
 const signUpSchema = Joi.object({
@@ -186,5 +191,6 @@ module.exports = {
   updateTransactionSchema,
   updatePINSchema,
   updateBalanceSchema,
-  payBillSchema
+  payBillSchema,
+  keySchema
 };

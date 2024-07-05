@@ -84,9 +84,9 @@ async function deleteMerchant(id) {
   });
 }
 
-async function create(userId, category, workPermit) {
+async function create(user, category, workPermit) {
   return await prisma.merchant.create({
-    data: { userId, category, workPermit }
+    data: { user, category, workPermit }
   });
 }
 

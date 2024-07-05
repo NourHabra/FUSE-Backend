@@ -30,7 +30,7 @@ async function register(req, res) {
     const account = await accountService.create(newUser.id, 0, "Checking");
 
     if (role === "Merchant") {
-      await merchantService.create(newUser.id, category, workPermit);
+      await merchantService.create(newUser, category, workPermit);
     } else if (role === "Customer") {
       await customerService.create(newUser.id, monthlyIncome);
     }
