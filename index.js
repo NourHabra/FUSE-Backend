@@ -42,8 +42,14 @@ app.use("/auth", authRouter);
 app.use(authenticateJWT);
 
 app.use((req, res, next) => {
+	const requestBody = { ...req.body };
+	if (requestBody.jwt) {
+	  delete requestBody.jwt;
+	}
+	requestBody.userID = req.user.id;
+  
 	console.log(`Destination: ${req.originalUrl}`);
-	console.log(`Request Body: ${JSON.stringify(req.body)}`);
+	console.log(`Request Body: ${JSON.stringify(requestBody)}`);
 	next();
   });
 
