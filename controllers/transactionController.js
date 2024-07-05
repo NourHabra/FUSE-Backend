@@ -6,11 +6,13 @@ const { handleError } = require('./errorController');
 const validate = require('./validateController');
 const { makePayload } = require('../middleware/encryptionMiddleware');
 const { makePayloadMobile } = require('../middleware/mobileEncryptionMiddleware');
+const { logServer } = require('./logController'); // Import the logServer function
 
 async function index(req, res) {
   try {
     const allTransactions = await transactionService.findAll();
     console.log("sending all transactions");
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.json(await makePayload(allTransactions, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
@@ -27,6 +29,7 @@ async function show(req, res) {
       error.meta = { code: "404", error: 'Transaction not found' };
       throw error;
     }
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.json(await makePayload(transaction, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
@@ -44,6 +47,7 @@ async function showTransactionsFromTo(req, res) {
       throw error;
     }
     console.log("transactions from ", sourceRole, " to ", destinationRole, " are going to be returned");
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.json(await makePayload(transactions, req.user.id));
 
   } catch (error) {
@@ -60,6 +64,7 @@ async function showTopUp(req, res) {
       throw error;
     }
     console.log("TopUp is ready to be sent");
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.status(201).json(await makePayload(transactions, req.user.id));
   } catch (error) {
     await handleError(error, res)
@@ -106,6 +111,7 @@ async function storeTransfer(req, res) {
     }
 
     console.log(type, " is done form", sAccount.id, " to ", dAccount.id, " with amount", amount);
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.status(201).json(await makePayloadMobile({ transactions }, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
@@ -141,6 +147,7 @@ async function storeDeposit(req, res) {
 
     transaction = await cashTransactionService.updateById(transaction.id, { status: "Completed" });
 
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.status(201).json(await makePayload({ transaction }, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
@@ -180,6 +187,7 @@ async function storeWithdraw(req, res) {
 
     transaction = await cashTransactionService.updateById(transaction.id, { status: "Completed" });
 
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.status(201).json(await makePayload({ transaction }, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
@@ -237,6 +245,7 @@ async function update(req, res) {
   if (result === "") { result = "Nothing changed" }
   //console.log(result);
 
+  await logServer(req, res); // Call the logServer function before returning the response
   return res.status(200).json(await makePayload(result, req.user.id));
 
 }
@@ -258,6 +267,7 @@ async function destroy(req, res) {
     error.meta = { code: "404", error: "Transaction not found" };
     throw error;
   } else {
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.status(200).json(await makePayload("Transaction deleted", req.user.id));
   }
 }

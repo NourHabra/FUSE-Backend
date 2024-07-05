@@ -14,6 +14,7 @@ const { makePayload } = require('../middleware/encryptionMiddleware');
 const validate = require('./validateController');
 const { makePayloadRegMobile } = require('../middleware/regMobileEncryptionMiddleware');
 const { makePayloadMobile } = require('../middleware/mobileEncryptionMiddleware');
+const { logServer } = require('./logController'); // Import the logServer function
 
 const secretKey = process.env.JWT_SECRET;
 const maxAge = 30 * 60 * 1000;
@@ -36,6 +37,7 @@ async function register(req, res) {
 
     const token = jwt.sign({ id: newUser.id, role }, secretKey, { expiresIn: '30m' });
     res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.json(await makePayloadRegMobile({ jwt: token, newUser }, newUser.id, email));
 
   } catch (error) {
@@ -55,9 +57,11 @@ async function registerEmployee(req, res) {
 
     if (newUser && account) {
       console.log("New Employee created successfully ID", newUser.id);
+      await logServer(req, res); // Call the logServer function before returning the response
       res.status(201).json(await makePayload(newUser, req.user.id));
     } else {
       console.log("Error creating new Employee");
+      await logServer(req, res); // Call the logServer function before returning the response
       res.status(400).json({ message: 'Error creating new Employee' });
     }
 
@@ -82,6 +86,7 @@ async function login(req, res) {
       const token = jwt.sign({ id: user.id, role: user.role }, secretKey, { expiresIn: '30m' });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
       userAccounts = await accountService.findCheckingById(user.id);
+      await logServer(req, res); // Call the logServer function before returning the response
       return res.json(await makePayloadMobile({ jwt: token, user, userAccounts }, user.id));
     } else {
       let error = new Error("Wrong password");
@@ -113,6 +118,7 @@ async function loginDashboard(req, res) {
     } else if (await bcrypt.compare(password, user.password)) {
       const token = jwt.sign({ id: user.id, role: user.role }, secretKey, { expiresIn: '30m' });
       res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge });
+      await logServer(req, res); // Call the logServer function before returning the response
       return res.json(await makePayload({ jwt: token }, user.id));
     } else {
       let error = new Error("Wrong password");
@@ -133,6 +139,7 @@ async function logout(req, res) {
     revokedTokens.add(token);
 
     res.clearCookie('jwt');
+    await logServer(req, res); // Call the logServer function before returning the response
     res.json({ message: 'Logout successful' });
   } catch (error) {
     await handleError(error, res, req);

@@ -6,11 +6,11 @@ const { handleError } = require('./errorController');
 const validate = require('./validateController');
 const { makePayload } = require('../middleware/encryptionMiddleware');
 const { makePayloadMobile } = require('../middleware/mobileEncryptionMiddleware');
-
+const { logServer } = require('./logController'); // Import the logServer function
 
 async function show(req, res) {
   try {
-		const id = await validate.checkEmpty(req.params.id, "id");
+    const id = await validate.checkEmpty(req.params.id, "id");
     const bill = await billService.findById(id);
     if (!bill) {
       let error = new Error("Not Found");
@@ -18,6 +18,7 @@ async function show(req, res) {
       throw error;
     }
 
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.json(await makePayloadMobile(bill, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
@@ -47,6 +48,7 @@ async function store(req, res) {
 
     const bill = await billService.create(dAccount.id , amount, details? details : null, user.merchant.categoryId);
 
+    await logServer(req, res); // Call the logServer function before returning the response
     res.status(201).json(await makePayloadMobile({ bill }, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
@@ -55,7 +57,7 @@ async function store(req, res) {
 
 async function pay(req, res) {
   try {
-		const id = parseInt(await validate.checkEmpty(req.params.id, "id"));
+    const id = parseInt(await validate.checkEmpty(req.params.id, "id"));
     const { cardId, cvv, month, year } = req.body;
     const bill = await billService.findById(id);
     const card = await cardService.findById(cardId);
@@ -86,6 +88,7 @@ async function pay(req, res) {
     }
 
     const payedBill = await billService.payBill(id, cardId, bill.amount, bill.merchantAccountNumber);
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.status(201).json(await makePayloadMobile({ payedBill }, req.user.id));
 
   }catch (error) {
@@ -96,6 +99,7 @@ async function pay(req, res) {
 async function showUnpaid (req, res) {
   try {
     const bills = await billService.findByMerchantId(req.user.id);
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.json(await makePayloadMobile(bills, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
@@ -107,4 +111,4 @@ module.exports = {
   pay,
   show,
   showUnpaid
-};
+}

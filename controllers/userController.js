@@ -2,10 +2,12 @@ const userService = require('../services/userService');
 const validate = require('./validateController');
 const { handleError } = require('./errorController');
 const { makePayload } = require('../middleware/encryptionMiddleware');
+const { logServer } = require('./logController'); // Import the logServer function
 
 async function index(req, res) {
   try {
     const allUsers = await userService.findAll();
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.json(await makePayload(allUsers, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
@@ -22,6 +24,7 @@ async function show(req, res) {
       error.meta = { code: "404", error: 'User not found' };
       throw error;
     }
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.json(await makePayload(user, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
@@ -41,6 +44,7 @@ async function update(req, res) {
     }
 
     const updatedUser = await userService.updateUser(id, name, email, phone, birth, status);
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.status(200).json(await makePayload(updatedUser, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
@@ -57,6 +61,7 @@ async function destroy(req, res) {
       error.meta = { code: "404", error: 'User not found' };
       throw error;
     }
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.json(await makePayload({ message: 'User deleted successfully' }, req.user.id));
   } catch (error) {
     await handleError(error, res, req);

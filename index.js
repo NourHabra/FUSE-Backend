@@ -49,24 +49,6 @@ app.use("/card", cardRoutes);
 app.use("/transaction", transactionRoutes);
 app.use("/bill", billRoutes);
 
-// for log Server
-app.use((req, res, next) => {
-	const requestBody = { ...req.body };
-	if (requestBody.jwt) {
-	  delete requestBody.jwt;
-	}
-
-	if( req.user.id){
-		requestBody.userID = req.user.id;
-	}
-  
-	console.log(`Destination: ${req.originalUrl}`);
-	console.log(`Request Body: ${JSON.stringify(requestBody)}`);
-	console.log("Requset Suscessful");
-	next();
-  });
-
-
 app.listen(PORT, () => {
 	console.log("Server listening on port ", PORT);
 });

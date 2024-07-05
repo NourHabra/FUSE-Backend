@@ -3,11 +3,13 @@ const { handleError } = require('./errorController');
 const { makePayload } = require('../middleware/encryptionMiddleware');
 const { makePayloadMobile } = require('../middleware/mobileEncryptionMiddleware');
 const validate = require('./validateController');
+const { logServer } = require('./logController'); // Import the logServer function
 
 async function index(req, res) {
   try {
     const allAccounts = await accountService.findAll();
-    return res.json(await makePayload(allAccounts, req,user.id));
+    await logServer(req, res); // Call the logServer function before returning the response
+    return res.json(await makePayload(allAccounts, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
   } finally {
@@ -26,7 +28,8 @@ async function show(req, res) {
       error.meta = { code: "404", error: 'Account not found' };
       throw error;
     }
-    return res.json(await makePayloadMobile(account, req,user.id));
+    await logServer(req, res); // Call the logServer function before returning the response
+    return res.json(await makePayloadMobile(account, req.user.id));
 
   } catch (error) {
     await handleError(error, res, req);
@@ -45,6 +48,7 @@ async function showUserAccounts(req, res) {
       throw error;
     }
 
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.json(await makePayloadMobile(accounts, req.user.id));
 
   }catch(error){
@@ -62,6 +66,7 @@ async function showByUserId(req, res) {
       throw error;
     }
 
+    await logServer(req, res); // Call the logServer function before returning the response
     return res.json(await makePayloadMobile(accounts, req.user.id));
 
   }catch(error){
@@ -74,7 +79,8 @@ async function store(req, res) {
     const { userId, balance, type } = req.body;
 
     const newAccount = await accountService.create(userId, balance, type);
-    return res.json(await makePayload(newAccount, req,user.id));
+    await logServer(req, res); // Call the logServer function before returning the response
+    return res.json(await makePayload(newAccount, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
   } finally {
@@ -88,7 +94,8 @@ async function update(req, res) {
     const { userId, balance, type, status, name } = req.body;
 
     const updatedAccount = await accountService.updateById(id, { userId, balance, type, status, name });
-    res.json(await makePayload(updatedAccount, req,user.id));
+    await logServer(req, res); // Call the logServer function before returning the response
+    res.json(await makePayload(updatedAccount, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
   } finally {
@@ -106,7 +113,8 @@ async function destroy(req, res) {
       error.meta = { code: "404", error: 'Account not found' };
       throw error;
     }
-    return res.json(await makePayload({ message: 'Account deleted successfully' }, req,user.id));
+    await logServer(req, res); // Call the logServer function before returning the response
+    return res.json(await makePayload({ message: 'Account deleted successfully' }, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
   } finally {
