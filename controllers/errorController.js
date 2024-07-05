@@ -25,13 +25,16 @@ async function handleError(error, res, req) {
 
   // for log Server
   const requestBody = { ...req.body };
-	if (requestBody.jwt) {
-	  delete requestBody.jwt;
-	}
+	if (req.user) {
+    const requestBody = { ...req.body };
+    if (requestBody.jwt) {
+      delete requestBody.jwt;
+    }
 
-	if( typeof req.user.id !== 'undefined' ){
-		requestBody.userID = req.user.id;
-	}
+    if (typeof req.user.id !== 'undefined') {
+      requestBody.userID = req.user.id;
+    }
+  }
   
 	console.log(`Destination: ${req.originalUrl}`);
 	console.log(`Request Body: ${JSON.stringify(requestBody)}`);
