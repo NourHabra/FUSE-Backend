@@ -24,7 +24,7 @@ const MerchantCategories = [
 // key
 const keySchema = Joi.object({
   email: Joi.string().email().required(),
-});
+}).unknown();
 
 // Auth
 

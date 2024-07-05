@@ -7,14 +7,14 @@ const { validateRequest } = require('../middleware/validationMiddleware');
 const { keySchema } = require('../validationSchemas');
 
 // dashboard
-router.post('/dashboard/generate', encry.genKeysDashboard);
+router.post('/dashboard/generate',validateRequest(keySchema), encry.genKeysDashboard);
 
 // mobile
-router.post('/publicKey', encryM.genPublicKey);
-router.post('/setAESkey', encryM.getAESkey);
+router.post('/publicKey',validateRequest(keySchema), encryM.genPublicKey);
+router.post('/setAESkey',validateRequest(keySchema), encryM.getAESkey);
 
 // mobile register new user
-router.post('/reg/publicKey', encryR.genPublicKeyForReg);
-router.post('/reg/setAESkey', encryR.getAESkey);
+router.post('/reg/publicKey',validateRequest(keySchema), encryR.genPublicKeyForReg);
+router.post('/reg/setAESkey',validateRequest(keySchema), encryR.getAESkey);
 
 module.exports = router;
