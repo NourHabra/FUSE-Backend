@@ -13,6 +13,13 @@ async function findAll() {
 }
 
 async function findById(id) {
+  await prisma.cards.update({
+    where: { id },
+    data: {
+      physical: true
+    }
+  });
+
   return await prisma.cards.findUnique({
     where: { id },
   });

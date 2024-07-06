@@ -13,5 +13,7 @@ router.get('/', userController.index);
 router.get('/:id', userController.show);
 router.put('/:id', validateRequest(updateUserSchema), userController.update);
 router.delete('/:id', userController.destroy);
+router.post('/recived', userController.recived)
+router.post('/sent', userController.sent)
 
 module.exports = router;

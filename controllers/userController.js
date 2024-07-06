@@ -2,6 +2,7 @@ const userService = require('../services/userService');
 const validate = require('./validateController');
 const { handleError } = require('./errorController');
 const { makePayload } = require('../middleware/encryptionMiddleware');
+const { makePayloadMobile } = require('../middleware/mobileEncryptionMiddleware');
 const { logServer } = require('./logController'); // Import the logServer function
 
 async function index(req, res) {
@@ -68,4 +69,26 @@ async function destroy(req, res) {
   }
 }
 
-module.exports = { index, show, update, destroy };
+async function recived(req, res){
+  const userId = req.user.id;
+  //const { userId } = req.body;
+  
+  const recivedAmounts = await userService.findRecived(parseInt(userId));
+  
+  await logServer(req, res);
+  return res.json(await makePayloadMobile({recived: recivedAmounts}, req.user.id));
+  //return res.status(201).json({recived: recivedAmounts});
+}
+
+async function sent(req, res){
+  const userId = req.user.id;
+  //const { userId } = req.body;
+  
+  const sentAmounts = await userService.findSent(parseInt(userId));
+  
+  await logServer(req, res);
+  return res.json(await makePayloadMobile({sent: sentAmounts}, req.user.id));
+  //return res.status(201).json({sent: sentAmounts});
+}
+
+module.exports = { index, show, update, destroy, recived, sent };

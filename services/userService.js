@@ -98,6 +98,146 @@ async function findByEmail(email) {
   });
 }
 
+async function findRecived(userId) {
+  let recived = {};
+  const userAccounts = await prisma.accounts.findMany({
+    where: {
+      userId
+    },
+    select: {
+      id: true
+    }
+  });
+
+  const accountIds = userAccounts.map(account => account.id); // Get an array of account ids
+
+  const cash = await prisma.cashTransactions.findMany({
+    where: {
+      accountNumber: {
+        in: accountIds
+      },
+      status: 'Completed'
+    },
+    select: {
+      amount: true,
+      accountNumber: true,
+      createdAt: true,
+    }
+  });
+  if(cash) {recived.cash = cash;}
+
+  const user = prisma.merchant.findFirst({
+    where: {
+      userId
+    }
+  });
+  if(user){
+    const bills = await prisma.bills.findMany({
+      where: {
+        merchantAccount: {
+          userId
+        },
+        status: 'Paid'
+      },
+      select: {
+        amount: true,
+        cardId: true,
+        payedAt: true
+      }
+    });
+    if(bills){ recived.bills = bills };
+  }
+
+  const transfer = await prisma.transactions.findMany({
+    where: {
+      dAccount: {
+        userId
+      },
+      status: 'Completed'
+    },
+    select: {
+      amount: true,
+      sAccount: {
+        select: {
+          user: {
+            select: {
+              name: true
+            }
+          }
+        }
+      },
+      createdAt: true
+    }
+  }); 
+  if(transfer) {recived.transfer = transfer}
+
+  return recived;
+}
+
+async function findSent(userId) {
+  let sent = {};
+  
+  const userCards = await prisma.cards.findMany({
+    where: {
+      account: {
+        userId
+      }
+    }
+  });
+  const cardIds = userCards.map(card => card.id);
+
+
+    const bills = await prisma.bills.findMany({
+      where: {
+        cardId: {
+          in : cardIds
+        },
+        status: 'Paid'
+      },
+      select: {
+        amount: true,
+        merchantAccount: {
+          select: {
+            user: {
+              select: {
+                name: true
+              }
+            }
+          }
+        },
+        payedAt: true
+      }
+    });
+    if(bills){ sent.bills = bills };
+
+
+  const transfer = await prisma.transactions.findMany({
+    where: {
+      sAccount: {
+        userId
+      },
+      status: 'Completed'
+    },
+    select: {
+      amount: true,
+      dAccount: {
+        select: {
+          user: {
+            select: {
+              name: true
+            }
+          }
+        }
+      },
+      createdAt: true
+    }
+  }); 
+  if(transfer) {sent.transfer = transfer}
+
+  return sent;
+}
+
+
 module.exports = {
   findAll,
   findById,
@@ -105,5 +245,7 @@ module.exports = {
   deleteUser,
   create,
   findByEmail,
-  deleteUserFromDB
+  deleteUserFromDB,
+  findRecived,
+  findSent
 };
