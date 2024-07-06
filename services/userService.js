@@ -242,6 +242,59 @@ async function findSent(userId) {
   return sent;
 }
 
+async function findExpenses(userId) {
+  const userBills = await prisma.bills.findMany({
+    where: {
+      card: {
+        account: {
+          userId : parseInt(userId)
+        }
+      },
+      status: "Paid"
+    },
+    select: {
+      amount: true,
+      category: true,
+      payedAt: true
+    }
+  });
+
+  const userTransfer = await prisma.transactions.findMany({
+    where: {
+      sAccount: {
+        userId: parseInt(userId)
+      },
+      status: 'Completed'
+    },
+    select: {
+      amount: true,
+      createdAt: true
+    }
+  });
+
+  const expenses = [];
+
+  // Add expenses from userBills
+  userBills.forEach(bill => {
+    expenses.push({
+      date: bill.payedAt,
+      category: bill.category,
+      amount: bill.amount
+    });
+  });
+
+  // Add expenses from userTransfer
+  userTransfer.forEach(transfer => {
+    expenses.push({
+      date: transfer.createdAt,
+      category: 'Personal Spending',
+      amount: transfer.amount
+    });
+  });
+
+  return expenses;
+}
+
 
 module.exports = {
   findAll,
@@ -252,5 +305,6 @@ module.exports = {
   findByEmail,
   deleteUserFromDB,
   findRecived,
-  findSent
+  findSent,
+  findExpenses
 };

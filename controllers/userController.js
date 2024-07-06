@@ -91,4 +91,15 @@ async function sent(req, res){
   //return res.status(201).json({sent: sentAmounts});
 }
 
-module.exports = { index, show, update, destroy, recived, sent };
+async function expenses(req, res) {
+  const userId = req.user.id;
+  //const { userId } = req.body;
+  
+  
+  const userExpenses = await userService.findExpenses(userId);
+  
+  return res.json(await makePayloadMobile({expenses: userExpenses}, req.user.id));
+  //return res.status(201).json(userExpenses);
+}
+
+module.exports = { index, show, update, destroy, recived, sent, expenses };
