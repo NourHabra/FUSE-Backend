@@ -61,8 +61,6 @@ const signInSchema = Joi.object({
 // Account
 
 const createAccountSchema = Joi.object({
-  userId: Joi.number().integer().required(),
-  balance: Joi.number().required(),
   type: Joi.string().valid(...Object.values(AccountType)).required(),
 });
 

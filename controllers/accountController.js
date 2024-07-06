@@ -4,6 +4,7 @@ const { makePayload } = require('../middleware/encryptionMiddleware');
 const { makePayloadMobile } = require('../middleware/mobileEncryptionMiddleware');
 const validate = require('./validateController');
 const { logServer } = require('./logController'); // Import the logServer function
+const { makePayloadRegMobile } = require('../middleware/regMobileEncryptionMiddleware');
 
 async function index(req, res) {
   try {
@@ -76,11 +77,12 @@ async function showByUserId(req, res) {
 
 async function store(req, res) {
   try {
-    const { userId, balance, type } = req.body;
+    const { type } = req.body;
+    const userId = req.user.id;
 
-    const newAccount = await accountService.create(userId, balance, type);
+    const newAccount = await accountService.create(userId, 0, type);
     await logServer(req, res); // Call the logServer function before returning the response
-    return res.json(await makePayload(newAccount, req.user.id));
+    return res.json(await makePayloadRegMobile(newAccount, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
   } finally {

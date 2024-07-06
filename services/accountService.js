@@ -70,8 +70,21 @@ async function findCheckingById(userId) {
 }
 
 async function create(userId, balance, type) {
+  let newAccountNumber = 0;
+  let account = null;
+  do {
+    prefix = "7053";
+    let randomSuffix = Math.floor(Math.random() * 9000000000000000) + 1000000000000000;
+
+    newAccountNumber = parseInt((prefix + randomSuffix));
+    account = prisma.accounts.findUnique({
+      where: newAccountNumber
+    })
+  } while (!account);
+
   return await prisma.accounts.create({
     data: {
+      id: newAccountNumber,
       userId: parseInt(userId),
       balance: parseFloat(balance),
       type,
