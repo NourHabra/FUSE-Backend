@@ -29,10 +29,15 @@ async function register(req, res) {
     const newUser = await userService.create(name, role, email, phone, birth, await bcrypt.hash(password, salt));
     const account = await accountService.create(newUser.id, 0, "Checking");
 
-    if (role === "Merchant") {
-      await merchantService.create(newUser.id, category, workPermit);
-    } else if (role === "Customer") {
-      await customerService.create(newUser.id, parseInt(monthlyIncome));
+    try {
+      if (role === "Merchant") {
+        await merchantService.create(newUser.id, category, workPermit);
+      } else if (role === "Customer") {
+        await customerService.create(newUser.id, parseInt(monthlyIncome));
+      }
+    } catch (error) {
+      await userService.deleteUserFromDB(newUser.id);
+      throw error;
     }
 
     const token = jwt.sign({ id: newUser.id, role }, secretKey, { expiresIn: '30m' });

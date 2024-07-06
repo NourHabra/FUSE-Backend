@@ -64,6 +64,20 @@ async function deleteUser(id) {
   });
 }
 
+async function deleteUserFromDB(id) {
+  await prisma.accounts.deleteMany({
+    where: {
+      userId : id
+    }
+  });
+
+  return await prisma.users.delete({
+    where: {
+      id
+    }
+  });
+}
+
 async function create(name, role, email, phone, birth, password) {
   return await prisma.users.create({
     data: { name, role, email, phone, birth: new Date(birth).toISOString(), password },
@@ -90,5 +104,6 @@ module.exports = {
   updateUser,
   deleteUser,
   create,
-  findByEmail
+  findByEmail,
+  deleteUserFromDB
 };
