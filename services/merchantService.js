@@ -84,11 +84,22 @@ async function deleteMerchant(id) {
   });
 }
 
-async function create(user, category, workPermit) {
+async function create(userId, categoryName, workPermit) {
+  const category = await prisma.merchantCategory.findFirst({
+    where: {
+      name: categoryName
+    }
+  });
+
   return await prisma.merchant.create({
-    data: { user, category, workPermit }
+    data: {
+      userId,
+      categoryId: category.id,
+      workPermit
+    }
   });
 }
+
 
 module.exports = {
   findAll,

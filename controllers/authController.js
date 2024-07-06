@@ -24,15 +24,15 @@ async function register(req, res) {
     const salt = await bcrypt.genSalt();
     const { name, role, email, phone, birth, password } = req.body;
     const { category, workPermit } = req.body;
-    const monthlyIncome = parseInt(req.body.monthlyIncome);
+    const { monthlyIncome } = req.body.monthlyIncome;
 
     const newUser = await userService.create(name, role, email, phone, birth, await bcrypt.hash(password, salt));
     const account = await accountService.create(newUser.id, 0, "Checking");
 
     if (role === "Merchant") {
-      await merchantService.create(newUser, category, workPermit);
+      await merchantService.create(newUser.id, category, workPermit);
     } else if (role === "Customer") {
-      await customerService.create(newUser.id, monthlyIncome);
+      await customerService.create(newUser.id, parseInt(monthlyIncome));
     }
 
     const token = jwt.sign({ id: newUser.id, role }, secretKey, { expiresIn: '30m' });
