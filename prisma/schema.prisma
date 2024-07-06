@@ -57,7 +57,7 @@ model Beneficiaries {
 }
 
 model Accounts {
-  id        Int                 @id @default(autoincrement())
+  id        String              @id 
   userId    Int     
   name      String     
   balance   Float               @default(0)
@@ -76,7 +76,7 @@ model Accounts {
 model Cards {
   id            String     @id
   cardName      String
-  accountNumber Int
+  accountNumber String
   balance       Float
   cvv           Int
   PIN           String     @db.VarChar(4)
@@ -91,7 +91,7 @@ model Cards {
 model CashTransactions {
   id                 Int                @id @default(autoincrement())
   supervisorId       Int
-  accountNumber      Int
+  accountNumber      String
   type               TransactionType
   amount             Float
   status             TransactionStatus  @default(Pending)
@@ -103,8 +103,8 @@ model CashTransactions {
 
 model Transactions {
   id                 Int                @id @default(autoincrement())
-  sourceAccount      Int?
-  destinationAccount Int
+  sourceAccount      String?
+  destinationAccount String
   type               TransactionType
   amount             Float
   status             TransactionStatus  @default(Pending)
@@ -118,7 +118,7 @@ model Transactions {
 model Bills {
   id                       Int                @id @default(autoincrement())
   cardId                   String?
-  merchantAccountNumber    Int
+  merchantAccountNumber    String
   category                 String
   amount                   Float
   details                  String

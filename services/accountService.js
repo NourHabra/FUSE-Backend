@@ -16,7 +16,7 @@ async function findAll() {
 async function findById(id) {
   return await prisma.accounts.findUnique({
     where: {
-      id: parseInt(id),
+      id: id,
     },
     select: {
       id: true,
@@ -52,7 +52,7 @@ async function findByUserId(id){
 async function findUserById(accountId) {
   return await prisma.accounts.findUnique({
     where: {
-      id: parseInt(accountId)
+      id: accountId
     },
     include: {
       user: true
@@ -70,13 +70,13 @@ async function findCheckingById(userId) {
 }
 
 async function create(userId, balance, type) {
-  let newAccountNumber = 0;
+  let newAccountNumber = "";
   let account = null;
   do {
     prefix = "7053";
     let randomSuffix = Math.floor(Math.random() * 9000000000000000) + 1000000000000000;
 
-    newAccountNumber = parseInt((prefix + randomSuffix));
+    newAccountNumber = (prefix + randomSuffix);
     account = prisma.accounts.findUnique({
       where: newAccountNumber
     })
@@ -96,7 +96,7 @@ async function create(userId, balance, type) {
 async function updateById(id,  data ) {
   return await prisma.accounts.update({
     where: {
-      id: parseInt(id)
+      id: id
     },
     data
   });

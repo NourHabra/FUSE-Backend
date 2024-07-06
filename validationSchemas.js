@@ -95,7 +95,7 @@ const createCardSchema = Joi.object({
 
 const updateCardSchema = Joi.object({
   cardName: Joi.string().required(),
-  accountNumber: Joi.number().integer(),
+  accountNumber: Joi.string().length(20).pattern(/^[0-9]+$/),
   expiryDate: Joi.date().iso().required(),
   physical: Joi.boolean().required(),
 });
@@ -126,21 +126,21 @@ const updateMerchantSchema = Joi.object({
 
 const createTransferSchema = Joi.object({
   type: Joi.string().valid(...Object.values(TransactionType)).required(),
-  destinationAccount: Joi.number().integer().required(),
-  sourceAccount: Joi.number().integer(),
+  destinationAccount: Joi.string().length(20).pattern(/^[0-9]+$/).required(),
+  sourceAccount: Joi.string().length(20).pattern(/^[0-9]+$/),
   amount: Joi.number().positive().required(),
   details: Joi.string().optional().allow(''),
 });
 
 const createDWSchema = Joi.object({
-  account: Joi.number().integer().required(),
+  account: Joi.string().length(20).pattern(/^[0-9]+$/).required(),
   amount: Joi.number().positive().required(),
   details: Joi.string().optional().allow(''),
 });
 
 const updateTransactionSchema = Joi.object({
-  sourceAccount: Joi.number().integer().required(),
-  destinationAccount: Joi.number().integer().required(),
+  sourceAccount: Joi.string().length(20).pattern(/^[0-9]+$/).required(),
+  destinationAccount: Joi.string().length(20).pattern(/^[0-9]+$/).required(),
   amount: Joi.number().positive().required(),
   details: Joi.string().optional().allow(''),
 });
@@ -158,7 +158,7 @@ const updateUserSchema = Joi.object({
 // Bill
 
 const payBillSchema = Joi.object({
-  cardId: Joi.string().length(16).required(),
+  cardId: Joi.string().length(16).pattern(/^[0-9]+$/).required(),
   cvv: Joi.number().positive().required(),
   month: Joi.string().max(2).pattern(/^[0-9]+$/).required(),
   year: Joi.string().length(4).pattern(/^[0-9]+$/).required(),
