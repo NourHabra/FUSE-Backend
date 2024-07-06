@@ -119,6 +119,7 @@ async function findRecived(userId) {
       status: 'Completed'
     },
     select: {
+      id: true,
       amount: true,
       accountNumber: true,
       createdAt: true,
@@ -140,6 +141,7 @@ async function findRecived(userId) {
         status: 'Paid'
       },
       select: {
+        id: true,
         amount: true,
         cardId: true,
         payedAt: true
@@ -156,6 +158,7 @@ async function findRecived(userId) {
       status: 'Completed'
     },
     select: {
+      id: true,
       amount: true,
       sAccount: {
         select: {
@@ -195,6 +198,7 @@ async function findSent(userId) {
         status: 'Paid'
       },
       select: {
+        id: true,
         amount: true,
         merchantAccount: {
           select: {
@@ -219,6 +223,7 @@ async function findSent(userId) {
       status: 'Completed'
     },
     select: {
+      id: true,
       amount: true,
       dAccount: {
         select: {
