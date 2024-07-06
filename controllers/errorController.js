@@ -1,4 +1,5 @@
 const { PrismaClient, Prisma, Role } = require('@prisma/client');
+const { logServerError } = require('./logController');
 const prisma = new PrismaClient();
 
 async function handleError(error, res, req) {
@@ -15,6 +16,7 @@ async function handleError(error, res, req) {
     error_message = `Invalid argument type (decryption error)`;
     res.status(409).json({ error: error_message });
   } else if (error.meta) {
+    error_message = error.meta.error;
     res.status(409).json(error.meta);
   } else {
     error_message = error;
@@ -23,23 +25,7 @@ async function handleError(error, res, req) {
   }
 
 
-  // for log Server
-  const requestBody = { ...req.body };
-	if (req.user) {
-    const requestBody = { ...req.body };
-    if (requestBody.jwt) {
-      delete requestBody.jwt;
-    }
-
-    if (typeof req.user.id !== 'undefined') {
-      requestBody.userID = req.user.id;
-    }
-  }
-  
-	console.log(`Destination: ${req.originalUrl}`);
-	console.log(`Request Body: ${JSON.stringify(requestBody)}`);
-	console.log(`Requset Failed ${error_message}`);
-	//next();
+  await logServerError(req, res, error_message);
 }
 
 module.exports = { handleError };

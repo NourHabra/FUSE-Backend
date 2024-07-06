@@ -138,6 +138,16 @@ model TransactionsDetails {
   transaction        Transactions  @relation(fields: [transactionId], references: [id])
 }
 
+model Log {
+  id        Int      @id @default(autoincrement())
+  endpoint  String
+  body      String
+  status    Int
+  userID    Int?
+  message   String?
+  createdAt DateTime @default(now())
+}
+
 enum Role {
   Admin
   Customer
