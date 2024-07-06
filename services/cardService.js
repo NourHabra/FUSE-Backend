@@ -48,7 +48,9 @@ async function create(cardName, accountNumber, PIN, balance) {
     let randomNumber = Math.floor(Math.random() * 9000000000000000) + 1000000000000000;
     id = randomNumber.toString();
 
-    checkID = await findById(id);
+    checkID = await prisma.cards.findUnique({
+      where: {id}
+    });
   } while (checkID);
 
   let transaction = [];
