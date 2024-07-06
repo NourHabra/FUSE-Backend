@@ -127,13 +127,7 @@ async function createAccountsAndCards(userId, numAccounts) {
   const cards = [];
 
   for (let i = 0; i < numAccounts; i++) {
-    const account = await prisma.accounts.create({
-      data: {
-        userId,
-        name: `Account ${i + 1}`,
-        type: i === 0 ? 'Checking' : 'Savings',
-      },
-    });
+    const account = await createAccount(userId, i === 0 ? 'Checking' : 'Savings');
     accounts.push(account);
 
     const cardId = generateRandomCardId();
@@ -152,6 +146,30 @@ async function createAccountsAndCards(userId, numAccounts) {
   }
 
   return [accounts, cards];
+}
+
+async function createAccount(userId, type) {
+  let newAccountNumber = "";
+  let account = null;
+  do {
+    prefix = "7053";
+    let randomSuffix = Math.floor(Math.random() * 9000000000000000) + 1000000000000000;
+
+    newAccountNumber = (prefix + randomSuffix);
+    account = await prisma.accounts.findUnique({
+      where: { id: newAccountNumber }
+    });
+  } while (account);
+
+  return await prisma.accounts.create({
+    data: {
+      id: newAccountNumber,
+      userId: parseInt(userId),
+      balance: 0,
+      type,
+      name: `${type}_${userId}_FUSE`
+    }
+  });
 }
 
 async function createTransactions(sourceAccounts, destinationAccounts, numTransactions) {
