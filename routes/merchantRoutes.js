@@ -11,5 +11,6 @@ const { updateMerchantSchema, generateMerchantBill } = require('../validationSch
 //router.put('/:id', validateRequest(updateMerchantSchema), merchantController.update);
 //router.delete('/:id', merchantController.destroy);
 router.post('/generate/bill', validateRequest(generateMerchantBill), merchantController.genBill);
+router.get('/check/:id', merchantController.checkBill);
 
 module.exports = router;

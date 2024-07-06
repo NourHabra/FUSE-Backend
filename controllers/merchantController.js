@@ -73,7 +73,7 @@ async function destroy(req, res) {
 
 async function genBill(req, res) {
   try {
-    const { merchantId, amount, details } = req.body;
+    const { merchantId, amount, details, password } = req.body;
 
     const merchant = await merchantService.findById(merchantId);
 
@@ -86,10 +86,29 @@ async function genBill(req, res) {
 
     const bill = await billServices.create(merchantAccount.id, amount, details, merchant.merchant.categoryId);
 
+    logServer(req, res);
     return res.status(201).json({ billID: bill.id })
   } catch (error) {
     await handleError(error, res, req);
   }
 }
 
-module.exports = { index, show, update, destroy, genBill };
+async function checkBill(req, res) {
+  try {
+    const billId = parseInt(await validate.isNumber(req.params.id));
+    const bill = await billServices.findById(billId);
+    if(!bill){
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'Bill not found' };
+      throw error;
+    }
+
+    logServer(req, res);
+    return res.status(201).json({ status: bill.status })
+
+  } catch (error) {
+    await handleError(error, res, req);
+  }
+}
+
+module.exports = { index, show, update, destroy, genBill, checkBill };
