@@ -144,7 +144,21 @@ async function findRecived(userId) {
         id: true,
         amount: true,
         cardId: true,
-        payedAt: true
+        payedAt: true,
+        card: {
+          select: {
+            account: {
+              select: {
+                user: {
+                  select: {
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        },
+        details: true
       }
     });
     if(bills){ recived.bills = bills };
@@ -204,12 +218,18 @@ async function findSent(userId) {
           select: {
             user: {
               select: {
-                name: true
+                name: true,
+                merchant: {
+                  select: {
+                    Category: true
+                  }
+                }
               }
             }
           }
         },
-        payedAt: true
+        payedAt: true,
+        details: true
       }
     });
     if(bills){ sent.bills = bills };
