@@ -24,9 +24,9 @@ async function findAll() {
 }
 
 async function findById(id) {
-  return await prisma.users.findUnique({
+  const merchant = await prisma.users.findUnique({
     where: {
-      id,
+      id: parseInt(id),
       status: { not: "Deleted" },
       role: controllerRole
     },
@@ -45,9 +45,17 @@ async function findById(id) {
       }
     }
   });
+
+  if (!merchant) {
+    let error = new Error("Not Found");
+    error.meta = { code: "404", error: 'Merchant account not found' };
+    throw error;
+  }
+
+  return merchant;
 }
 
-async function updateById(id,  data ) {
+async function updateById(id, data) {
   if (data.birth) data.birth = new Date(data.birth).toISOString();
   return await prisma.users.update({
     where: {

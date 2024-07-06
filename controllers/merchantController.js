@@ -1,4 +1,6 @@
 const merchantService = require('../services/merchantService');
+const billServices = require('../services/billServices');
+const accountService = require('../services/accountService');
 const { handleError } = require('./errorController');
 const validate = require('./validateController');
 const { makePayload } = require('../middleware/encryptionMiddleware');
@@ -69,4 +71,25 @@ async function destroy(req, res) {
   }
 }
 
-module.exports = { index, show, update, destroy };
+async function genBill(req, res) {
+  try {
+    const { merchantId, amount, details } = req.body;
+
+    const merchant = await merchantService.findById(merchantId);
+
+    const merchantAccount = await accountService.findCheckingById(merchantId);
+    if (!merchantAccount) {
+      let error = new Error("Not Found");
+      error.meta = { code: "404", error: 'Merchant account not found' };
+      throw error;
+    }
+
+    const bill = await billServices.create(merchantAccount.id, amount, details, merchant.merchant.categoryId);
+
+    return res.status(201).json({ billID: bill.id })
+  } catch (error) {
+    await handleError(error, res, req);
+  }
+}
+
+module.exports = { index, show, update, destroy, genBill };

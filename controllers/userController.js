@@ -98,6 +98,7 @@ async function expenses(req, res) {
   
   const userExpenses = await userService.findExpenses(userId);
   
+  await logServer(req, res);
   return res.json(await makePayloadMobile({expenses: userExpenses}, req.user.id));
   //return res.status(201).json(userExpenses);
 }

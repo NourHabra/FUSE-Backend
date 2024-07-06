@@ -122,6 +122,12 @@ const updateMerchantSchema = Joi.object({
   workPermit: Joi.string().required(),
 });
 
+const generateMerchantBill = Joi.object({
+  merchantId: Joi.number().integer().positive().required(),
+  amount: Joi.number().positive().required(),
+  details: Joi.string().optional().allow(''),
+})
+
 // Transaction
 
 const createTransferSchema = Joi.object({
@@ -190,5 +196,6 @@ module.exports = {
   updatePINSchema,
   updateBalanceSchema,
   payBillSchema,
-  keySchema
+  keySchema,
+  generateMerchantBill
 };

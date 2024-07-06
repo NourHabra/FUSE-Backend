@@ -41,7 +41,7 @@ async function findByMerchantId(id) {
 async function create(merchantAccount, amount, details, categoryId) {
 	const category = await prisma.merchantCategory.findUnique({
 		where: {
-			id: categoryId,
+			id: parseInt(categoryId),
 		},
 	});
 

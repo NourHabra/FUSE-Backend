@@ -63,7 +63,7 @@ async function findUserById(accountId) {
 async function findCheckingById(userId) {
   return await prisma.accounts.findFirst({
     where:{
-      user: { id: userId },
+      user: { id: parseInt(userId) },
       type: "Checking"
     }
   });

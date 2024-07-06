@@ -35,6 +35,8 @@ app.get("/", async (req, res) => {
 	res.json({ msg: "Hello World, I am alive!" });
 });
 
+app.use("/merchant", merchantRoutes);
+
 app.use("/key", keyRoutes);
 
 app.use("/auth", authRouter);
@@ -43,7 +45,6 @@ app.use(authenticateJWT);
 
 app.use("/user", userRoutes);
 app.use("/beneficiarie", beneficiarieRouter);
-app.use("/merchant", merchantRoutes);
 app.use("/account", accountRoutes);
 app.use("/card", cardRoutes);
 app.use("/transaction", transactionRoutes);
