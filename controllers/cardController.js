@@ -105,6 +105,7 @@ async function store(req, res) {
     await logServer(req, res); // Call the logServer function before returning the response
     return res.json(await makePayloadMobile(newCard[0], req.user.id));
   } catch (error) {
+    console.log(error);
     await handleError(error, res, req);
   }
 }
