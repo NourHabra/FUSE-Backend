@@ -59,7 +59,7 @@ async function create(cardName, accountNumber, PIN, balance) {
         id,
         cardName,
         balance,
-        accountNumber: parseInt(accountNumber),
+        accountNumber: accountNumber,
         cvv: Math.floor(Math.random() * 900) + 100,
         PIN
       }
