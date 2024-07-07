@@ -64,4 +64,37 @@ async function logServerError(req, res, message) {
   }
 }
 
-module.exports = { logServer, logServerError };
+async function clearLog() {
+  try {
+    const allLogs = await logPrisma.log.findMany({
+      orderBy: {
+        id: 'asc',
+      },
+    });
+
+    const totalCount = allLogs.length;
+    const countToKeep = 100;
+    const countToDelete = totalCount - countToKeep;
+
+    if (countToDelete > 0) {
+      const logsToDelete = allLogs.slice(0, countToDelete);
+      const deletedLogs = await logPrisma.log.deleteMany({
+        where: {
+          id: {
+            in: logsToDelete.map((log) => log.id),
+          },
+        },
+      });
+
+      console.log(`Deleted ${deletedLogs.count} log entries, keeping the latest ${countToKeep} entries.`);
+    } else {
+      console.log('No log entries to delete. Keeping all entries.');
+    }
+  } catch (error) {
+    console.error('Error deleting log entries:', error);
+  }
+}
+
+
+
+module.exports = { logServer, logServerError, clearLog };
