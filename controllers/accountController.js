@@ -57,7 +57,7 @@ async function showUserAccounts(req, res) {
   }
 }
 
-async function showByUserId(req, res) {
+async function showUserById(req, res) {
   try {
     const accountUser = await accountService.findUserById(req.params.id);
 
@@ -124,4 +124,4 @@ async function destroy(req, res) {
   }
 }
 
-module.exports = { index, show, store, update, destroy, showByUserId, showUserAccounts };
+module.exports = { index, show, store, update, destroy, showUserById, showUserAccounts };
