@@ -24,7 +24,7 @@ async function register(req, res) {
     const salt = await bcrypt.genSalt();
     const { name, role, email, phone, birth, password } = req.body;
     const { category, workPermit } = req.body;
-    const { monthlyIncome } = req.body.monthlyIncome;
+    const { monthlyIncome } = req.body;
 
     const newUser = await userService.create(name, role, email, phone, birth, await bcrypt.hash(password, salt));
     const account = await accountService.create(newUser.id, 0, "Checking");
