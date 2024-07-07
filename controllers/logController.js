@@ -20,7 +20,7 @@ async function logServer(req, res) {
   };
 
   if (userId) {
-    logData.userId = userId;
+    logData.userID = userId;
   }
   console.log(logData);
 
