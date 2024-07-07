@@ -59,16 +59,16 @@ async function showUserAccounts(req, res) {
 
 async function showByUserId(req, res) {
   try {
-    const accounts = await accountService.findUserById(req.params.id);
+    const accountUser = await accountService.findUserById(req.params.id);
 
-    if(!accounts){
+    if(!accountUser){
       let error = new Error("Not Found");
       error.meta = { code: "404", error: 'Accounts not found' };
       throw error;
     }
 
     await logServer(req, res); // Call the logServer function before returning the response
-    return res.json(await makePayloadMobile(accounts, req.user.id));
+    return res.json(await makePayloadMobile(accountUser, req.user.id));
 
   }catch(error){
     await handleError(error, res, req);
@@ -92,7 +92,7 @@ async function store(req, res) {
 
 async function update(req, res) {
   try {
-    const id = await validate.isNumber(req.params.id, "id");
+    const id = req.params.id;
     const { userId, balance, type, status, name } = req.body;
 
     const updatedAccount = await accountService.updateById(id, { userId, balance, type, status, name });
