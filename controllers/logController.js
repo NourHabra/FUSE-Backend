@@ -52,7 +52,7 @@ async function logServerError(req, res, message) {
   };
 
   if (userId) {
-    logData.userId = userId;
+    logData.userID = userId;
   }
   console.log(logData);
 
