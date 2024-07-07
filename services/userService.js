@@ -35,6 +35,19 @@ async function findById(id) {
   });
 }
 
+async function findCustomer(userId) {
+  return await prisma.users.findFirst({
+    where: {
+      customer: {
+        userId: parseInt(userId)
+      }
+    },
+    include: {
+      customer: true
+    }
+  });
+}
+
 async function updateUser(id,  data ) {
   if (data.birth) data.birth = new Date(data.birth).toISOString();
   return await prisma.users.update({
@@ -326,5 +339,6 @@ module.exports = {
   deleteUserFromDB,
   findRecived,
   findSent,
-  findExpenses
+  findExpenses,
+  findCustomer
 };

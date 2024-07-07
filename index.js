@@ -11,7 +11,7 @@ const cardRoutes = require("./routes/cardRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
 const keyRoutes = require("./routes/keyRoutes");
 const billRoutes = require("./routes/billRoutes");
-const encry = require("./middleware/encryptionMiddleware");
+//const encry = require("./middleware/encryptionMiddleware");
 const {authenticateJWT} = require('./middleware/authMiddleware');
 
 
@@ -35,6 +35,7 @@ app.get("/", async (req, res) => {
 	res.json({ msg: "Hello World, I am alive!" });
 });
 
+// for payment gateway
 app.use("/merchant", merchantRoutes);
 
 app.use("/key", keyRoutes);

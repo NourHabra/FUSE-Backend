@@ -20,7 +20,7 @@ async function index(req, res) {
 
 async function show(req, res) {
   try {
-    const id = await validate.isNumber(req.params.id, "id");
+    const id = req.params.id;
 
     const account = await accountService.findById(id);
 

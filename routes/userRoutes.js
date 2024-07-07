@@ -15,6 +15,6 @@ router.put('/:id', validateRequest(updateUserSchema), userController.update);
 router.delete('/:id', userController.destroy);
 router.post('/received', userController.recived)
 router.post('/sent', userController.sent)
-router.post('/expenses', userController.expenses)
+router.post('/expenses',isCustomer, userController.expenses)
 
 module.exports = router;

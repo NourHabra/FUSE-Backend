@@ -45,7 +45,7 @@ async function update(req, res) {
     }
 
     const updatedUser = await userService.updateUser(id, name, email, phone, birth, status);
-    await logServer(req, res); // Call the logServer function before returning the response
+    await logServer(req, res); 
     return res.status(200).json(await makePayload(updatedUser, req.user.id));
   } catch (error) {
     await handleError(error, res, req);
@@ -95,12 +95,17 @@ async function expenses(req, res) {
   const userId = req.user.id;
   //const { userId } = req.body;
   
-  
+  const user = await userService.findCustomer(userId);
+  if(!user){
+    let error = new Error("Not Found");
+    error.meta = { code: "404", error: 'Customer not found/Not customer' };
+    throw error;
+  }
   const userExpenses = await userService.findExpenses(userId);
   
   await logServer(req, res);
-  return res.json(await makePayloadMobile({expenses: userExpenses}, req.user.id));
-  //return res.status(201).json(userExpenses);
+  return res.json(await makePayloadMobile({expenses: userExpenses, monthlyIncome: user.customer.monthlyIncome}, req.user.id));
+  //return res.status(201).json({userExpenses, monthlyIncome: user.customer.monthlyIncome});
 }
 
 module.exports = { index, show, update, destroy, recived, sent, expenses };

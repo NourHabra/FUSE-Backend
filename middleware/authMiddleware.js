@@ -25,10 +25,8 @@ const authenticateJWT = (req, res, next) => {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
-  // Remove expired tokens from the revokedTokens set
   removeExpiredTokens();
 
-  // Check if the token is revoked
   if (revokedTokens.has(token)) {
     return res.status(401).json({ message: 'Token has been revoked' });
   }

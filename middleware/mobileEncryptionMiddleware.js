@@ -142,7 +142,7 @@ async function makePayloadMobile(data, userId, email) {
 
 const encryptMobile = (data, aesKey) => {
   try {
-    const iv = forge.random.getBytesSync(12); // Generate a random IV
+    const iv = forge.random.getBytesSync(12); 
     const cipher = forge.cipher.createCipher(
       "AES-GCM",
       forge.util.hexToBytes(aesKey)
