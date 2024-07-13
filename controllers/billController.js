@@ -88,7 +88,7 @@ async function pay(req, res) {
     }
 
     const payedBill = await billService.payBill(id, cardId, bill.amount, bill.merchantAccountNumber);
-    await logServer(req, res); // Call the logServer function before returning the response
+    await logServer(req, res); 
     return res.status(201).json(await makePayloadMobile({ payedBill }, req.user.id));
 
   }catch (error) {

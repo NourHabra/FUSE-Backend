@@ -49,7 +49,7 @@ async function findCustomer(userId) {
 }
 
 async function updateUser(id,  data ) {
-  if (data.birth) data.birth = new Date(data.birth).toISOString();
+  if (data.birth) data.birth = (new Date(data.birth)).toISOString();
   return await prisma.users.update({
     where: {
       id

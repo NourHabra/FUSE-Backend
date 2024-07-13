@@ -53,7 +53,7 @@ async function genKeysDashboard(req, res) {
 
     const serverPublicKeyBase64 = server.getPublicKey().toString('base64');
     const sharedKey = server.computeSecret(Buffer.from(clientPublicKey, 'base64'), null, 'hex');
-    //keys[user.id] = sharedKey;
+
     await setAESKey(user.id, sharedKey);
 
     console.log(`Shared Key for ${email} is sent`);
